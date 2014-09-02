@@ -1,0 +1,129 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Gravity Forms Checkout for Easy Digital Downloads\n"
+"POT-Creation-Date: 2014-02-27 10:27-0700\n"
+"PO-Revision-Date: 2014-02-27 10:28-0700\n"
+"Last-Translator: Zack Katz <support@katz.co>\n"
+"Language-Team: Katz Web Services, Inc. <support@katz.co>\n"
+"Language: en_US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.4\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
+"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
+"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: admin.php:32
+msgid "Gravity Forms is installed but not active."
+msgstr ""
+
+#: admin.php:33
+#, php-format
+msgid "%sActivate Gravity Forms%s to use the %s plugin."
+msgstr ""
+
+#: admin.php:35
+#, php-format
+msgid "%s requires Gravity Forms."
+msgstr ""
+
+#: admin.php:36
+#, php-format
+msgid "%sPurchase Gravity Forms%s"
+msgstr ""
+
+#: admin.php:49
+msgid "Value"
+msgstr ""
+
+#: admin.php:50
+msgid "EDD Price ID"
+msgstr ""
+
+#: admin.php:160
+#, php-format
+msgid "Connect to EDD %s"
+msgstr ""
+
+#: admin.php:168
+#, php-format
+msgid "Choose a %s"
+msgstr ""
+
+#: admin.php:186
+#, php-format
+msgid "No %s created yet"
+msgstr ""
+
+#: admin.php:191
+msgid ""
+"This download has variations. You will need to add an \"Option\" Pricing "
+"Field to configure the variation pricing."
+msgstr ""
+
+#: admin.php:205
+#, php-format
+msgid "Load EDD Options &amp; Prices for this Product %s"
+msgstr ""
+
+#: admin.php:206
+msgid "This is an Easy Digital Downloads product"
+msgstr ""
+
+#: admin.php:207
+#, php-format
+msgid ""
+"The \"Label\" below must match the EDD Option Name or the EDD Price ID "
+"value. %sLearn more about connecting variable price products%s."
+msgstr ""
+
+#: admin.php:215
+msgid ""
+"This EDD product has no price variants. This field&rsquo;s settings will not "
+"modify the EDD download purchase."
+msgstr ""
+
+#: admin.php:234
+msgid "Use EDD Settings"
+msgstr ""
+
+#: admin.php:234
+msgid ""
+"Load the variation names and prices from the Easy Digital Downloads product. "
+"You can change the options after loading."
+msgstr ""
+
+#: admin.php:235
+msgid "EDD Download"
+msgstr ""
+
+#: admin.php:235
+msgid ""
+"Connect this product to an Easy Digital Downloads product. If connected, "
+"when this product is purchased it will generate a sale in Easy Digital "
+"Downloads."
+msgstr ""
+
+#: edd-gravity-forms.php:430
+#, php-format
+msgid "Transaction ID: %s - "
+msgstr ""
+
+#: edd-gravity-forms.php:433
+#, php-format
+msgid "%s%sView Gravity Forms Entry%s"
+msgstr ""
+
+#: edd-gravity-forms.php:437
+msgid "Easy Digital Downloads"
+msgstr ""
+
+#: edd-gravity-forms.php:437
+#, php-format
+msgid "Created Payment ID %d in Easy Digital Downloads"
+msgstr ""
