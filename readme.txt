@@ -26,7 +26,7 @@ For support, [visit the Help Docs](https://katzwebservices.zendesk.com/hc/en-us/
 
 == Changelog ==
 
-= 1.1 on August 29 =
+= 1.1 on September 2 =
 * Fixed support for separate Gravity Forms "Quantity" fields
 * Modified how the plugin processes downloads
 * Fixed fatal error on Edit Form page when EDD isn't active but the add-on is
@@ -51,6 +51,11 @@ For support, [visit the Help Docs](https://katzwebservices.zendesk.com/hc/en-us/
 * Liftoff!
 
 == Upgrade Notice ==
+
+= 1.1 on September 2 =
+* Fixed support for separate Gravity Forms "Quantity" fields
+* Modified how the plugin processes downloads
+* Fixed fatal error on Edit Form page when EDD isn't active but the add-on is
 
 = 1.0.5 on July 15 =
 * Fixed: plugin had been resetting field options in Form Editor
