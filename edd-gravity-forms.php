@@ -189,6 +189,12 @@ final class KWS_GF_EDD {
 		return $options;
 	}
 
+	/**
+	 * Get a field array from a Gravity Forms form by the ID of the field
+	 * @param  string|int $id   Number of the field ID
+	 * @param  array $form Gravity Forms form array
+	 * @return array|boolean       Field array, if exists. False if not.
+	 */
 	function get_form_field_by_id( $id, $form ) {
 
 		foreach ($form['fields'] as $field) {

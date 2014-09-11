@@ -14,6 +14,8 @@ Use Gravity Forms to sell Easy Digital Downloads products. Simply add a product 
 
 For support, [visit the Help Docs](https://katzwebservices.zendesk.com/hc/en-us/categories/200124168-Gravity-Forms-Checkout-for-Easy-Digital-Downloads).
 
+__To translate the plugin__ into your language, please [submit your translation here](https://www.transifex.com/projects/p/edd-gravity-forms-checkout/).
+
 == Screenshots ==
 
 
@@ -25,6 +27,9 @@ For support, [visit the Help Docs](https://katzwebservices.zendesk.com/hc/en-us/
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.1.1 on September 11 =
+* Fixed issue where plugin was overriding existing options for options fields that were not connected to an EDD download
 
 = 1.1 on September 2 =
 * Fixed support for separate Gravity Forms "Quantity" fields
