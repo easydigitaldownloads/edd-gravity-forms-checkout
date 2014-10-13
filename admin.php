@@ -72,7 +72,10 @@ class KWS_GF_EDD_Admin {
 	 * Add scripts to the admin.
 	 */
 	function admin_enqueue_scripts() {
-		wp_enqueue_script( 'edd-gf-admin', plugins_url( 'assets/js/admin.js', EDD_GF_PLUGIN_FILE ), array('jquery'), NULL, true);
+
+		$min = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '.min' : '';
+
+		wp_enqueue_script( 'edd-gf-admin', plugins_url( 'assets/js/admin'.$min.'.js', EDD_GF_PLUGIN_FILE ), array('jquery'), NULL, true);
 
 		wp_localize_script( 'edd-gf-admin', 'EDDGF', array(
 			'text_value' => __('Value', 'edd-gf'),
