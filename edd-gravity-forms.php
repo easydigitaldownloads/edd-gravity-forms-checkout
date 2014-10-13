@@ -340,6 +340,13 @@ final class KWS_GF_EDD {
 		$data['cart_details'] = $cart_details;
 		$data['total'] = GFCommon::to_number( $total );
 
+		if( $data['total'] < 0 ) {
+
+			$this->r( $data, false, '$data[total] was negative ('.$data['total'].') - resetting to $0.00 (Line '.__LINE__.')');
+
+			$data['total'] = 0;
+		}
+
 		$this->r( $data, false, '$data returned from get_edd_data_array_from_entry() (Line '.__LINE__.')');
 
 		return $data;
