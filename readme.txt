@@ -28,8 +28,14 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
-= 1.1.1 on September 11 =
+= 1.2 on September 11 =
+* Properly handle Product Price + Option Price, if set
 * Fixed issue where plugin was overriding existing options for options fields that were not connected to an EDD download
+* Added payment status "Void" to support Gravity Forms updates
+* Improved support for using Simple Name field
+    * Fixed error on submission
+    * Sets the user's Display Name to the submitted value
+* Fixed: Support for Product fields loading EDD Variations, when using the Radio or Drop Down Field Type
 
 = 1.1 on September 2 =
 * Fixed support for separate Gravity Forms "Quantity" fields

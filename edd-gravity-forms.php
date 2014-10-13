@@ -13,7 +13,7 @@
  * Plugin URI: http://katz.co/downloads/edd-gf/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 1.1
+ * Version: 1.2
  * Requires at least: 3.0
  * Author URI: http://katz.co
  * License: GPL v3
@@ -42,7 +42,7 @@ final class KWS_GF_EDD {
 	 * @link  http://semver.org
 	 * @var  string Semantic Versioning version number
 	 */
-	const version = '1.1';
+	const version = '1.2';
 
 	/**
 	 * Name of the plugin for the updater class
@@ -54,7 +54,7 @@ final class KWS_GF_EDD {
 	 * Set whether to print debug output using the `r()` method
 	 * @var boolean
 	 */
-	private $debug = false;
+	private $debug = true;
 
 	/**
 	 * Set constants, load textdomain, and trigger init()
@@ -125,6 +125,7 @@ final class KWS_GF_EDD {
 			"Reversed" => 'refunded',
 			"Refunded" => 'refunded',
 			"Voided" => 'refunded',
+			"Void" => 'refunded',
 		);
 
 		return isset($gf_payment_statuses[$status]) ? apply_filters( 'edd_gf_payment_status', $gf_payment_statuses[$status], $status ) : apply_filters( 'edd_gf_default_status', 'pending', $status);
@@ -142,23 +143,19 @@ final class KWS_GF_EDD {
 	 * @param  float|int $field_id    The ID of the current field being processed
 	 * @return array              An associative array with `amount` and `price_id` keys.
 	 */
-	function get_download_options_from_entry($entry, $field, $download_id, $product ) {
+	function get_download_options_from_entry($entry, $field, $download_id, $product, $option_name = '', $option_price = 0 ) {
 
 		$options = NULL;
 
 		// Get the variations for the product
-		if($prices = edd_get_variable_prices($download_id)) {
+		if( $prices = edd_get_variable_prices( $download_id ) ) {
 
 			$this->r($prices, false, '$prices for EDD product ID #'.$download_id.' , line '.__LINE__);
 
 			$options = array(); // Default options array
 
-
-			$option_name = $product['options'][0]['option_name'];
-			$submitted_price = $product['options'][0]['price'];
-
 			// Use the submitted price instead of any other.
-			$options['amount'] = GFCommon::to_number($submitted_price);
+			$options['amount'] = GFCommon::to_number($option_price);
 
 			// We loop through the download variable prices from EDD
 			foreach ($prices as $price_id => $price_details) {
@@ -254,11 +251,41 @@ final class KWS_GF_EDD {
 
 			if( !empty( $field['eddHasVariables'] ) ) {
 
-				$download_item['options'] = $this->get_download_options_from_entry( $entry, $field, $edd_product_id, $product );
+				// If the product was submitted with options chosen
+				if( !empty( $product['options'] ) ) {
+
+					// The BASE product
+					$downloads[] = $download_item;
+
+					// We want to add a purchase item for each option
+					foreach ( $product['options'] as $key => $option ) {
+
+						$option_name = $product['options'][ $key ]['option_name'];
+						$option_price = $product['options'][ $key ]['price'];
+
+						$download_item['quantity'] = 1;
+						$download_item['price'] = GFCommon::to_number( $product['price'] + $option_price );
+
+						$download_item['options'] = $this->get_download_options_from_entry( $entry, $field, $edd_product_id, $product, $option_name, $option_price );
+
+						// Create an additional download for each option
+						$downloads[] = $download_item;
+					}
+
+				} else {
+					$option_price = $product['price'];
+					$option_name = $product['name'];
+
+					$download_item['options'] = $this->get_download_options_from_entry( $entry, $field, $edd_product_id, $product, $option_name, $option_price );
+
+					$downloads[] = $download_item;
+				}
+
+			} else {
+
+				$downloads[] = $download_item;
 
 			}
-
-			$downloads[] = $download_item;
 
 		}
 
@@ -335,13 +362,19 @@ final class KWS_GF_EDD {
 					$user_info['email'] = $field['id'];
 					break;
 				case 'name':
-					foreach ($field['inputs'] as $input) {
-						if(floatval($input['id']) === floatval($field['id'].'.3')) {
-							$user_info['first_name'] = $input['id'];
+
+					if( is_array( $field['inputs'] ) && !empty( $field['inputs'] ) ) {
+						foreach ( $field['inputs'] as $input ) {
+							if(floatval($input['id']) === floatval($field['id'].'.3')) {
+								$user_info['first_name'] = $input['id'];
+							} else if(floatval($input['id']) === floatval($field['id'].'.6')) {
+								$user_info['last_name'] = $input['id'];
+							}
 						}
-						if(floatval($input['id']) === floatval($field['id'].'.6')) {
-							$user_info['last_name'] = $input['id'];
-						}
+					} else {
+
+						// For a Simple Name field, show full name
+						$user_info['display_name'] = $field['id'];
 					}
 					break;
 			}
@@ -376,7 +409,8 @@ final class KWS_GF_EDD {
 				// If email, first & last name exist in Gravity Forms, use those
 				'email'      => !empty($user_info['email']) ? $user_info['email'] : $current_user->user_email,
 				'first_name' => !empty($user_info['first_name']) ? $user_info['first_name'] : $current_user->user_firstname,
-				'last_name'  => !empty($user_info['last_name']) ? $user_info['last_name'] : $current_user->user_lastname
+				'last_name'  => !empty($user_info['last_name']) ? $user_info['last_name'] : $current_user->user_lastname,
+				'display_name' => !empty($user_info['display_name']) ? $user_info['display_name'] : $current_user->display_name,
 			);
 
 		} else {
@@ -396,6 +430,7 @@ final class KWS_GF_EDD {
 					// If first & last name exist in Gravity Forms, use those
 					$user_info['first_name'] = !empty($user_info['first_name']) ? $user_info['first_name'] : $wp_user->user_firstname;
 					$user_info['last_name']  = !empty($user_info['last_name']) ? $user_info['last_name'] : $wp_user->user_firstname;
+					$user_info['display_name'] = !empty($user_info['display_name']) ? $user_info['display_name'] : $wp_user->display_name;
 				}
 			}
 
@@ -407,6 +442,7 @@ final class KWS_GF_EDD {
 			'email'      => $user_info['email'],
 			'first_name' => $user_info['first_name'],
 			'last_name'  => $user_info['last_name'],
+			'display_name'  => $user_info['display_name'],
 			'discount'   => ''
 		);
 

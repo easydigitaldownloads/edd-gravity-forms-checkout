@@ -222,7 +222,8 @@ class KWS_GF_EDD_Admin {
 		?>
 			</select>
 
-			<span class="howto product-has-variations-message" style="display:none;"><?php _e('This download has variations. You will need to add an "Option" Pricing Field to configure the variation pricing.'); ?></span>
+			<span class="howto product-has-variations-message" style="display:none;"><?php esc_html_e('This download has variations.', 'edd-gf'); ?><span class="product-add-option-field" style="display:none;"><?php esc_html_e('You will need to add an "Option" Pricing Field or change the Field Type to "Radio" or "Drop Down" below in order to configure the variation pricing.', 'edd-gf'); ?></span>
+			</span>
 		</li>
 		<?php
 	}
@@ -234,7 +235,7 @@ class KWS_GF_EDD_Admin {
 	 */
 	function options_field($position, $form_id) {
 
-		if($position !== 25) { return; }
+		if($position !== 37) { return; }
 
 		$button_text = sprintf(esc_attr__('Load EDD Options &amp; Prices for this Product %s', 'edd-gf'), gform_tooltip("edd_gf_load_variations", '', true));
 		$connected_text = esc_attr__('This is an Easy Digital Downloads product', 'edd-gf');
@@ -245,13 +246,13 @@ class KWS_GF_EDD_Admin {
 
 			<div class="edd-connected"><span class="fa fa-lg fa-arrow-circle-o-down"></span> <?php echo $connected_text; ?></div>
 
-			<div class="edd-gf-variation-warning" style="display:none;">
-				<p><span class="description"><?php _e('This EDD product has no price variants. This field&rsquo;s settings will not modify the EDD download purchase.', 'edd-gf'); ?></span></p>
+			<div class="edd-gf-no-variations-warning" style="display:none;">
+				<p><span class="description"><?php esc_html_e('This EDD product has no price variants; the settings below will not be applied to the EDD download purchase.', 'edd-gf'); ?></span></p>
 			</div>
 			<div class="edd-gf-get-variations" style="display:none; position:relative;">
 				<p><span class="howto"><?php echo $connect_variation_help; ?></span></p>
 				<p class="ui-helper-clearfix">
-					<button class="button button-small button-default alignleft" type="button" onclick="jQuery('body').trigger('edd-gf-get-variations');"><?php echo $button_text; ?></button>
+					<button class="button button-small button-default alignleft" type="button"><?php echo $button_text; ?></button>
 					<img class="waiting edd-gf-loading alignleft" style="display:none; margin-top: 2px; margin-left:5px;" width="20" height="20" src="<?php echo admin_url('images/spinner.gif'); ?>" />
 				</p>
 			</div>
