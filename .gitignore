@@ -1,1 +1,11 @@
 .DS_Store
+*.config
+config.codekit
+.codekit-cache
+doxygen.config
+
+*.sublime-project
+
+edd-gravity-forms.sublime-project
+
+doxygen.config
