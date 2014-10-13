@@ -6,6 +6,8 @@ jQuery(document).ready(function($) {
 
 			var self = EDD_GF_Admin;
 
+			$(document).on('gform_load_field_settings', self.hide_connect_for_options );
+
 			/**
 			 * Set field values when an EDD product is selected on a GF Product field
 			 *
@@ -40,6 +42,21 @@ jQuery(document).ready(function($) {
 			info = info || null;
 
 			console.log( content, info );
+		},
+
+		/**
+		 * Hide EDD connection info for other Product fields like Coupon, Quantity and Total
+		 * @return {void}
+		 */
+		hide_connect_for_options: function() {
+
+			// Get the current field
+			var field = GetSelectedField();
+
+			if( field.type !== 'product' && field.type !== 'option' ) {
+				EDD_GF_Admin.product_hide_all( field );
+			}
+
 		},
 
 		/**
