@@ -54,7 +54,7 @@ final class KWS_GF_EDD {
 	 * Set whether to print debug output using the `r()` method
 	 * @var boolean
 	 */
-	private $debug = true;
+	private $debug = false;
 
 	/**
 	 * Set constants, load textdomain, and trigger init()
