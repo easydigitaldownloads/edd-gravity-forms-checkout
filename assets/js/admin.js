@@ -1,6 +1,17 @@
+/**
+ *
+ * Handle EDD options in the Gravity Forms field settings
+ *
+ * @package edd-gravity-forms
+ */
+
+
+
 jQuery(document).ready(function($) {
 
 	var EDD_GF_Admin = EDD_GF_Admin || {
+
+		debug: false,
 
 		init: function() {
 
@@ -38,6 +49,9 @@ jQuery(document).ready(function($) {
 		 * @return {[type]}         [description]
 		 */
 		log: function( content, info ) {
+
+			// Don't log anything if debug is false
+			if( !EDD_GF_Admin.debug ) { return; }
 
 			info = info || null;
 
@@ -99,6 +113,11 @@ jQuery(document).ready(function($) {
 			return eddProductField;
 		},
 
+		/**
+		 * Fetch variation data from EDD using AJAX
+		 * @param  {object} e Event object
+		 * @return {void}
+		 */
 		get_variations: function( e ) {
 
 			var self = EDD_GF_Admin;
@@ -147,7 +166,7 @@ jQuery(document).ready(function($) {
 				$('.edd-gf-loading').hide();
 
 				// The ajax call gave us a JSON array of price variables
-				items = jQuery.parseJSON(data);
+				var items = jQuery.parseJSON(data);
 
 				self.log( 'parsed JSON price Variable Items', items );
 
@@ -156,7 +175,7 @@ jQuery(document).ready(function($) {
 
 					self.log('There were no variations. Reverting to original field choices.');
 
-					edd_gf_restore_field_choices(field);
+					self.restore_field_choices(field);
 
 				} else {
 					// Store the original choices
@@ -177,14 +196,14 @@ jQuery(document).ready(function($) {
 						var price = currency.toMoney(item.amount);
 
 						// Create a choice based on the variation
-						choice = new Choice();
+						var choice = new Choice();
 							choice.text = item.name;
 							choice.value = i.toString(); // It needs to be a string so GF can do `choiceValue.replace(/'/g, "&#039;")` on it
 							choice.price = price;
 							choice.isSelected = false; // previous: (i === 0); // Select the first variation as the default
 
 						// Add the choice to the list of choices available
-						field.choices.push(choice);
+						field.choices.push( choice );
 					});
 
 					// Update the field choices
@@ -194,10 +213,16 @@ jQuery(document).ready(function($) {
 			})
 			.error(function(data) {
 				$('.edd-gf-loading').hide();
+				self.log('Error loading variations', data );
 			});
 
 		},
 
+		/**
+		 * Handle logic on whether to show messages
+		 * @param  {[type]} e [description]
+		 * @return {[type]}   [description]
+		 */
 		maybe_show_variations: function (e) {
 			var self = EDD_GF_Admin;
 
@@ -222,39 +247,32 @@ jQuery(document).ready(function($) {
 			// There's no connected EDD download
 			if( edd_gf_selected_download === '' || edd_gf_selected_download === '0' ) {
 
-				$('.product-has-variations-message').hide();
-				$('.edd_gf_connect_variations').slideUp(100);
+				self.product_hide_all( field );
 
-				// Restore the field choices
-				self.restore_field_choices( field );
 			}
 
 			// If the download isn't empty and it has variables.
-			else {
+			else if( eddProductField.eddHasVariables ) {
 
-				// Options field
-				if( field.productField !== '' ) {
-
-					// No parent
-					SetFieldProperty('eddVariationParentID', false);
-
-				}
-				// Product field, not Options field
-				else {
-
-					// Parent is self (Product Field)
-					SetFieldProperty('eddVariationParentID', edd_gf_selected_download);
-				}
-
-				if( eddProductField.eddHasVariables ) {
-					self.product_has_variables( field );
-				}
-				// There's a download, but has no variable products
-				else {
-					self.product_has_no_variables( field );
-				}
+				self.product_has_variables( field );
 
 			}
+
+			// There's a download, but has no variable products
+			else {
+				self.product_has_no_variables( field );
+			}
+
+		},
+
+		product_hide_all: function( field ) {
+
+			$('.product-has-variations-message').hide();
+			$('.edd_gf_connect_variations').slideUp(100);
+
+			// Restore the field choices
+			EDD_GF_Admin.restore_field_choices( field );
+
 		},
 
 		/**
@@ -373,9 +391,6 @@ jQuery(document).ready(function($) {
 
 			var self = EDD_GF_Admin;
 
-			// Get the current field
-			var field = GetSelectedField();
-
 			var selected_download = $('option:selected', this).val();
 
 			// Tell Gravity Forms to update the field value.
@@ -398,7 +413,7 @@ jQuery(document).ready(function($) {
 
 		}
 
-	}
+	};
 
 	EDD_GF_Admin.init();
 
