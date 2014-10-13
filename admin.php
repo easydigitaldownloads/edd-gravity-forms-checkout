@@ -8,7 +8,7 @@ class KWS_GF_EDD_Admin {
 	function __construct() {
 
 		// We want to be in the admin.
-		if (!(is_admin() || (defined('DOING_CRON') && DOING_CRON))) { return ; }
+		if (!(is_admin() || (defined('DOING_CRON') && DOING_CRON))) { return; }
 
 		add_action( 'plugins_loaded', array(&$this, 'admin_init') );
 		add_action( 'admin_enqueue_scripts', array(&$this, 'admin_enqueue_scripts') );
@@ -91,7 +91,7 @@ class KWS_GF_EDD_Admin {
 
 		add_filter( 'gform_tooltips', array( &$this, 'gf_tooltips' ) );
 
-		add_action( 'gform_field_standard_settings', array( &$this, 'options_field' ), 10, 2);
+		add_action( 'gform_field_standard_settings', array( &$this, 'options_field' ), 50, 2);
 
 		add_action( 'gform_field_standard_settings', array( &$this, 'product_field' ), 10, 2);
 
@@ -238,7 +238,7 @@ class KWS_GF_EDD_Admin {
 	 */
 	function options_field($position, $form_id) {
 
-		if($position !== 37) { return; }
+		if($position !== 25) { return; }
 
 		$button_text = sprintf(esc_attr__('Load EDD Options &amp; Prices for this Product %s', 'edd-gf'), gform_tooltip("edd_gf_load_variations", '', true));
 		$connected_text = esc_attr__('This is an Easy Digital Downloads product', 'edd-gf');
