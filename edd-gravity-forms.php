@@ -13,7 +13,7 @@
  * Plugin URI: http://katz.co/downloads/edd-gf/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 1.2
+ * Version: 1.2.1
  * Requires at least: 3.0
  * Author URI: http://katz.co
  * License: GPL v3
@@ -42,7 +42,7 @@ final class KWS_GF_EDD {
 	 * @link  http://semver.org
 	 * @var  string Semantic Versioning version number
 	 */
-	const version = '1.2';
+	const version = '1.2.1';
 
 	/**
 	 * Name of the plugin for the updater class
@@ -90,6 +90,9 @@ final class KWS_GF_EDD {
 
 		// Run the EDD functionality
 		add_action("gform_after_submission", array( &$this, 'send_purchase_to_edd' ), PHP_INT_MAX, 2);
+
+		// Update whenever GF updates payment statii
+		add_action("gform_post_payment_callback", array( &$this, 'post_payment_callback' ), 10, 3 );
 
 		/**
 		 * Check for plugin updates. Built into EDD version 1.9+
@@ -516,6 +519,8 @@ final class KWS_GF_EDD {
 		// Add the payment
 		$payment_id = edd_insert_payment( $purchase_data );
 
+		add_post_meta( $payment_id, '_edd_gf_entry_id', $entry['id'] );
+
 		// Was there a transaction ID to add to `edd_insert_payment_note()`?
 		$transaction_id_note = empty($entry['transaction_id']) ? '' : sprintf( __( 'Transaction ID: %s - ', 'edd-gf'), $entry['transaction_id'] );
 
@@ -536,6 +541,45 @@ final class KWS_GF_EDD {
 		$this->r($purchase_data, false, 'Purchase Data (Line '.__LINE__.')');
 
 		$this->r( get_post( $payment_id ), true, 'Payment Object (Line '.__LINE__.')');
+	}
+
+	/**
+	 * Update the payment status after payment is modified in Gravity Forms
+	 *
+	 * $action = array(
+     *     'type' => 'cancel_subscription',     // required
+     *     'transaction_id' => '',              // required (if payment)
+     *     'subscription_id' => '',             // required (if subscription)
+     *     'amount' => '0.00',                  // required (some exceptions)
+     *     'entry_id' => 1,                     // required (some exceptions)
+     *     'transaction_type' => '',
+     *     'payment_status' => '',
+     *     'note' => ''
+     * );
+     *
+	 * @param  array $entry  Gravity Forms entry array
+	 * @param  array $action Array describing the action (see method description above)
+	 * @param  boolean $result Whether the update was successful in GF
+	 * @uses  edd_update_payment_status()
+	 * @see  GFPaymentAddOn::process_callback_action()
+	 * @return void
+	 */
+	public function post_payment_callback( $entry = array(), $action = array(), $result = true ) {
+		global $wpdb;
+
+		// If GF didn't update anything, neither should we.
+		if( empty( $result ) ) {
+			return;
+		}
+
+		// Make sure GF and EDD have statuses that mean the same things.
+		$payment_status = $this->get_payment_status_from_gf_status( $action['payment_status'] );
+
+		// Get the payment ID from the entry ID
+		$payment_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %s LIMIT 1", $entry['id'] ) );
+
+		// Update the payment status
+		edd_update_payment_status( $payment_id, $payment_status );
 	}
 
 	/**

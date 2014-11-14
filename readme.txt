@@ -28,6 +28,9 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
+= 1.2.1 on November 14 = 
+* Fixed: Updated payments when payment status is updated in Gravity Forms
+
 = 1.2 on October 13 =
 * Fixed: issue where plugin was overriding existing options for options fields that were not connected to an EDD download
 * Added: Support for Product fields loading EDD Variations, when using the Radio or Drop Down Field Type
