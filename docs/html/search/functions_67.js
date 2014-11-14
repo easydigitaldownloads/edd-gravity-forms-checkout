@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['get_5fdownload_5foptions_5ffrom_5fentry',['get_download_options_from_entry',['../class_k_w_s___g_f___e_d_d.html#a44647c1ec51acd334dea1315fc9130a2',1,'KWS_GF_EDD']]],
+  ['get_5fdownload_5foptions_5ffrom_5fentry',['get_download_options_from_entry',['../class_k_w_s___g_f___e_d_d.html#a12a19a926271d45de84ac47024158f39',1,'KWS_GF_EDD']]],
   ['get_5fedd_5fdata_5farray_5ffrom_5fentry',['get_edd_data_array_from_entry',['../class_k_w_s___g_f___e_d_d.html#a957f6050e92f37a0c11d9350a32accdd',1,'KWS_GF_EDD']]],
   ['get_5fform_5ffield_5fby_5fid',['get_form_field_by_id',['../class_k_w_s___g_f___e_d_d.html#accff3282375f065ebf14dc35abf9ecf0',1,'KWS_GF_EDD']]],
   ['get_5fpayment_5fstatus_5ffrom_5fgf_5fstatus',['get_payment_status_from_gf_status',['../class_k_w_s___g_f___e_d_d.html#aa718a24cb749c979ed56e798a7e9ae52',1,'KWS_GF_EDD']]],

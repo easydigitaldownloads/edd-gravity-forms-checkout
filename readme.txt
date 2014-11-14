@@ -2,7 +2,6 @@
 Tags: easy digital downloads, edd, gravity forms, gravityforms
 Requires at least: 3.3
 Tested up to: 4.0
-Stable tag: trunk
 Contributors: katzwebdesign, katzwebservices
 License: GPL 3 or higher
 
@@ -23,13 +22,29 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 1. Upload plugin files to your plugins folder, or install using WordPress' built-in Add New Plugin installer
 1. Activate the plugin
+1. For more, [visit the Help Docs](https://katzwebservices.zendesk.com/hc/en-us/categories/200124168-Gravity-Forms-Checkout-for-Easy-Digital-Downloads).
 
 == Frequently Asked Questions ==
 
 == Changelog ==
 
-= 1.1.1 on September 11 =
-* Fixed issue where plugin was overriding existing options for options fields that were not connected to an EDD download
+= 1.2.1 on November 14 = 
+* Fixed: Updated payments when payment status is updated in Gravity Forms
+
+= 1.2 on October 13 =
+* Fixed: issue where plugin was overriding existing options for options fields that were not connected to an EDD download
+* Added: Support for Product fields loading EDD Variations, when using the Radio or Drop Down Field Type
+* Fixed: Properly handle Product Price + Option Price, if set  
+Previously, the Product for an Option would always be processed as $0.00. Now, the price is used as Gravity Forms intends: the base price, with the Options fiel as modifiers to that price.
+* Support multiple download purchases using Options field checkboxes
+* Added: Payment status "Void" to support Gravity Forms updates
+* Improved: Support for using Simple Name field
+    * Fixed error on submission
+    * Sets the user's Display Name to the submitted value
+* Fixed: Force orders to be 0 or positive
+* Fixed: Don't show EDD connection information for Pricing Fields other than Product and Option
+* Tweak: Added a minified Javascript file
+* Tweak: Updated `.po` file
 
 = 1.1 on September 2 =
 * Fixed support for separate Gravity Forms "Quantity" fields
