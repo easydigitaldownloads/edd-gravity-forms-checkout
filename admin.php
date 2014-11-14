@@ -57,15 +57,54 @@ class KWS_GF_EDD_Admin {
 		// Gravity Forms is active
 		if(defined('RG_CURRENT_PAGE')) { return; }
 
-		if(is_plugin_inactive('gravityforms/gravityforms.php')) {
-			$heading = __('Gravity Forms is installed but not active.', 'edd-gf');
-			$message = sprintf(__('%sActivate Gravity Forms%s to use the %s plugin.', 'edd-gf'), '<strong><a href="'.wp_nonce_url(admin_url('plugins.php?action=activate&plugin=gravityforms/gravityforms.php'), 'activate-plugin_gravityforms/gravityforms.php').'">', '</a></strong>', KWS_GF_EDD::name );
-		} else {
-			$heading = sprintf(__('%s requires Gravity Forms.', 'edd-gf'), KWS_GF_EDD::name);
-			$message = sprintf(__('%sPurchase Gravity Forms%s', 'edd-gf'), "\n\n".'<a href="http://www.gravityforms.com" class="button button-large button-default">', '</a>');
+		// Is the plugin active?
+		switch( $this->get_plugin_status( 'gravityforms/gravityforms.php' ) ) {
+
+			case 'active':
+				return;
+				break;
+
+			case 'inactive':
+				$heading = __('Gravity Forms is installed but not active.', 'edd-gf');
+				$message = sprintf(__('%sActivate Gravity Forms%s to use the %s plugin.', 'edd-gf'), '<strong><a href="'.wp_nonce_url(admin_url('plugins.php?action=activate&plugin=gravityforms/gravityforms.php'), 'activate-plugin_gravityforms/gravityforms.php').'">', '</a></strong>', KWS_GF_EDD::name );
+				break;
+
+			case 'notinstalled':
+			default:
+				$heading = sprintf(__('%s requires Gravity Forms.', 'edd-gf'), KWS_GF_EDD::name);
+				$message = sprintf(__('%sPurchase Gravity Forms%s', 'edd-gf'), "\n\n".'<a href="http://www.gravityforms.com" class="button button-large button-default">', '</a>');
+				break;
+
 		}
 
 		printf('<div class="error">%s%s</div>', '<h3>'.$heading.'</h3>', wpautop( $message ));
+	}
+
+	/**
+	 * Check if specified plugin is active, inactive or not installed
+	 *
+	 * @access public
+	 * @static
+	 * @param string $location (default: '')
+	 * @return void
+	 */
+	private function get_plugin_status( $location = '' ) {
+
+		if( ! function_exists('is_plugin_active') ) {
+			include_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+		}
+
+		if( is_plugin_active( $location ) ) {
+			return 'active';
+		}
+
+		if( !file_exists( trailingslashit( WP_PLUGIN_DIR ) . $location ) ) {
+			return 'notinstalled';
+		}
+
+		if( is_plugin_inactive( $location ) ) {
+			return 'inactive';
+		}
 	}
 
 	/**
