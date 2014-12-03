@@ -148,6 +148,10 @@ final class KWS_GF_EDD {
 	 */
 	function get_download_options_from_entry($entry, $field, $download_id, $product, $option_name = '', $option_price = 0 ) {
 
+		if( !function_exists('edd_get_variable_prices') ) {
+			return NULL;
+		}
+
 		$options = NULL;
 
 		// Get the variations for the product
@@ -476,6 +480,11 @@ final class KWS_GF_EDD {
 	 */
 	public function send_purchase_to_edd($entry = null, $form) {
 
+		// EDD not active
+		if( !function_exists( 'edd_insert_payment' ) ) {
+			return;
+		}
+
 		// Do an initial check to make sure there are downloads connected to the form.
 		$has_edd_download = false;
 		foreach($form['fields'] as $field) {
@@ -567,8 +576,11 @@ final class KWS_GF_EDD {
 	public function post_payment_callback( $entry = array(), $action = array(), $result = true ) {
 		global $wpdb;
 
-		// If GF didn't update anything, neither should we.
-		if( empty( $result ) ) {
+		// EDD not active
+		if( !function_exists( 'edd_update_payment_status' ) ) {
+
+			$this->r( 'edd_update_payment_status not available' );
+
 			return;
 		}
 

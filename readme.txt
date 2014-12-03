@@ -28,6 +28,7 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
+* Fixed: PHP warnings when Easy Digital Downloads is not active
 = 1.2.1 on November 14 = 
 * Fixed: Updated payments when payment status is updated in Gravity Forms
 
