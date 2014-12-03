@@ -13,7 +13,7 @@
  * Plugin URI: http://katz.co/downloads/edd-gf/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 1.2.1
+ * Version: 1.2.2
  * Requires at least: 3.0
  * Author URI: http://katz.co
  * License: GPL v3
@@ -91,8 +91,12 @@ final class KWS_GF_EDD {
 		// Run the EDD functionality
 		add_action("gform_after_submission", array( &$this, 'send_purchase_to_edd' ), PHP_INT_MAX, 2);
 
+		// Backward compatibility
+		add_action('gform_post_payment_status', array( &$this, 'gform_post_payment_status' ), 10, 3 );
+
 		// Update whenever GF updates payment statii
-		add_action("gform_post_payment_callback", array( &$this, 'post_payment_callback' ), 10, 3 );
+		add_action('gform_post_payment_completed', array( &$this, 'post_payment_callback' ), 10, 2 );
+		add_action('gform_post_payment_refunded', array( &$this, 'post_payment_callback' ), 10, 2 );
 
 		/**
 		 * Check for plugin updates. Built into EDD version 1.9+
@@ -109,7 +113,9 @@ final class KWS_GF_EDD {
 	 * @filter edd_gf_payment_status Override the status when there is a match. Passes matched value and `$status` arguments.
 	 * @todo  Ensure the default status is right when there's no status match.
 	 */
-	public function get_payment_status_from_gf_status($status) {
+	public function get_payment_status_from_gf_status( $status ) {
+
+		$this->r( 'Status passed to get_payment_status_from_gf_status: '. $status );
 
 		$gf_payment_statuses = array(
 
@@ -119,6 +125,7 @@ final class KWS_GF_EDD {
 			"Paid" => 'publish',
 			"Active" => 'publish',
 			"Approved" => 'publish',
+			"Completed" => 'publish',
 
 			"Expired" => 'revoked',
 
@@ -131,7 +138,15 @@ final class KWS_GF_EDD {
 			"Void" => 'refunded',
 		);
 
-		return isset($gf_payment_statuses[$status]) ? apply_filters( 'edd_gf_payment_status', $gf_payment_statuses[$status], $status ) : apply_filters( 'edd_gf_default_status', 'pending', $status);
+		$default = apply_filters( 'edd_gf_default_status', 'pending', $status);
+
+		$return = $default;
+
+		if( isset( $gf_payment_statuses[$status] ) ) {
+			$return = apply_filters( 'edd_gf_payment_status', $gf_payment_statuses[$status], $status );
+		}
+
+		return $return;
 	}
 
 	/**
@@ -553,6 +568,22 @@ final class KWS_GF_EDD {
 	}
 
 	/**
+	 * Process payment for older payment addons. Alias for KWS_GF_EDD::post_payment_callback()
+	 *
+	 * @see KWS_GF_EDD::post_payment_callback() Alias
+	 *
+	 * @param  array $feed           Feed settings
+	 * @param  array $entry          Gravity Forms entry array
+	 * @param  string $status         Payment status
+	 * @return void
+	 */
+	function gform_post_payment_status( $feed, $entry, $status ) {
+
+		$this->post_payment_callback( $entry, array( 'payment_status' => $status ) );
+
+	}
+
+	/**
 	 * Update the payment status after payment is modified in Gravity Forms
 	 *
 	 * $action = array(
@@ -568,12 +599,11 @@ final class KWS_GF_EDD {
      *
 	 * @param  array $entry  Gravity Forms entry array
 	 * @param  array $action Array describing the action (see method description above)
-	 * @param  boolean $result Whether the update was successful in GF
 	 * @uses  edd_update_payment_status()
 	 * @see  GFPaymentAddOn::process_callback_action()
 	 * @return void
 	 */
-	public function post_payment_callback( $entry = array(), $action = array(), $result = true ) {
+	public function post_payment_callback( $entry = array(), $action = array() ) {
 		global $wpdb;
 
 		// EDD not active
@@ -589,6 +619,10 @@ final class KWS_GF_EDD {
 
 		// Get the payment ID from the entry ID
 		$payment_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %s LIMIT 1", $entry['id'] ) );
+
+		$this->r( sprintf( 'Setting $payment_id to %s and $payment_status to %s.', $payment_id, $payment_status ) );
+
+		$this->r( array( '$entry' => $entry, '$payment_status' => $payment_status, '$action' => $action ), false, 'Data passed to post_payment_callback');
 
 		// Update the payment status
 		edd_update_payment_status( $payment_id, $payment_status );

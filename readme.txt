@@ -1,7 +1,7 @@
 === Gravity Forms Checkout for Easy Digital Downloads ===
 Tags: easy digital downloads, edd, gravity forms, gravityforms
 Requires at least: 3.3
-Tested up to: 4.0
+Tested up to: 4.0.1
 Contributors: katzwebdesign, katzwebservices
 License: GPL 3 or higher
 
@@ -28,7 +28,11 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
+= 1.2.2 on December 2 =
+* Fixed: Support for legacy Gravity Forms payment Addons
 * Fixed: PHP warnings when Easy Digital Downloads is not active
+* Added: Additional logging for use with Gravity Forms Logging Tool
+
 = 1.2.1 on November 14 = 
 * Fixed: Updated payments when payment status is updated in Gravity Forms
 
