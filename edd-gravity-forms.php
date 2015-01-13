@@ -13,7 +13,7 @@
  * Plugin URI: http://katz.co/downloads/edd-gf/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 1.2.2
+ * Version: 1.2.3
  * Requires at least: 3.0
  * Author URI: http://katz.co
  * License: GPL v3
@@ -22,7 +22,7 @@
  */
 
 /*
-Copyright (C) 2014 Katz Web Services, Inc.
+Copyright (C) 2015 Katz Web Services, Inc.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ final class KWS_GF_EDD {
 	 * @link  http://semver.org
 	 * @var  string Semantic Versioning version number
 	 */
-	const version = '1.2.1';
+	const version = '1.2.3';
 
 	/**
 	 * Name of the plugin for the updater class
@@ -557,7 +557,10 @@ final class KWS_GF_EDD {
 		}
 
 		// Make sure GF and EDD have statuses that mean the same things.
-		$status = $this->get_payment_status_from_gf_status($entry['payment_status']);
+		$status = $this->get_payment_status_from_gf_status( $entry['payment_status'] );
+
+		// If a purchase was free, set status to Active
+		$status = $this->set_free_payment_status( $status, $purchase_data );
 
 		// increase stats and log earnings
 		edd_update_payment_status( $payment_id, $status) ;
@@ -565,6 +568,21 @@ final class KWS_GF_EDD {
 		$this->r($purchase_data, false, 'Purchase Data (Line '.__LINE__.')');
 
 		$this->r( get_post( $payment_id ), true, 'Payment Object (Line '.__LINE__.')');
+	}
+
+	/**
+	 * Check if the purchase was free. If so, set status to `publish`
+	 * @param string $status        Existing EDD status
+	 * @param array $purchase_data Purchase data array
+	 * @return  string Purchase status; `publish` if free purchase. Previous status otherwise.
+	 */
+	private function set_free_payment_status( $status, $purchase_data ) {
+
+		if( empty( $purchase_data['price'] ) ) {
+			return 'publish';
+		}
+
+		return $status;
 	}
 
 	/**
