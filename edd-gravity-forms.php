@@ -4,7 +4,7 @@
  *
  * \section intro Who this documentation is for
  * This documentation is for _developers_, not for non-developers. If you don't intend to edit any code,
- * then you should instead visit the [Support & Knowledgebase](https://katzwebservices.zendesk.com/hc/en-us/categories/200124168).
+ * then you should instead visit the [Support & Knowledgebase](http://kws.helpscoutdocs.com/collection/29-gravity-forms-checkout-for-easy-digital-downloads).
  *
  */
 
