@@ -11,7 +11,7 @@ Integrate Gravity Forms purchases with Easy Digital Downloads
 
 Use Gravity Forms to sell Easy Digital Downloads products. Simply add a product field to your Gravity Forms form, connect it to an EDD product, and then set your prices. Use any of your existing Gravity Forms gateways and payment methods.
 
-For support, [visit the Help Docs](https://katzwebservices.zendesk.com/hc/en-us/categories/200124168-Gravity-Forms-Checkout-for-Easy-Digital-Downloads).
+For support, [visit the Help Docs](http://kws.helpscoutdocs.com/collection/29-gravity-forms-checkout-for-easy-digital-downloads).
 
 __To translate the plugin__ into your language, please [submit your translation here](https://www.transifex.com/projects/p/edd-gravity-forms-checkout/).
 
@@ -22,13 +22,17 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 1. Upload plugin files to your plugins folder, or install using WordPress' built-in Add New Plugin installer
 1. Activate the plugin
-1. For more, [visit the Help Docs](https://katzwebservices.zendesk.com/hc/en-us/categories/200124168-Gravity-Forms-Checkout-for-Easy-Digital-Downloads).
+1. For more, [visit the Help Docs](http://kws.helpscoutdocs.com/collection/29-gravity-forms-checkout-for-easy-digital-downloads).
 
 == Frequently Asked Questions ==
 
 == Changelog ==
 
-= 1.2.3 on January 13, 2015 = 
+= 1.3 on February 9, 2015 =
+* Modified: When a product with variable pricing was purchased, the customer's purchase would include the base product and also the price option. Now, the customer's purchase will include only the price option. If you want to restore the functionality, [read the how-to here](http://kws.helpscoutdocs.com/article/219-include-base-product-download-links-when-purchasing-a-product-with-price-variations)
+
+
+= 1.2.3 on January 13, 2015 =
 * Fixed: Mark free purchases as Complete
 * Confirmed WordPress 4.1 compatibility
 

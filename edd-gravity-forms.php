@@ -13,7 +13,7 @@
  * Plugin URI: http://katz.co/downloads/edd-gf/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 1.2.3
+ * Version: 1.3
  * Requires at least: 3.0
  * Author URI: http://katz.co
  * License: GPL v3
@@ -42,7 +42,7 @@ final class KWS_GF_EDD {
 	 * @link  http://semver.org
 	 * @var  string Semantic Versioning version number
 	 */
-	const version = '1.2.3';
+	const version = '1.3';
 
 	/**
 	 * Name of the plugin for the updater class
@@ -102,7 +102,7 @@ final class KWS_GF_EDD {
 		 * Check for plugin updates. Built into EDD version 1.9+
 		 */
 		if( class_exists( 'EDD_License' ) ) {
-			$license = new EDD_License( EDD_GF_PLUGIN_FILE, self::name, self::version, 'Katz Web Services, Inc.' );
+			new EDD_License( EDD_GF_PLUGIN_FILE, self::name, self::version, 'Katz Web Services, Inc.' );
 		}
 	}
 
@@ -138,12 +138,26 @@ final class KWS_GF_EDD {
 			"Void" => 'refunded',
 		);
 
+		/**
+		 * Modify the default status when there's no status match.
+		 *
+		 * @param string $default Default payment status for EDD ("pending" or "publish") (Default: "pending")
+		 * @param string $status The status of the Gravity Forms entry, set in `$entry['payment_status']`
+		 */
 		$default = apply_filters( 'edd_gf_default_status', 'pending', $status);
 
 		$return = $default;
 
 		if( isset( $gf_payment_statuses[$status] ) ) {
+
+			/**
+			 * Override the status for a purchase.
+			 *
+			 * @param string $edd_status The EDD status
+			 * @param string $gf_status The GF status used to fetch the EDD status
+			 */
 			$return = apply_filters( 'edd_gf_payment_status', $gf_payment_statuses[$status], $status );
+
 		}
 
 		return $return;
@@ -273,11 +287,19 @@ final class KWS_GF_EDD {
 
 			if( !empty( $field['eddHasVariables'] ) ) {
 
+				/**
+				 * Also include a link to download the base product for variable purchases
+				 *
+				 * @param boolean $include True: Yes, include base. False: no, don't. Default: false
+				 */
+				$include_base_product = apply_filters( 'edd_gf_variable_products_include_base', false );
+
 				// If the product was submitted with options chosen
 				if( !empty( $product['options'] ) ) {
 
-					// The BASE product
-					$downloads[] = $download_item;
+					if( $include_base_product ) {
+						$downloads[] = $download_item;
+					}
 
 					// We want to add a purchase item for each option
 					foreach ( $product['options'] as $key => $option ) {
@@ -300,7 +322,9 @@ final class KWS_GF_EDD {
 
 					$download_item['options'] = $this->get_download_options_from_entry( $entry, $field, $edd_product_id, $product, $option_name, $option_price );
 
-					$downloads[] = $download_item;
+					if( $include_base_product ) {
+						$downloads[] = $download_item;
+					}
 				}
 
 			} else {
