@@ -11,3 +11,4 @@ edd-gravity-forms.sublime-project
 doxygen.config
 
 *.sublime-workspace
+node_modules/
