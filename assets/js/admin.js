@@ -9,7 +9,7 @@ jQuery(document).ready(function($) {
 
     var EDD_GF_Admin = EDD_GF_Admin || {
 
-            debug: true,
+            debug: false,
 
             init: function() {
 
