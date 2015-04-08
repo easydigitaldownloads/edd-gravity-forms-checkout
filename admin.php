@@ -228,6 +228,19 @@ class KWS_GF_EDD_Admin {
 		// Restore sanity to EDD results per page.
 		remove_filter('edd_api_results_per_page', array( &$this, 'results_per_page') );
 
+	/**
+	 * Add a "Connect to EDD Download" select box to GF product fields
+	 * @param  int $position Current position on GF field
+	 * @param  int $form_id  The current GF form ID
+	 */
+	function product_field($position, $form_id) {
+
+		if($position !== 25){ return; }
+
+		// EDD isn't active.
+		if( !class_exists( 'EDD_API' ) ) {
+			return NULL;
+		}
 ?>
 		<li class="edd_gf_connect_download field_setting">
 
@@ -239,6 +252,8 @@ class KWS_GF_EDD_Admin {
 
 			<select id="field_edd_download" name="downloads[0][id]" class="edd-gf-download-select">
 		<?php
+
+			$products = $this->get_all_edd_products();
 
 			if( $products ) {
 		    	echo '<option value="0">' . sprintf( __('Choose a %s', 'edd-gf'), esc_html( edd_get_label_singular() ) ) . '</option>';
