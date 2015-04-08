@@ -190,6 +190,9 @@ final class KWS_GF_EDD {
 
 			$options = array(); // Default options array
 
+			// The default Price ID is 0, like in EDD.
+			$options['price_id'] = 0;
+
 			// Use the submitted price instead of any other.
 			$options['amount'] = GFCommon::to_number($option_price);
 
