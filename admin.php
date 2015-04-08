@@ -112,7 +112,7 @@ class KWS_GF_EDD_Admin {
 	 */
 	function admin_enqueue_scripts() {
 
-		$min = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '.min' : '';
+		$min = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? NULL : '.min';
 
 		wp_enqueue_script( 'edd-gf-admin', plugins_url( 'assets/js/admin'.$min.'.js', EDD_GF_PLUGIN_FILE ), array('jquery'), KWS_GF_EDD::version, true);
 
