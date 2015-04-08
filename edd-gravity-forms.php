@@ -547,14 +547,11 @@ final class KWS_GF_EDD {
 		// If there are no downloads connected, get outta here.
 		if(empty($data['downloads'])) { return; }
 
-		$date = isset($entry['payment_date']) ? date( 'Y-m-d H:i:s', strtotime( $entry['payment_date'] ) ) : NULL;
-
 		$price = isset($entry['payment_amount']) ? GFCommon::to_number( $entry['payment_amount'] ) : $data['total'];
 
 		// Create the purchase array
 		$purchase_data     = array(
 			'price'        => $price, // Remove currency, commas
-			'post_date'    => $date,
 			'purchase_key' => strtolower( md5( uniqid() ) ), // Random key
 			'user_id'	   => $data['user_info']['id'],
 			'user_email'   => $data['user_info']['email'],
