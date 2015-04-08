@@ -89,14 +89,14 @@ final class KWS_GF_EDD {
 		include( EDD_GF_PLUGIN_DIR . 'admin.php' );
 
 		// Run the EDD functionality
-		add_action("gform_after_submission", array( &$this, 'send_purchase_to_edd' ), PHP_INT_MAX, 2);
+		add_action("gform_after_submission", array( $this, 'send_purchase_to_edd' ), PHP_INT_MAX, 2);
 
 		// Backward compatibility
-		add_action('gform_post_payment_status', array( &$this, 'gform_post_payment_status' ), 10, 3 );
+		add_action('gform_post_payment_status', array( $this, 'gform_post_payment_status' ), 10, 3 );
 
 		// Update whenever GF updates payment statii
-		add_action('gform_post_payment_completed', array( &$this, 'post_payment_callback' ), 10, 2 );
-		add_action('gform_post_payment_refunded', array( &$this, 'post_payment_callback' ), 10, 2 );
+		add_action('gform_post_payment_completed', array( $this, 'post_payment_callback' ), 10, 2 );
+		add_action('gform_post_payment_refunded', array( $this, 'post_payment_callback' ), 10, 2 );
 
 		/**
 		 * Check for plugin updates. Built into EDD version 1.9+
@@ -218,7 +218,6 @@ final class KWS_GF_EDD {
 						}
 					}
 				}
-
 			}
 		}
 
@@ -267,14 +266,15 @@ final class KWS_GF_EDD {
 			return array();
 		}
 
+
 		foreach ( $product_info['products'] as $product_field_id => $product ) {
 
 			$field = $this->get_form_field_by_id( $product_field_id, $form );
 
-
-
 			// Only process connected products that don't have variable prices.
-			if(empty($field['eddDownload'])) { continue; }
+			if( empty( $field['eddDownload'] ) ) {
+				continue;
+			}
 
 			$edd_product_id = (int)$field['eddDownload'];
 
@@ -325,12 +325,12 @@ final class KWS_GF_EDD {
 
 					$download_item['options'] = $this->get_download_options_from_entry( $entry, $field, $edd_product_id, $product, $option_name, $option_price );
 
-					if( $include_base_product ) {
-						$downloads[] = $download_item;
-					}
+					$downloads[] = $download_item;
 				}
 
 			} else {
+
+				$this->r( $download_item, false, 'Download item when empty $field[\'eddHasVariables\']' );
 
 				$downloads[] = $download_item;
 

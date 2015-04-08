@@ -10,6 +10,16 @@ class KWS_GF_EDD_Admin {
 		// We want to be in the admin.
 		if (!(is_admin() || (defined('DOING_CRON') && DOING_CRON))) { return; }
 
+		$this->add_hooks();
+	}
+
+	/**
+	 * Add WP hooks for the admin
+	 *
+	 * @since 1.3.1
+	 * @return void
+	 */
+	function add_hooks() {
 		add_action( 'plugins_loaded', array(&$this, 'admin_init') );
 		add_action( 'admin_enqueue_scripts', array(&$this, 'admin_enqueue_scripts') );
 
@@ -19,7 +29,7 @@ class KWS_GF_EDD_Admin {
 		add_action( 'admin_notices', array(&$this, 'gravity_forms_required') );
 
 		// Enable debug with Gravity Forms Logging Add-on
-	    add_filter( 'gform_logging_supported', array( $this, 'enable_gform_logging' ) );
+		add_filter( 'gform_logging_supported', array( $this, 'enable_gform_logging' ) );
 	}
 
 	/**
@@ -117,6 +127,7 @@ class KWS_GF_EDD_Admin {
 		wp_enqueue_script( 'edd-gf-admin', plugins_url( 'assets/js/admin'.$min.'.js', EDD_GF_PLUGIN_FILE ), array('jquery'), KWS_GF_EDD::version, true);
 
 		wp_localize_script( 'edd-gf-admin', 'EDDGF', array(
+			'debug' => ( $min ? false : true ),
 			'text_value' => __('Value', 'edd-gf'),
 			'text_price_id' => __('EDD Price ID', 'edd-gf')
 		));
@@ -128,16 +139,16 @@ class KWS_GF_EDD_Admin {
 	 */
 	function admin_init() {
 
-		add_filter( 'gform_tooltips', array( &$this, 'gf_tooltips' ) );
+		add_filter( 'gform_tooltips', array( $this, 'gf_tooltips' ) );
 
-		add_action( 'gform_field_standard_settings', array( &$this, 'options_field' ), 50, 2);
+		add_action( 'gform_field_standard_settings', array( $this, 'options_field' ), 50, 2);
 
-		add_action( 'gform_field_standard_settings', array( &$this, 'product_field' ), 10, 2);
+		add_action( 'gform_field_standard_settings', array( $this, 'product_field' ), 10, 2);
 
 		add_action("gform_editor_js", array( &$this, 'editor_script' ));
 
 		// check for download price variations via ajax for Options field
-		add_action( 'wp_ajax_edd_gf_check_for_variations', array( &$this, 'check_for_variations' ) );
+		add_action( 'wp_ajax_edd_gf_check_for_variations', array( $this, 'check_for_variations' ) );
 	}
 
 	/**
@@ -204,29 +215,25 @@ class KWS_GF_EDD_Admin {
 	}
 
 	/**
-	 * Add a "Connect to EDD Download" select box to GF product fields
-	 * @param  int $position Current position on GF field
-	 * @param  int $form_id  The current GF form ID
+	 * Get all the EDD products that exist.
+	 * @since 1.3.1
+	 * @return array|null
 	 */
-	function product_field($position, $form_id) {
-
-		if($position !== 25){ return; }
-
-		// EDD doesn't exist.
-		if( !class_exists( 'EDD_API' ) ) {
-			return;
-		}
+	private function get_all_edd_products() {
 
 		$EDD_API = new EDD_API;
 
 		// Force EDD to show all the downloads at once.
-		add_filter('edd_api_results_per_page', array( &$this, 'results_per_page') );
+		add_filter('edd_api_results_per_page', array( $this, 'results_per_page') );
 
 		// Get all the EDD products
 		$products = $EDD_API->get_products();
 
 		// Restore sanity to EDD results per page.
-		remove_filter('edd_api_results_per_page', array( &$this, 'results_per_page') );
+		remove_filter('edd_api_results_per_page', array( $this, 'results_per_page') );
+
+		return $products;
+	}
 
 	/**
 	 * Add a "Connect to EDD Download" select box to GF product fields
