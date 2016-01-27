@@ -13,7 +13,7 @@
  * Plugin URI: http://katz.co/downloads/edd-gf/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 1.3
+ * Version: 1.3.1
  * Requires at least: 3.0
  * Author URI: http://katz.co
  * License: GPL v3
@@ -42,7 +42,7 @@ final class KWS_GF_EDD {
 	 * @link  http://semver.org
 	 * @var  string Semantic Versioning version number
 	 */
-	const version = '1.3';
+	const version = '1.3.1';
 
 	/**
 	 * Name of the plugin for the updater class
@@ -89,14 +89,14 @@ final class KWS_GF_EDD {
 		include( EDD_GF_PLUGIN_DIR . 'admin.php' );
 
 		// Run the EDD functionality
-		add_action("gform_after_submission", array( &$this, 'send_purchase_to_edd' ), PHP_INT_MAX, 2);
+		add_action("gform_after_submission", array( $this, 'send_purchase_to_edd' ), PHP_INT_MAX, 2);
 
 		// Backward compatibility
-		add_action('gform_post_payment_status', array( &$this, 'gform_post_payment_status' ), 10, 3 );
+		add_action('gform_post_payment_status', array( $this, 'gform_post_payment_status' ), 10, 3 );
 
 		// Update whenever GF updates payment statii
-		add_action('gform_post_payment_completed', array( &$this, 'post_payment_callback' ), 10, 2 );
-		add_action('gform_post_payment_refunded', array( &$this, 'post_payment_callback' ), 10, 2 );
+		add_action('gform_post_payment_completed', array( $this, 'post_payment_callback' ), 10, 2 );
+		add_action('gform_post_payment_refunded', array( $this, 'post_payment_callback' ), 10, 2 );
 
 		/**
 		 * Check for plugin updates. Built into EDD version 1.9+
@@ -190,6 +190,9 @@ final class KWS_GF_EDD {
 
 			$options = array(); // Default options array
 
+			// The default Price ID is 0, like in EDD.
+			$options['price_id'] = 0;
+
 			// Use the submitted price instead of any other.
 			$options['amount'] = GFCommon::to_number($option_price);
 
@@ -215,7 +218,6 @@ final class KWS_GF_EDD {
 						}
 					}
 				}
-
 			}
 		}
 
@@ -264,14 +266,15 @@ final class KWS_GF_EDD {
 			return array();
 		}
 
+
 		foreach ( $product_info['products'] as $product_field_id => $product ) {
 
 			$field = $this->get_form_field_by_id( $product_field_id, $form );
 
-
-
 			// Only process connected products that don't have variable prices.
-			if(empty($field['eddDownload'])) { continue; }
+			if( empty( $field['eddDownload'] ) ) {
+				continue;
+			}
 
 			$edd_product_id = (int)$field['eddDownload'];
 
@@ -322,12 +325,12 @@ final class KWS_GF_EDD {
 
 					$download_item['options'] = $this->get_download_options_from_entry( $entry, $field, $edd_product_id, $product, $option_name, $option_price );
 
-					if( $include_base_product ) {
-						$downloads[] = $download_item;
-					}
+					$downloads[] = $download_item;
 				}
 
 			} else {
+
+				$this->r( $download_item, false, 'Download item when empty $field[\'eddHasVariables\']' );
 
 				$downloads[] = $download_item;
 
@@ -544,14 +547,11 @@ final class KWS_GF_EDD {
 		// If there are no downloads connected, get outta here.
 		if(empty($data['downloads'])) { return; }
 
-		$date = isset($entry['payment_date']) ? date( 'Y-m-d H:i:s', strtotime( $entry['payment_date'] ) ) : NULL;
-
 		$price = isset($entry['payment_amount']) ? GFCommon::to_number( $entry['payment_amount'] ) : $data['total'];
 
 		// Create the purchase array
 		$purchase_data     = array(
 			'price'        => $price, // Remove currency, commas
-			'post_date'    => $date,
 			'purchase_key' => strtolower( md5( uniqid() ) ), // Random key
 			'user_id'	   => $data['user_info']['id'],
 			'user_email'   => $data['user_info']['email'],

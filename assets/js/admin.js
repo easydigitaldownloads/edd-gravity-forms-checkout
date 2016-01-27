@@ -3,13 +3,14 @@
  * Handle EDD options in the Gravity Forms field settings
  *
  * @package edd-gravity-forms
+ * @global EDDGF
  */
 
 jQuery(document).ready(function($) {
 
     var EDD_GF_Admin = EDD_GF_Admin || {
 
-            debug: true,
+            debug: ( EDDGF.debug === '1' ),
 
             init: function() {
 
@@ -17,26 +18,29 @@ jQuery(document).ready(function($) {
 
                 $(document).on('gform_load_field_settings', self.hide_connect_for_options );
 
-                /**
-                 * Set field values when an EDD product is selected on a GF Product field
-                 *
-                 * @return {void}
-                 */
-                $('body').on('change', '#field_edd_download', self.change_download );
 
-                /**
-                 * When changing the Product picker in the Option field
-                 * @param  {[type]} e [description]
-                 * @return {[type]}   [description]
-                 */
-                $('body').on('show change', '#product_field,#product_field_type', self.maybe_show_variations );
+                $('body')
 
-                /**
-                 * Triggered when the "Load EDD Options & Prices" button is clicked
-                 *
-                 * The button is only shown when on a GF Options field that has been connected to an EDD product that has price variables
-                 */
-                $('body').on('mouseup keyup', '.edd-gf-get-variations button', self.get_variations );
+	                /**
+	                 * Set field values when an EDD product is selected on a GF Product field
+	                 *
+	                 * @return {void}
+	                 */
+	                .on('change', '#field_edd_download', self.change_download )
+
+	                /**
+	                 * When changing the Product picker in the Option field
+	                 * @param  {[type]} e [description]
+	                 * @return {[type]}   [description]
+	                 */
+                    .on('show change', '#product_field,#product_field_type', self.maybe_show_variations )
+
+		            /**
+		             * Triggered when the "Load EDD Options & Prices" button is clicked
+		             *
+		             * The button is only shown when on a GF Options field that has been connected to an EDD product that has price variables
+		             */
+                    .on('mouseup keyup', '.edd-gf-get-variations button', self.get_variations );
 
             },
 
@@ -233,7 +237,7 @@ jQuery(document).ready(function($) {
                 var edd_gf_selected_download = eddProductField ? eddProductField.eddDownload : '';
 
                 // Set the default text for the Choices header
-                $('#gfield_settings_choices_container .gfield_choice_header_value').text(EDDGF.text_value);
+                $('#gfield_settings_choices_container').find('.gfield_choice_header_value' ).text( EDDGF.text_value );
 
                 self.log( '#' + $(e.target).attr('id') + ' ' + e.type , {
                     'event': e,
@@ -399,7 +403,7 @@ jQuery(document).ready(function($) {
 
                 var self = EDD_GF_Admin;
 
-                var selected_download = $('option:selected', this).val();
+                var selected_download = $('option:selected', $( this ) ).val();
 
                 // Tell Gravity Forms to update the field value.
                 SetFieldProperty('eddDownload', selected_download );

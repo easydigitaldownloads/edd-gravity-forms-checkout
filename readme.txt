@@ -28,6 +28,11 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
+= 1.3.1 on April 7, 2015 =
+* Fixed: Issues where Gravity Forms entry and EDD purchase date differ
+* Fixed: Display nothing in the Product field when EDD isn't active
+* Fixed: If a Variable Product doesn't have any options configured in Gravity Forms, use the first price option as default.
+
 = 1.3 on February 9, 2015 =
 * Modified: When a product with variable pricing was purchased, the customer's purchase would include the base product and also the price option. Now, the customer's purchase will include only the price option. If you want to restore the functionality, [read the how-to here](http://kws.helpscoutdocs.com/article/219-include-base-product-download-links-when-purchasing-a-product-with-price-variations)
 * Fixed: Plugin affecting Conditional Logic for non-product fields
