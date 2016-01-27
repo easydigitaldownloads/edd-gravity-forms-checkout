@@ -4,7 +4,7 @@
  *
  * \section intro Who this documentation is for
  * This documentation is for _developers_, not for non-developers. If you don't intend to edit any code,
- * then you should instead visit the [Support & Knowledgebase](http://kws.helpscoutdocs.com/collection/29-gravity-forms-checkout-for-easy-digital-downloads).
+ * then you should instead visit the [Support & Knowledgebase](http://support.katz.co).
  *
  */
 
@@ -246,7 +246,7 @@ final class KWS_GF_EDD {
 	 *
 	 * This is the work horse for the plugin. It processes an array with the keys: `cart_details`, `user_info`, `downloads`.
 	 *
-	 * @link https://katzwebservices.zendesk.com/hc/en-us/articles/201569476 Learn about how not to use logged-in user data
+	 * @link http://support.katz.co/article/334-override-user-data Learn about how not to use logged-in user data
 	 * @param  array $entry GF Entry array
 	 * @param  array $form  GF Form array
 	 * @todo More user info for logged-in users.
