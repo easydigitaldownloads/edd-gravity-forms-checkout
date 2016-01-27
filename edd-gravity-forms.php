@@ -54,7 +54,7 @@ final class KWS_GF_EDD {
 	 * Set whether to print debug output using the `r()` method and `console.log()`
 	 * @var boolean
 	 */
-	const debug = true;
+	const debug = false;
 
 	/**
 	 * Set constants, load textdomain, and trigger init()
