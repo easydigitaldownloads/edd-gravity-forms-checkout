@@ -13,7 +13,7 @@
  * Plugin URI: http://katz.co/downloads/edd-gf/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 1.4-beta
+ * Version: 1.4
  * Requires at least: 3.0
  * Author URI: http://katz.co
  * License: GPL v3
@@ -42,7 +42,7 @@ final class KWS_GF_EDD {
 	 * @link  http://semver.org
 	 * @var  string Semantic Versioning version number
 	 */
-	const version = '1.4-beta';
+	const version = '1.4';
 
 	/**
 	 * Name of the plugin for the updater class
@@ -602,7 +602,7 @@ final class KWS_GF_EDD {
 
 		// increase stats and log earnings
 		edd_update_payment_status( $payment_id, $status);
-		
+
 		// Set session purchase data, so redirecting to the confirmation page works properly
 		edd_set_purchase_session( $purchase_data );
 
