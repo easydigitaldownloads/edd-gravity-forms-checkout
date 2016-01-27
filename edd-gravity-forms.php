@@ -601,7 +601,8 @@ final class KWS_GF_EDD {
 		$status = $this->set_free_payment_status( $status, $purchase_data );
 
 		// increase stats and log earnings
-		edd_update_payment_status( $payment_id, $status) ;
+		edd_update_payment_status( $payment_id, $status);
+		
 		// Set session purchase data, so redirecting to the confirmation page works properly
 		edd_set_purchase_session( $purchase_data );
 
