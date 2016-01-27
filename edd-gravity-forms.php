@@ -83,7 +83,7 @@ final class KWS_GF_EDD {
 	 *
 	 * @todo Check for whether Gravity Forms exists.
 	 */
-	public function init() {
+	private function init() {
 
 		include( EDD_GF_PLUGIN_DIR . 'logging.php' );
 		include( EDD_GF_PLUGIN_DIR . 'admin.php' );
@@ -635,7 +635,7 @@ final class KWS_GF_EDD {
 	 * @param  string $status         Payment status
 	 * @return void
 	 */
-	function gform_post_payment_status( $feed, $entry, $status ) {
+	public function gform_post_payment_status( $feed, $entry, $status ) {
 
 		$this->post_payment_callback( $entry, array( 'payment_status' => $status ) );
 
