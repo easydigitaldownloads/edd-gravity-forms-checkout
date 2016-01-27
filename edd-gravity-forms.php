@@ -499,7 +499,7 @@ final class KWS_GF_EDD {
 			'first_name' => $user_info['first_name'],
 			'last_name'  => $user_info['last_name'],
 			'display_name'  => $user_info['display_name'],
-			'discount'   => ''
+			'discount' => 'none',
 		);
 
 		return $user_info;
@@ -602,6 +602,8 @@ final class KWS_GF_EDD {
 
 		// increase stats and log earnings
 		edd_update_payment_status( $payment_id, $status) ;
+		// Set session purchase data, so redirecting to the confirmation page works properly
+		edd_set_purchase_session( $purchase_data );
 
 		$this->r($purchase_data, false, 'Purchase Data (Line '.__LINE__.')');
 
