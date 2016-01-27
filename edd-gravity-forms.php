@@ -4,7 +4,7 @@
  *
  * \section intro Who this documentation is for
  * This documentation is for _developers_, not for non-developers. If you don't intend to edit any code,
- * then you should instead visit the [Support & Knowledgebase](http://kws.helpscoutdocs.com/collection/29-gravity-forms-checkout-for-easy-digital-downloads).
+ * then you should instead visit the [Support & Knowledgebase](http://support.katz.co).
  *
  */
 
@@ -13,7 +13,7 @@
  * Plugin URI: http://katz.co/downloads/edd-gf/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 1.3.1
+ * Version: 1.4
  * Requires at least: 3.0
  * Author URI: http://katz.co
  * License: GPL v3
@@ -42,7 +42,7 @@ final class KWS_GF_EDD {
 	 * @link  http://semver.org
 	 * @var  string Semantic Versioning version number
 	 */
-	const version = '1.3.1';
+	const version = '1.4';
 
 	/**
 	 * Name of the plugin for the updater class
@@ -51,10 +51,10 @@ final class KWS_GF_EDD {
 	const name = 'Gravity Forms Checkout';
 
 	/**
-	 * Set whether to print debug output using the `r()` method
+	 * Set whether to print debug output using the `r()` method and `console.log()`
 	 * @var boolean
 	 */
-	private $debug = false;
+	const debug = false;
 
 	/**
 	 * Set constants, load textdomain, and trigger init()
@@ -83,7 +83,7 @@ final class KWS_GF_EDD {
 	 *
 	 * @todo Check for whether Gravity Forms exists.
 	 */
-	public function init() {
+	private function init() {
 
 		include( EDD_GF_PLUGIN_DIR . 'logging.php' );
 		include( EDD_GF_PLUGIN_DIR . 'admin.php' );
@@ -246,7 +246,7 @@ final class KWS_GF_EDD {
 	 *
 	 * This is the work horse for the plugin. It processes an array with the keys: `cart_details`, `user_info`, `downloads`.
 	 *
-	 * @link https://katzwebservices.zendesk.com/hc/en-us/articles/201569476 Learn about how not to use logged-in user data
+	 * @link http://support.katz.co/article/334-override-user-data Learn about how not to use logged-in user data
 	 * @param  array $entry GF Entry array
 	 * @param  array $form  GF Form array
 	 * @todo More user info for logged-in users.
@@ -499,7 +499,7 @@ final class KWS_GF_EDD {
 			'first_name' => $user_info['first_name'],
 			'last_name'  => $user_info['last_name'],
 			'display_name'  => $user_info['display_name'],
-			'discount'   => ''
+			'discount' => 'none',
 		);
 
 		return $user_info;
@@ -542,6 +542,15 @@ final class KWS_GF_EDD {
 
 		$this->r(array( '$entry' => $entry ), false, '$entry in `send_purchase_to_edd`, ('.__LINE__.')');
 
+		// Prevent double-logging
+		if( function_exists('gform_update_meta') ) {
+			$entry_payment_id_meta = gform_get_meta( $entry['id'], 'edd_payment_id' );
+			if( ! empty( $entry_payment_id_meta ) ) {
+				$this->r( array( '$entry' => $entry, '$entry_payment_id_meta' => $entry_payment_id_meta ), true, 'Payment already recorded for entry in `send_purchase_to_edd`, ('.__LINE__.')');
+				return;
+			}
+		}
+
 		$data = $this->get_edd_data_array_from_entry($entry, $form);
 
 		// If there are no downloads connected, get outta here.
@@ -580,6 +589,11 @@ final class KWS_GF_EDD {
 			GFFormsModel::add_note($entry['id'], -1, __('Easy Digital Downloads', 'edd-gf'), sprintf(__('Created Payment ID %d in Easy Digital Downloads', 'edd-gf'), $payment_id));
 		}
 
+		// Add Gravity Forms entry meta
+		if( function_exists('gform_update_meta') ) {
+			gform_update_meta( $entry['id'], 'edd_payment_id', $payment_id );
+		}
+
 		// Make sure GF and EDD have statuses that mean the same things.
 		$status = $this->get_payment_status_from_gf_status( $entry['payment_status'] );
 
@@ -587,7 +601,10 @@ final class KWS_GF_EDD {
 		$status = $this->set_free_payment_status( $status, $purchase_data );
 
 		// increase stats and log earnings
-		edd_update_payment_status( $payment_id, $status) ;
+		edd_update_payment_status( $payment_id, $status);
+
+		// Set session purchase data, so redirecting to the confirmation page works properly
+		edd_set_purchase_session( $purchase_data );
 
 		$this->r($purchase_data, false, 'Purchase Data (Line '.__LINE__.')');
 
@@ -619,7 +636,7 @@ final class KWS_GF_EDD {
 	 * @param  string $status         Payment status
 	 * @return void
 	 */
-	function gform_post_payment_status( $feed, $entry, $status ) {
+	public function gform_post_payment_status( $feed, $entry, $status ) {
 
 		$this->post_payment_callback( $entry, array( 'payment_status' => $status ) );
 
@@ -680,7 +697,7 @@ final class KWS_GF_EDD {
 		// Push debug messages to the Gravity Forms Logging Tool
 		do_action('edd_gf_log_debug', $title ."\n".print_r( $value, true ) );
 
-		if(current_user_can( 'administrator' ) && $this->debug) {
+		if( current_user_can('administrator') && self::debug ) {
 
 			// Output buffering fatal errors when seeing `print_r()`
 			if( ob_get_level() > 0 ) {

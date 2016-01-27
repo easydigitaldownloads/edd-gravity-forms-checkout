@@ -46,7 +46,7 @@ module.exports = function(grunt) {
         // Pull in the latest translations
         exec: {
             // Create a ZIP file
-            zip: 'python /usr/bin/git-archive-all ../edd-gravity-forms.zip'
+            zip: 'git-archive-all ../edd-gravity-forms.zip'
         }
     });
 

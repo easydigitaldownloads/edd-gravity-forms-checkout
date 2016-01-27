@@ -1,7 +1,7 @@
 === Gravity Forms Checkout for Easy Digital Downloads ===
 Tags: easy digital downloads, edd, gravity forms, gravityforms
 Requires at least: 3.3
-Tested up to: 4.1.1
+Tested up to: 4.4.1
 Contributors: katzwebdesign, katzwebservices
 License: GPL 3 or higher
 
@@ -11,7 +11,7 @@ Integrate Gravity Forms purchases with Easy Digital Downloads
 
 Use Gravity Forms to sell Easy Digital Downloads products. Simply add a product field to your Gravity Forms form, connect it to an EDD product, and then set your prices. Use any of your existing Gravity Forms gateways and payment methods.
 
-For support, [visit the Help Docs](http://kws.helpscoutdocs.com/collection/29-gravity-forms-checkout-for-easy-digital-downloads).
+For support, [visit the Help Docs](http://support.katz.co).
 
 __To translate the plugin__ into your language, please [submit your translation here](https://www.transifex.com/projects/p/edd-gravity-forms-checkout/).
 
@@ -22,11 +22,18 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 1. Upload plugin files to your plugins folder, or install using WordPress' built-in Add New Plugin installer
 1. Activate the plugin
-1. For more, [visit the Help Docs](http://kws.helpscoutdocs.com/collection/29-gravity-forms-checkout-for-easy-digital-downloads).
+1. For more, [visit the Help Docs](http://support.katz.co).
 
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.4 on January 27, 2016 =
+* Added: Support for redirecting to EDD Purchase Confirmation page [Read how to set this up](http://support.katz.co/article/335-edd-payment-confirmation-page)
+* Fixed: Prevent duplicate payment records
+* Fixed: Default Price Option wasn't set when loading choices
+* Fixed: Broken links to documentation
+* Tweak: If `KWS_GF_EDD::debug` is set to true, print Javascript console logs
 
 = 1.3.1 on April 7, 2015 =
 * Fixed: Issues where Gravity Forms entry and EDD purchase date differ

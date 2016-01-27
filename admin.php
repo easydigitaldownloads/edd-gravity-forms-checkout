@@ -127,7 +127,7 @@ class KWS_GF_EDD_Admin {
 		wp_enqueue_script( 'edd-gf-admin', plugins_url( 'assets/js/admin'.$min.'.js', EDD_GF_PLUGIN_FILE ), array('jquery'), KWS_GF_EDD::version, true);
 
 		wp_localize_script( 'edd-gf-admin', 'EDDGF', array(
-			'debug' => ( $min ? false : true ),
+			'debug' => ( $min || KWS_GF_EDD::debug ),
 			'text_value' => __('Value', 'edd-gf'),
 			'text_price_id' => __('EDD Price ID', 'edd-gf')
 		));
@@ -164,6 +164,15 @@ class KWS_GF_EDD_Admin {
 
 			if($prices = edd_get_variable_prices($download_id)) {
 				$response = $prices;
+
+				/**
+				 * Is there a default price variation? If so, pass it along.
+				 */
+				if( function_exists('edd_get_default_variable_price') && $default_id = edd_get_default_variable_price( $download_id ) ) {
+					foreach( $response as $key => $price ) {
+						$response[ $key ]['default'] = intval( $default_id === $key );
+					}
+				}
 			}
 
 			exit(json_encode($response));
@@ -303,7 +312,7 @@ class KWS_GF_EDD_Admin {
 
 		$button_text = sprintf(esc_attr__('Load EDD Options &amp; Prices for this Product %s', 'edd-gf'), gform_tooltip("edd_gf_load_variations", '', true));
 		$connected_text = esc_attr__('This is an Easy Digital Downloads product', 'edd-gf');
-		$connect_variation_help = sprintf(esc_attr__( 'The "Label" below must match the EDD Option Name or the EDD Price ID value. %sLearn more about connecting variable price products%s.', 'edd-gf' ), '<a href="https://katzwebservices.zendesk.com/hc/en-us/articles/201760193-How-to-connect-Gravity-Forms-with-Easy-Digital-Downloads-price-variations" target="_blank">', '</a>');
+		$connect_variation_help = sprintf(esc_attr__( 'The "Label" below must match the EDD Option Name or the EDD Price ID value. %sLearn more about connecting variable price products%s.', 'edd-gf' ), '<a href="http://support.katz.co/article/85-how-to-connect-gravity-forms-with-easy-digital-downloads-price-variations" target="_blank">', '</a>');
 	?>
 		<li class="edd_gf_connect_variations field_setting" style="position:relative;">
 			<?php wp_nonce_field( 'edd_gf_download_nonce', 'edd_gf_download_nonce' ); ?>
