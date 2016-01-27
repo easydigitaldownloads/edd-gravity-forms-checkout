@@ -542,6 +542,15 @@ final class KWS_GF_EDD {
 
 		$this->r(array( '$entry' => $entry ), false, '$entry in `send_purchase_to_edd`, ('.__LINE__.')');
 
+		// Prevent double-logging
+		if( function_exists('gform_update_meta') ) {
+			$entry_payment_id_meta = gform_get_meta( $entry['id'], 'edd_payment_id' );
+			if( ! empty( $entry_payment_id_meta ) ) {
+				$this->r( array( '$entry' => $entry, '$entry_payment_id_meta' => $entry_payment_id_meta ), true, 'Payment already recorded for entry in `send_purchase_to_edd`, ('.__LINE__.')');
+				return;
+			}
+		}
+
 		$data = $this->get_edd_data_array_from_entry($entry, $form);
 
 		// If there are no downloads connected, get outta here.
@@ -578,6 +587,11 @@ final class KWS_GF_EDD {
 		// Record the EDD purchase in GF
 		if(class_exists('GFFormsModel') && is_callable('GFFormsModel::add_note')) {
 			GFFormsModel::add_note($entry['id'], -1, __('Easy Digital Downloads', 'edd-gf'), sprintf(__('Created Payment ID %d in Easy Digital Downloads', 'edd-gf'), $payment_id));
+		}
+
+		// Add Gravity Forms entry meta
+		if( function_exists('gform_update_meta') ) {
+			gform_update_meta( $entry['id'], 'edd_payment_id', $payment_id );
 		}
 
 		// Make sure GF and EDD have statuses that mean the same things.

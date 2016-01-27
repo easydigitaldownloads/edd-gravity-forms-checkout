@@ -28,6 +28,7 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
+* Fixed: Prevent duplicate payment records
 * Fixed: Default Price Option wasn't set when loading choices
 * Tweak: If `KWS_GF_EDD::debug` is set to true, print Javascript console logs
 
