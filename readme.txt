@@ -29,6 +29,7 @@ __To translate the plugin__ into your language, please [submit your translation 
 == Changelog ==
 
 * Fixed: Default Price Option wasn't set when loading choices
+* Tweak: If `KWS_GF_EDD::debug` is set to true, print Javascript console logs
 
 = 1.3.1 on April 7, 2015 =
 * Fixed: Issues where Gravity Forms entry and EDD purchase date differ

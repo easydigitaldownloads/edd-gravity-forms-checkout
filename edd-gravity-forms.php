@@ -51,10 +51,10 @@ final class KWS_GF_EDD {
 	const name = 'Gravity Forms Checkout';
 
 	/**
-	 * Set whether to print debug output using the `r()` method
+	 * Set whether to print debug output using the `r()` method and `console.log()`
 	 * @var boolean
 	 */
-	private $debug = false;
+	const debug = true;
 
 	/**
 	 * Set constants, load textdomain, and trigger init()
@@ -680,7 +680,7 @@ final class KWS_GF_EDD {
 		// Push debug messages to the Gravity Forms Logging Tool
 		do_action('edd_gf_log_debug', $title ."\n".print_r( $value, true ) );
 
-		if(current_user_can( 'administrator' ) && $this->debug) {
+		if( current_user_can('administrator') && self::debug ) {
 
 			// Output buffering fatal errors when seeing `print_r()`
 			if( ob_get_level() > 0 ) {

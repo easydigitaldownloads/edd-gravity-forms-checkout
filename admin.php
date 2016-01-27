@@ -127,7 +127,7 @@ class KWS_GF_EDD_Admin {
 		wp_enqueue_script( 'edd-gf-admin', plugins_url( 'assets/js/admin'.$min.'.js', EDD_GF_PLUGIN_FILE ), array('jquery'), KWS_GF_EDD::version, true);
 
 		wp_localize_script( 'edd-gf-admin', 'EDDGF', array(
-			'debug' => ( $min ? false : true ),
+			'debug' => ( $min || KWS_GF_EDD::debug ),
 			'text_value' => __('Value', 'edd-gf'),
 			'text_price_id' => __('EDD Price ID', 'edd-gf')
 		));
