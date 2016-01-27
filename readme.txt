@@ -28,6 +28,8 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
+* Fixed: Default Price Option wasn't set when loading choices
+
 = 1.3.1 on April 7, 2015 =
 * Fixed: Issues where Gravity Forms entry and EDD purchase date differ
 * Fixed: Display nothing in the Product field when EDD isn't active

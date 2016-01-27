@@ -164,6 +164,15 @@ class KWS_GF_EDD_Admin {
 
 			if($prices = edd_get_variable_prices($download_id)) {
 				$response = $prices;
+
+				/**
+				 * Is there a default price variation? If so, pass it along.
+				 */
+				if( $default_id = edd_get_default_variable_price( $download_id ) ) {
+					foreach( $response as $key => $price ) {
+						$response[ $key ]['default'] = intval( $default_id === $key );
+					}
+				}
 			}
 
 			exit(json_encode($response));

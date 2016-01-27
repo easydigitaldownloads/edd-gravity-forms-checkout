@@ -193,6 +193,8 @@ jQuery(document).ready(function($) {
                             // For each price variation
                             $.each( items, function( i, item ) {
 
+                                self.log( 'Item being added as Choice', item );
+
                                 // Convert the price to Gravity Forms style
                                 var currency = GetCurrentCurrency();
                                 var price = currency.toMoney(item.amount);
@@ -202,7 +204,7 @@ jQuery(document).ready(function($) {
                                 choice.text = item.name;
                                 choice.value = i.toString(); // It needs to be a string so GF can do `choiceValue.replace(/'/g, "&#039;")` on it
                                 choice.price = price;
-                                choice.isSelected = false; // previous: (i === 0); // Select the first variation as the default
+                                choice.isSelected = ( 1 === item.default ); // Select the first variation as the default
 
                                 // Add the choice to the list of choices available
                                 field.choices.push( choice );
