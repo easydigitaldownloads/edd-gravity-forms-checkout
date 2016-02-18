@@ -28,6 +28,9 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
+= 1.4.1 on February 17, 2016 =
+* Update the "EDD Price ID" label to be more accurately called "EDD Price ID or Name"
+
 = 1.4 on January 27, 2016 =
 * Added: Support for redirecting to EDD Purchase Confirmation page [Read how to set this up](http://support.katz.co/article/335-edd-payment-confirmation-page)
 * Fixed: Prevent duplicate payment records
