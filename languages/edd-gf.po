@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Gravity Forms Checkout for Easy Digital Downloads\n"
-"POT-Creation-Date: 2016-01-27 01:13-0700\n"
-"PO-Revision-Date: 2016-01-27 01:13-0700\n"
+"POT-Creation-Date: 2016-02-17 18:39-0700\n"
+"PO-Revision-Date: 2016-02-17 18:39-0700\n"
 "Last-Translator: Katz Web Services, Inc. <support@katz.co>\n"
 "Language-Team: Katz Web Services, Inc. <support@katz.co>\n"
 "Language: en_US\n"
@@ -46,7 +46,7 @@ msgid "Value"
 msgstr ""
 
 #: admin.php:132
-msgid "EDD Price ID"
+msgid "EDD Price ID or Name"
 msgstr ""
 
 #: admin.php:265

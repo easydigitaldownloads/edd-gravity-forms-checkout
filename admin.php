@@ -129,7 +129,7 @@ class KWS_GF_EDD_Admin {
 		wp_localize_script( 'edd-gf-admin', 'EDDGF', array(
 			'debug' => ( $min || KWS_GF_EDD::debug ),
 			'text_value' => __('Value', 'edd-gf'),
-			'text_price_id' => __('EDD Price ID', 'edd-gf')
+			'text_price_id' => __('EDD Price ID or Name', 'edd-gf')
 		));
 	}
 
