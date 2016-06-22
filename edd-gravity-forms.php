@@ -148,7 +148,7 @@ final class KWS_GF_EDD {
 
 		$return = $default;
 
-		if( isset( $gf_payment_statuses[$status] ) ) {
+		if( isset( $gf_payment_statuses["{$status}"] ) ) {
 
 			/**
 			 * Override the status for a purchase.
@@ -156,7 +156,7 @@ final class KWS_GF_EDD {
 			 * @param string $edd_status The EDD status
 			 * @param string $gf_status The GF status used to fetch the EDD status
 			 */
-			$return = apply_filters( 'edd_gf_payment_status', $gf_payment_statuses[$status], $status );
+			$return = apply_filters( 'edd_gf_payment_status', $gf_payment_statuses["{$status}"], $status );
 
 		}
 
