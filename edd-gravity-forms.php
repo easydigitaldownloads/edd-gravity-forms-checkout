@@ -451,10 +451,8 @@ final class KWS_GF_EDD {
 
 		if( is_user_logged_in() ) {
 
-			global $current_user;
-
 			// Get the $current_user WP_User object
-			get_currentuserinfo();
+			$current_user = wp_get_current_user();
 
 			$user_id = get_current_user_id();
 
