@@ -11,8 +11,6 @@ Integrate Gravity Forms purchases with Easy Digital Downloads
 
 Use Gravity Forms to sell Easy Digital Downloads products. Simply add a product field to your Gravity Forms form, connect it to an EDD product, and then set your prices. Use any of your existing Gravity Forms gateways and payment methods.
 
-For support, [visit the Help Docs](http://support.katz.co).
-
 __To translate the plugin__ into your language, please [submit your translation here](https://www.transifex.com/projects/p/edd-gravity-forms-checkout/).
 
 == Screenshots ==
