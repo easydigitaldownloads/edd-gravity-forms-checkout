@@ -26,11 +26,11 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
-= 1.5 on June 21, 2016 =
-* Compatible with Easy Digital Downloads 2.6
-* Fixed: Purchase quantity is now properly handled
-* Fixed: Removed deprecated `get_currentuserinfo()` function
+= 1.4.2 on June 23, 2016 =
+* Compatible with Easy Digital Downloads 2.6 and Gravity Forms 2.0
+* Fixed: Purchase quantity is now properly handled; a download is added for each defined quantity
 * Fixed: Empty payments being created that have no customer details
+* Fixed: Removed call to deprecated `get_currentuserinfo()` function
 
 = 1.4.1 on February 17, 2016 =
 * Update the "EDD Price ID" label to be more accurately called "EDD Price ID or Name"
