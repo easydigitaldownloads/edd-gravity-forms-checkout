@@ -285,7 +285,7 @@ final class KWS_GF_EDD {
 				'id' => $field['eddDownload'],
 				'name' => $product['name'],
 				'quantity' => $product['quantity'],
-				'price'	=> $product['price'],
+				'price'	=> GFCommon::to_number( $product['price'] ),
 			);
 
 			if( !empty( $field['eddHasVariables'] ) ) {
@@ -357,10 +357,12 @@ final class KWS_GF_EDD {
 			// the array key doesn't get overwritten.
 			$download_id = absint($download['id']);
 
-			// Referenced from `edd_update_payment_details()` in functions.php
+			$quantity = ( absint( $download['quantity'] ) > 0 ? absint( $download['quantity'] ) : 1 );
+
+			/** @see edd_update_payment_details() in functions.php */
 			$item = array(
 				'id'		=> $download_id,
-				'quantity'	=> absint( $download['quantity'] ),
+				'quantity'	=> 1,
 			);
 
 			// If there's price ID data, use it
@@ -370,16 +372,20 @@ final class KWS_GF_EDD {
 
 			$item_price = isset($download['price']) ? GFCommon::to_number($download['price']) : GFCommon::to_number($item['options']['amount']);
 
-			$cart_details[] = array(
-				'name'        => get_the_title( $download_id ),
-				'id'          => $download_id,
-				'item_number' => $item,
-				'price'       => $item_price,
-				'tax'		  => NULL,
-				'quantity'    => absint( $download['quantity'] ),
-			);
+			$i = 0;
+			while( $quantity > $i ) {
+				$cart_details[] = array(
+					'name'        => get_the_title( $download_id ),
+					'id'          => $download_id,
+					'item_number' => $item,
+					'price'       => $item_price,
+					'tax'         => NULL,
+					'quantity'    => 1,
+				);
+				$i++;
+			}
 
-			$total += $item_price * absint( $download['quantity'] );
+			$total += ( $item_price * $quantity );
 		}
 
 		$this->r( $downloads, false, 'Downloads after generating Cart Details (Line '.__LINE__.')');

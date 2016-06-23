@@ -26,8 +26,9 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
-= 1.4.2 on June 21, 2016 =
+= 1.5 on June 21, 2016 =
 * Compatible with Easy Digital Downloads 2.6
+* Fixed: Purchase quantity is now properly handled
 * Fixed: Removed deprecated `get_currentuserinfo()` function
 
 = 1.4.1 on February 17, 2016 =
