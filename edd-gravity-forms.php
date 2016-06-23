@@ -10,10 +10,10 @@
 
 /**
  * Plugin Name: Easy Digital Downloads - Gravity Forms Checkout
- * Plugin URI: http://katz.co/downloads/edd-gf/
+ * Plugin URI: https://easydigitaldownloads.com/downloads/gravity-forms-checkout/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 1.4.1
+ * Version: 1.4.2
  * Requires at least: 3.0
  * Author URI: http://katz.co
  * License: GPL v3
@@ -42,7 +42,7 @@ final class KWS_GF_EDD {
 	 * @link  http://semver.org
 	 * @var  string Semantic Versioning version number
 	 */
-	const version = '1.4.1';
+	const version = '1.4.2';
 
 	/**
 	 * Name of the plugin for the updater class
@@ -148,7 +148,7 @@ final class KWS_GF_EDD {
 
 		$return = $default;
 
-		if( isset( $gf_payment_statuses[$status] ) ) {
+		if( isset( $gf_payment_statuses["{$status}"] ) ) {
 
 			/**
 			 * Override the status for a purchase.
@@ -156,7 +156,7 @@ final class KWS_GF_EDD {
 			 * @param string $edd_status The EDD status
 			 * @param string $gf_status The GF status used to fetch the EDD status
 			 */
-			$return = apply_filters( 'edd_gf_payment_status', $gf_payment_statuses[$status], $status );
+			$return = apply_filters( 'edd_gf_payment_status', $gf_payment_statuses["{$status}"], $status );
 
 		}
 
@@ -285,7 +285,7 @@ final class KWS_GF_EDD {
 				'id' => $field['eddDownload'],
 				'name' => $product['name'],
 				'quantity' => $product['quantity'],
-				'price'	=> $product['price'],
+				'price'	=> GFCommon::to_number( $product['price'] ),
 			);
 
 			if( !empty( $field['eddHasVariables'] ) ) {
@@ -357,10 +357,12 @@ final class KWS_GF_EDD {
 			// the array key doesn't get overwritten.
 			$download_id = absint($download['id']);
 
-			// Referenced from `edd_update_payment_details()` in functions.php
+			$quantity = ( absint( $download['quantity'] ) > 0 ? absint( $download['quantity'] ) : 1 );
+
+			/** @see edd_update_payment_details() in functions.php */
 			$item = array(
 				'id'		=> $download_id,
-				'quantity'	=> absint( $download['quantity'] ),
+				'quantity'	=> 1,
 			);
 
 			// If there's price ID data, use it
@@ -370,16 +372,20 @@ final class KWS_GF_EDD {
 
 			$item_price = isset($download['price']) ? GFCommon::to_number($download['price']) : GFCommon::to_number($item['options']['amount']);
 
-			$cart_details[] = array(
-				'name'        => get_the_title( $download_id ),
-				'id'          => $download_id,
-				'item_number' => $item,
-				'price'       => $item_price,
-				'tax'		  => NULL,
-				'quantity'    => absint( $download['quantity'] ),
-			);
+			$i = 0;
+			while( $quantity > $i ) {
+				$cart_details[] = array(
+					'name'        => get_the_title( $download_id ),
+					'id'          => $download_id,
+					'item_number' => $item,
+					'price'       => $item_price,
+					'tax'         => NULL,
+					'quantity'    => 1,
+				);
+				$i++;
+			}
 
-			$total += $item_price * absint( $download['quantity'] );
+			$total += ( $item_price * $quantity );
 		}
 
 		$this->r( $downloads, false, 'Downloads after generating Cart Details (Line '.__LINE__.')');
@@ -451,10 +457,8 @@ final class KWS_GF_EDD {
 
 		if( is_user_logged_in() ) {
 
-			global $current_user;
-
 			// Get the $current_user WP_User object
-			get_currentuserinfo();
+			$current_user = wp_get_current_user();
 
 			$user_id = get_current_user_id();
 
@@ -673,11 +677,19 @@ final class KWS_GF_EDD {
 			return;
 		}
 
-		// Make sure GF and EDD have statuses that mean the same things.
-		$payment_status = $this->get_payment_status_from_gf_status( $action['payment_status'] );
-
 		// Get the payment ID from the entry ID
 		$payment_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %s LIMIT 1", $entry['id'] ) );
+
+		// Payment's not been officially inserted yet
+		if( empty( $payment_id ) ) {
+
+			$this->r( '_edd_gf_entry_id not yet set; send_purchase_to_edd() has not run. Wait for it!' );
+
+			return;
+		}
+
+		// Make sure GF and EDD have statuses that mean the same things.
+		$payment_status = $this->get_payment_status_from_gf_status( $action['payment_status'] );
 
 		$this->r( sprintf( 'Setting $payment_id to %s and $payment_status to %s.', $payment_id, $payment_status ) );
 

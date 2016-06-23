@@ -1,8 +1,8 @@
 === Gravity Forms Checkout for Easy Digital Downloads ===
 Tags: easy digital downloads, edd, gravity forms, gravityforms
 Requires at least: 3.3
-Tested up to: 4.4.2
-Contributors: katzwebdesign, katzwebservices
+Tested up to: 4.5.2
+Contributors: katzwebservices
 License: GPL 3 or higher
 
 Integrate Gravity Forms purchases with Easy Digital Downloads
@@ -10,8 +10,6 @@ Integrate Gravity Forms purchases with Easy Digital Downloads
 == Description ==
 
 Use Gravity Forms to sell Easy Digital Downloads products. Simply add a product field to your Gravity Forms form, connect it to an EDD product, and then set your prices. Use any of your existing Gravity Forms gateways and payment methods.
-
-For support, [visit the Help Docs](http://support.katz.co).
 
 __To translate the plugin__ into your language, please [submit your translation here](https://www.transifex.com/projects/p/edd-gravity-forms-checkout/).
 
@@ -27,6 +25,12 @@ __To translate the plugin__ into your language, please [submit your translation 
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.4.2 on June 23, 2016 =
+* Compatible with Easy Digital Downloads 2.6 and Gravity Forms 2.0
+* Fixed: Purchase quantity is now properly handled; a download is added for each defined quantity
+* Fixed: Empty payments being created that have no customer details
+* Fixed: Removed call to deprecated `get_currentuserinfo()` function
 
 = 1.4.1 on February 17, 2016 =
 * Update the "EDD Price ID" label to be more accurately called "EDD Price ID or Name"
