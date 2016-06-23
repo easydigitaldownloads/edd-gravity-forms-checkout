@@ -30,6 +30,7 @@ __To translate the plugin__ into your language, please [submit your translation 
 * Compatible with Easy Digital Downloads 2.6
 * Fixed: Purchase quantity is now properly handled
 * Fixed: Removed deprecated `get_currentuserinfo()` function
+* Fixed: Empty payments being created that have no customer details
 
 = 1.4.1 on February 17, 2016 =
 * Update the "EDD Price ID" label to be more accurately called "EDD Price ID or Name"

@@ -677,11 +677,19 @@ final class KWS_GF_EDD {
 			return;
 		}
 
-		// Make sure GF and EDD have statuses that mean the same things.
-		$payment_status = $this->get_payment_status_from_gf_status( $action['payment_status'] );
-
 		// Get the payment ID from the entry ID
 		$payment_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %s LIMIT 1", $entry['id'] ) );
+
+		// Payment's not been officially inserted yet
+		if( empty( $payment_id ) ) {
+
+			$this->r( '_edd_gf_entry_id not yet set; send_purchase_to_edd() has not run. Wait for it!' );
+
+			return;
+		}
+
+		// Make sure GF and EDD have statuses that mean the same things.
+		$payment_status = $this->get_payment_status_from_gf_status( $action['payment_status'] );
 
 		$this->r( sprintf( 'Setting $payment_id to %s and $payment_status to %s.', $payment_id, $payment_status ) );
 
