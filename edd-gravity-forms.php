@@ -54,7 +54,7 @@ final class KWS_GF_EDD {
 	 * Set whether to print debug output using the `r()` method and `console.log()`
 	 * @var boolean
 	 */
-	const debug = false;
+	const debug = true;
 
 	/**
 	 * Set constants, load textdomain, and trigger init()
@@ -63,12 +63,14 @@ final class KWS_GF_EDD {
 	function __construct() {
 
 		if(!defined('EDD_GF_PLUGIN_FILE')) {
+			/** @define "EDD_GF_PLUGIN_FILE" "." */
 			define('EDD_GF_PLUGIN_FILE', __FILE__ );
 		}
 		if(!defined('EDD_GF_PLUGIN_URL')) {
 			define('EDD_GF_PLUGIN_URL', plugins_url( '', __FILE__ ));
 		}
 		if(!defined('EDD_GF_PLUGIN_DIR')) {
+			/** @define "EDD_GF_PLUGIN_DIR" "." */
 			define( 'EDD_GF_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		}
 
@@ -407,13 +409,7 @@ final class KWS_GF_EDD {
 		return $data;
 	}
 
-	/**
-	 * Get user info from the entry
-	 * @param  array $form  Gravity Forms form array
-	 * @param  array $entry Gravity Forms entry array
-	 * @return array        array with user data. Keys include: 'id' (int user ID), 'email' (string user email), 'first_name', 'last_name', 'discount' (empty)
-	 */
-	function get_user_info( $form, $entry ) {
+	private function get_user_info_from_submission( $form, $entry ) {
 
 		$user_info = array();
 
@@ -452,8 +448,23 @@ final class KWS_GF_EDD {
 
 			// Convert the Gravity Forms Field ID keys into Entry values.
 			// See `$user_info['first_name']` code above for examples.
-			$user_info[$key] = $entry["{$entry_key}"];
+			$user_info[ $key ] = $entry["{$entry_key}"];
 		}
+
+		return $user_info;
+	}
+
+	/**
+	 * Get user info from the entry
+	 * @param  array $form  Gravity Forms form array
+	 * @param  array $entry Gravity Forms entry array
+	 * @return array        array with user data. Keys include: 'id' (int user ID), 'email' (string user email), 'first_name', 'last_name', 'discount' (empty)
+	 */
+	function get_user_info( $form, $entry ) {
+
+		$user_id = -1;
+
+		$user_info = $this->get_user_info_from_submission( $form, $entry );
 
 		if( is_user_logged_in() ) {
 
@@ -475,8 +486,6 @@ final class KWS_GF_EDD {
 
 		} else {
 
-			$user_id = -1;
-
 			//
 			// User is not logged in, but the email exists
 			//
@@ -496,6 +505,15 @@ final class KWS_GF_EDD {
 
 		}
 
+		$default_user_info = array(
+			'email' => NULL,
+			'first_name' => NULL,
+			'last_name' => NULL,
+			'display_name' => NULL,
+		);
+
+		$user_info = wp_parse_args( $user_info, $default_user_info );
+
 		// Set user data array
 		$user_info = array(
 			'id'         => $user_id,
@@ -510,7 +528,7 @@ final class KWS_GF_EDD {
 	}
 
 	/**
-	 * Take a GF submission and add a purcase to EDD.
+	 * Take a GF submission and add a purchase to EDD.
 	 *
 	 * This converts the GF submission to an EDD order.
 	 *

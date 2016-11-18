@@ -1,7 +1,7 @@
 === Gravity Forms Checkout for Easy Digital Downloads ===
 Tags: easy digital downloads, edd, gravity forms, gravityforms
 Requires at least: 3.3
-Tested up to: 4.5.2
+Tested up to: 4.6.1
 Contributors: katzwebservices
 License: GPL 3 or higher
 
