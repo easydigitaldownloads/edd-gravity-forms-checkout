@@ -100,6 +100,13 @@ final class KWS_GF_EDD {
         add_action('gform_post_payment_completed', array($this, 'post_payment_callback'), 10, 2);
         add_action('gform_post_payment_refunded', array($this, 'post_payment_callback'), 10, 2);
 
+        // add edd subscription when GF subscription complete
+        add_action('gform_post_subscription_started', array($this, 'edd_subscription_started'), 10, 2);
+        add_action('gform_post_add_subscription_payment', array($this, 'edd_subscription_payment'), 10, 2);
+
+        // action to set edd transaction id 
+        add_action('gform_post_payment_callback', array($this, 'update_edd_transaction_id'), 10, 3);
+
         /**
          * Check for plugin updates. Built into EDD version 1.9+
          */
@@ -307,6 +314,7 @@ final class KWS_GF_EDD {
                 'name' => $product['name'],
                 'quantity' => $product['quantity'],
                 'price' => GFCommon::to_number($product['price']),
+                'product_field_id' => $product_field_id,
             );
 
             if (!empty($field['eddHasVariables'])) {
@@ -377,6 +385,8 @@ final class KWS_GF_EDD {
 
             $quantity = ( absint($download['quantity']) > 0 ? absint($download['quantity']) : 1 );
 
+            $prod_id = $download['product_field_id'];
+
             /** @see edd_update_payment_details() in functions.php */
             $item = array(
                 'id' => $download_id,
@@ -407,7 +417,8 @@ final class KWS_GF_EDD {
                     'price' => $item_price,
                     'tax' => NULL,
                     'quantity' => 1,
-                    'discount' => $item_discount
+                    'discount' => $item_discount,
+                    'product_field_id' => $prod_id
                 );
                 $i++;
             }
@@ -443,7 +454,7 @@ final class KWS_GF_EDD {
         $edd_fields = (isset($form["edd-fields"]) && $form["edd-fields"]) ? $form["edd-fields"] : array();
 
         // if not name or email fields settings selected then get them from from fields 
-        if ( (!isset($edd_fields['name_field']) || !$edd_fields['name_field'] ) || ( !isset($edd_fields['email_field']) || !$edd_fields['email_field'] )):
+        if ((!isset($edd_fields['name_field']) || !$edd_fields['name_field'] ) || (!isset($edd_fields['email_field']) || !$edd_fields['email_field'] )):
             foreach ($form['fields'] as $field) {
 
                 switch ($field['type']) {
@@ -467,7 +478,7 @@ final class KWS_GF_EDD {
                 }
             }
         endif;
-        
+
         // get name field from form settings
         if (isset($edd_fields['name_field']) && $edd_fields['name_field']):
             $name_field = $edd_fields['name_field'];
@@ -771,6 +782,165 @@ final class KWS_GF_EDD {
 
         // Update the payment status
         edd_update_payment_status($payment_id, $payment_status);
+    }
+
+    /**
+     * Add edd subscription when GF subscription started 
+     * 
+     * @param array $entry Entry Object
+     * @param array $subscription The new Subscription object
+     */
+    public function edd_subscription_started($entry, $subscription) {
+
+        if (class_exists('GFPayPal')):
+            // get form paypal configuraion
+            $paypal_conf = GFPayPal::get_config_by_entry($entry);
+            if (isset($paypal_conf['meta']['transactionType']) && $paypal_conf['meta']['transactionType'] == 'subscription'):
+                // get entry payment id 
+                $entry_payment = get_posts(array(
+                    'post_type' => 'edd_payment',
+                    'posts_per_page' => 1,
+                    'meta_key' => '_edd_gf_entry_id',
+                    'meta_value' => $entry['id']
+                        )
+                );
+                if ($entry_payment):
+                    $payment_id = $entry_payment[0]->ID;
+                    // set subscription payment
+                    $payment = new EDD_Payment($payment_id);
+
+                    // Set subscription_payment
+                    $user_id = get_current_user_id();
+                    $payment->update_meta('_edd_subscription_payment', true);
+
+                    // get customer id 
+                    $customer_id = get_post_meta($payment_id, '_edd_payment_customer_id', TRUE);
+                    $subscriber = new EDD_Recurring_Subscriber($customer_id);
+
+                    // get GF by form id
+                    $form = GFAPI::get_form($entry['form_id']);
+                    // get entry data
+                    $data = $this->get_edd_data_array_from_entry($entry, $form);
+                    $cart_details = $data['cart_details'];
+
+                    // get gf configuraion trial 
+                    $trial_amount = $trial_prod = NULL;
+                    $trial_subscription = FALSE;
+                    $trial_period = '';
+
+                    if (isset($paypal_conf['meta']['trial_enabled']) && $paypal_conf['meta']['trial_enabled'] == '1'):
+                        $trial_subscription = TRUE;
+                        // if trial amount is selected 
+                        if (isset($paypal_conf['meta']['trial_product']) && $paypal_conf['meta']['trial_product'] == 'enter_amount'):
+                            $trial_amount = intval(ereg_replace("[^0-9]", "", $paypal_conf['meta']['trial_amount']));
+                        else:
+                            $trial_prod = $paypal_conf['meta']['trial_product'];
+                        endif;
+                        // get trial period 
+                        if (isset($paypal_conf['meta']['trialPeriod_length']) && $paypal_conf['meta']['trialPeriod_length'] && $paypal_conf['meta']['trialPeriod_unit'])
+                            $trial_period = $paypal_conf['meta']['trialPeriod_length'] . ' ' . $paypal_conf['meta']['trialPeriod_unit'];
+                    endif;
+
+                    // get billing cycle 
+                    $recurring_len = $paypal_conf['meta']['billingCycle_length'] . ' ' . $paypal_conf['meta']['billingCycle_unit'];
+                    $exp_date = Date('Y-m-d', strtotime($recurring_len . 's'));
+                    // get recurring times
+                    $recurring_times = (intval($paypal_conf['meta']['recurringTimes'])) ? intval($paypal_conf['meta']['recurringTimes']) : '';
+
+                    // add edd subscription
+                    if ($cart_details):
+                        foreach ($cart_details as $cart_detail) :
+                            // get product discount 
+                            $prod_discount = (isset($cart_detail['discount']) && $cart_detail['discount'] ) ? $cart_detail['discount'] : 0;
+                            // get product price 
+                            $prod_price = (isset($cart_detail['price']) && $cart_detail['price'] ) ? $cart_detail['price'] : 0;
+                            $product_total = $prod_price - $prod_discount;
+
+                            // check if trial product
+                            if ($trial_prod && $trial_prod == intval($cart_detail['product_field_id'])):
+                                $trial_amount = 0;
+                            endif;
+
+                            // get initial amount 
+                            $initial_amount = ($trial_subscription && $trial_amount != NULL) ? $trial_amount : $product_total;
+
+                            $args = array(
+                                'product_id' => $cart_detail['item_number']['id'],
+                                'user_id' => $customer_id,
+                                'parent_payment_id' => $payment_id,
+                                'status' => 'Active',
+                                'period' => $recurring_times,
+                                'initial_amount' => $initial_amount,
+                                'recurring_amount' => $product_total,
+                                'bill_times' => $recurring_times,
+                                'expiration' => $exp_date,
+                                'trial_period' => $trial_period,
+                                'profile_id' => $customer_id,
+                                'transaction_id' => $subscription['subscription_id'],
+                            );
+
+                            // set args 
+                            $sub = $subscriber->add_subscription($args);
+
+                            if ($trial_period) {
+                                $subscriber->add_meta('edd_recurring_trials', $entry['id']);
+                            }
+
+                        endforeach;
+                    endif;
+                endif;
+            endif;
+        endif;
+    }
+
+    /**
+     * Add edd subscription when GF subscription renew 
+     * 
+     * @param array $entry The Entry Object
+     * @param array $action The Action Object
+     */
+    public function edd_subscription_payment($entry, $action) {
+
+        // get download id for entry
+        $payment_id = get_post_meta($entry['id'], 'edd_payment_id', TRUE);
+        if ($payment_id):
+            // get subscription id 
+            global $wpdb;
+            $sub_id = $wpdb->get_var("SELECT id FROM {$wpdb->prefix}edd_subscriptions WHERE parent_payment_id=$payment_id ");
+            if ($sub_id):
+                // get amount and transaction id
+                $amount = ( isset($action['amount']) ) ? edd_sanitize_amount($action['amount']) : '0.00';
+                $txn_id = (!empty($action['transaction_id']) ) ? $action['transaction_id'] : $action['subscription_id'];
+
+                // add edd subscription
+                $sub = new EDD_Subscription($sub_id);
+                $payment = $sub->add_payment(array(
+                    'amount' => $amount,
+                    'transaction_id' => $txn_id
+                ));
+                $sub->renew();
+            endif;
+
+        endif;
+    }
+
+    /**
+     * function to update edd transaction id 
+     * 
+     * @param array $entry The Entry Object
+     * @param array $action The Action Object
+     * @param array mixed $result The Result Object
+     */
+    public function update_edd_transaction_id($entry, $action, $result) {
+
+        // add transaction id in complete payment or start subscription payment
+        if ($action['type'] == 'complete_payment' || $action['type'] == 'create_subscription'):
+            // get download id for entry
+            $payment_id = get_post_meta($entry['id'], 'edd_payment_id', TRUE);
+            $transaction_id = (!empty($action['transaction_id'])) ? $action['transaction_id'] : $action['subscription_id'];
+
+            edd_set_payment_transaction_id($payment_id, $transaction_id);
+        endif;
     }
 
     /**
