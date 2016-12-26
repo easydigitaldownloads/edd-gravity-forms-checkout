@@ -16,10 +16,12 @@ jQuery(document).ready(function($) {
 
                 var self = EDD_GF_Admin;
 
-                $(document).on('gform_load_field_settings', self.hide_connect_for_options );
+                $(document).on('gform_load_field_settings', self.on_load_field_settings );
 
 
                 $('body')
+
+                    .on('change', '#edd_gf_customer_name', self.change_customer_data )
 
 	                /**
 	                 * Set field values when an EDD product is selected on a GF Product field
@@ -58,6 +60,66 @@ jQuery(document).ready(function($) {
                 info = info || null;
 
                 console.log( content, info );
+            },
+
+		    /**
+             * When a Use as EDD Customer Field is checked, update the rest of the form
+             * @return {void}
+             */
+            change_customer_data: function() {
+
+                // Remove all other
+                $.each( form.fields, function( i, field ) {
+                    if ( EDD_GF_Admin.is_customer_data_field( field ) ) {
+                        field.eddCustomerData = false;
+                    }
+                });
+
+                SetFieldProperty('eddCustomerData', $( this ).is(':checked') );
+            },
+
+            /**
+             * Triggered when field settings are loaded
+             * @since {1.5}
+             * @return {void}
+             */
+            on_load_field_settings: function() {
+                EDD_GF_Admin.hide_connect_for_options();
+                EDD_GF_Admin.hide_customer_data_setting();
+            },
+
+            is_customer_data_field: function( field ) {
+
+                // Compare against -1 (not found)
+                return ( 0 >= $.inArray( field.type, EDDGF.field_types ) )
+            },
+
+            /**
+             * Hide EDD Customer Data setting if only one or less of the field type
+             * @since {1.5}
+             * @return {void}
+             */
+            hide_customer_data_setting: function() {
+
+                // Get the current field
+                var current_field = GetSelectedField();
+
+                if ( ! EDD_GF_Admin.is_customer_data_field( current_field ) ) {
+                    return;
+                }
+
+                var fields_count = 0;
+
+                $.each( form.fields, function( i, field ) {
+                    if ( current_field.type === field.type ) {
+                        fields_count++;
+                    }
+                });
+
+                if ( fields_count < 2 ) {
+                    EDD_GF_Admin.log( 'There is only one field of the current field type; hiding the input.' );
+                    $('.edd_gf_customer_data').hide();
+                }
             },
 
             /**

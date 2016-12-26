@@ -30,6 +30,25 @@ class KWS_GF_EDD_Admin {
 
 		// Enable debug with Gravity Forms Logging Add-on
 		add_filter( 'gform_logging_supported', array( $this, 'enable_gform_logging' ) );
+
+		add_action( 'gform_field_standard_settings', array( $this, 'my_standard_settings' ), 10, 2 );
+	}
+
+	function my_standard_settings( $position, $form_id ) {
+
+		//create settings on position 1150 (right after Name Fields)
+		if ( 1150 === $position ) {
+			?>
+			<li class="edd_gf_customer_data field_setting">
+				<h4 class="section_label"><?php esc_html_e( 'Use as source of EDD Customer', 'edd-gf' ); ?></h4>
+				<label for="edd_gf_customer_data">
+					<input type="checkbox" id="edd_gf_customer_data" onclick="SetFieldProperty('eddCustomerData', this.checked );" onkeypress="SetFieldProperty('eddCustomerData', this.checked );" />
+					<?php esc_html_e( 'Use this information for EDD Customer details' ); ?>
+					<?php gform_tooltip( 'form_field_edd_customer_data' ) ?>
+				</label>
+			</li>
+			<?php
+		}
 	}
 
 	/**
@@ -96,7 +115,7 @@ class KWS_GF_EDD_Admin {
 	 * @access public
 	 * @static
 	 * @param string $location (default: '')
-	 * @return void
+	 * @return string
 	 */
 	private function get_plugin_status( $location = '' ) {
 
@@ -129,6 +148,7 @@ class KWS_GF_EDD_Admin {
 		wp_localize_script( 'edd-gf-admin', 'EDDGF', array(
 			'debug' => ( $min || KWS_GF_EDD::debug ),
 			'text_value' => __('Value', 'edd-gf'),
+			'field_types' => array( 'email', 'name' ),
 			'text_price_id' => __('EDD Price ID or Name', 'edd-gf')
 		));
 	}
@@ -204,6 +224,10 @@ class KWS_GF_EDD_Admin {
 	        //adding setting to fields of type "options"
 	        fieldSettings["option"] += ", .edd_gf_connect_variations";
 
+	        //adding setting to fields of type "text"
+	        fieldSettings["name"] += ", .edd_gf_customer_data";
+	        fieldSettings["email"] += ", .edd_gf_customer_data";
+
 	        //binding to the load field settings event to initialize the checkbox
 	        jQuery(document).bind("gform_load_field_settings", function(event, field, form){
 
@@ -211,6 +235,9 @@ class KWS_GF_EDD_Admin {
 	        	console.info('in gform_load_field_settings (event, field, form)');
 	        	console.log(event, field, form);
 	        	*/
+
+		        // If the customer name hasn't been set yet or it's active
+		        jQuery('#edd_gf_customer_data').attr( 'checked', ( true === field.eddCustomerData ) );
 
 	        	// Set the value of the download ID
 	        	// We trigger change to force display of variations message.
@@ -341,6 +368,7 @@ class KWS_GF_EDD_Admin {
 	function gf_tooltips($tooltips) {
 		$tooltips['edd_gf_load_variations'] = sprintf('<h6>%s</h6> %s', __('Use EDD Settings', 'edd-gf'), __( 'Load the variation names and prices from the Easy Digital Downloads product. You can change the options after loading.', 'edd-gf'));
 		$tooltips["form_field_edd_download_value"] = sprintf("<h6>%s</h6>%s", __('EDD Download', 'edd-gf'), __('Connect this product to an Easy Digital Downloads product. If connected, when this product is purchased it will generate a sale in Easy Digital Downloads.', 'edd-gf'));
+		$tooltips["form_field_edd_customer_data"] = sprintf("<h6>%s</h6>%s", __('Use for EDD Customer', 'edd-gf'), __('This form contains multiple fields of this type. Select this option to use this field\'s data when creating a Customer in Easy Digital Downloads.', 'edd-gf'));
 		return $tooltips;
 	}
 }
