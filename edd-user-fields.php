@@ -29,26 +29,6 @@ class eddUserFields extends GFAddOn {
         return self::$_instance;
     }
 
-    public function pre_init() {
-        parent::pre_init();
-    }
-
-    public function init() {
-        parent::init();
-    }
-
-    public function init_admin() {
-        parent::init_admin();
-    }
-
-    public function init_frontend() {
-        parent::init_frontend();
-    }
-
-    public function init_ajax() {
-        parent::init_ajax();
-    }
-
     /**
      * Configures the settings which should be rendered on the Form Settings > EDD User Fields Add-On tab.
      *
@@ -102,5 +82,4 @@ class eddUserFields extends GFAddOn {
     }
 
 }
-
 $obj = new eddUserFields();
