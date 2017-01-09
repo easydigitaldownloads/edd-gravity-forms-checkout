@@ -269,35 +269,15 @@ final class KWS_GF_EDD {
         }
 
         // get coupons for entry 
-        $coupon_obj = new GFCoupons();
-        $entry_coupons = $coupon_obj->get_submitted_coupon_codes($form, $entry);
+        $entry_coupons = $this->get_entry_coupons($form, $entry);
         // get number of products in entry
         $products_num = $this->entry_num_products($product_info['products'], $entry_coupons);
+        // get applied coupons to entry
+        $coupon_details = $this->get_entry_applied_coupons($form, $product_info['products'], $entry_coupons, $products_num);
 
         foreach ($product_info['products'] as $product_field_id => $product) {
 
             $field = $this->get_form_field_by_id($product_field_id, $form);
-
-            // If product in coupons array 
-            if (in_array($product_field_id, $entry_coupons)) {
-                // get coupon data
-                $coupon_code = $product['name'];
-                $coupon_data = $coupon_obj->get_coupons_by_codes(array($coupon_code), $form);
-                if ($coupon_data) {
-                    foreach ($coupon_data as $coupon_code => $coupon_meta) {
-                        // save percentage coupon data
-                        if ($coupon_meta['type'] == 'percentage') {
-                            $coupon_details['percentage'] = (isset($coupon_details['percentage']) && $coupon_details['percentage']) ? $coupon_details['percentage'] + $coupon_meta['amount'] : $coupon_meta['amount'];
-                        } else {
-                            if ($products_num) {
-                                $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + ($coupon_meta['amount'] / $products_num) : ($coupon_meta['amount'] / $products_num);
-                            } else {
-                                $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + $coupon_meta['amount'] : $coupon_meta['amount'];
-                            }
-                        }
-                    }
-                }
-            }
 
             // Only process connected products that don't have variable prices.
             if (empty($field['eddDownload'])) {
@@ -418,7 +398,7 @@ final class KWS_GF_EDD {
                     'tax' => null,
                     'quantity' => 1,
                     'discount' => $item_discount,
-                    'product_field_id' => $prod_id
+                    'product_field_id' => $prod_id,
                 );
                 $i++;
             }
@@ -563,9 +543,7 @@ final class KWS_GF_EDD {
         }
 
         // get entry coupon codes to set user data array
-        $coupon_obj = new GFCoupons();
-        $entry_coupons = $coupon_obj->get_submitted_coupon_codes($form, $entry);
-        $user_info_discount = (isset($entry_coupons) && $entry_coupons) ? $entry_coupons : 'none';
+        $user_info_discount = $this->get_entry_discount($form, $entry);
 
         $default_user_info = array(
             'email' => null,
@@ -583,8 +561,10 @@ final class KWS_GF_EDD {
             'first_name' => $user_info['first_name'],
             'last_name' => $user_info['last_name'],
             'display_name' => $user_info['display_name'],
-            'discount' => $user_info_discount,
         );
+        if(!empty($user_info_discount)){
+            $user_info['discount'] = $user_info_discount;
+        }
 
         return $user_info;
     }
@@ -819,71 +799,73 @@ final class KWS_GF_EDD {
 
                     // get GF by form id
                     $form = GFAPI::get_form($entry['form_id']);
-                    // get entry data
-                    $data = $this->get_edd_data_array_from_entry($entry, $form);
-                    $cart_details = $data['cart_details'];
+                    if ($form) {
+                        // get entry data
+                        $data = $this->get_edd_data_array_from_entry($entry, $form);
+                        $cart_details = $data['cart_details'];
 
-                    // get gf configuraion trial 
-                    $trial_amount = $trial_prod = null;
-                    $trial_subscription = false;
-                    $trial_period = '';
+                        // get gf configuraion trial 
+                        $trial_amount = $trial_prod = null;
+                        $trial_subscription = false;
+                        $trial_period = '';
 
-                    if (isset($paypal_conf['meta']['trial_enabled']) && $paypal_conf['meta']['trial_enabled'] == '1') {
-                        $trial_subscription = true;
-                        // if trial amount is selected 
-                        if (isset($paypal_conf['meta']['trial_product']) && $paypal_conf['meta']['trial_product'] == 'enter_amount') {
-                            $trial_amount = intval(ereg_replace("[^0-9]", "", $paypal_conf['meta']['trial_amount']));
-                        } else {
-                            $trial_prod = $paypal_conf['meta']['trial_product'];
-                        }
-                        // get trial period 
-                        if (isset($paypal_conf['meta']['trialPeriod_length']) && $paypal_conf['meta']['trialPeriod_length'] && $paypal_conf['meta']['trialPeriod_unit'])
-                            $trial_period = $paypal_conf['meta']['trialPeriod_length'] . ' ' . $paypal_conf['meta']['trialPeriod_unit'];
-                    }
-
-                    // get billing cycle 
-                    $recurring_len = $paypal_conf['meta']['billingCycle_length'] . ' ' . $paypal_conf['meta']['billingCycle_unit'];
-                    $exp_date = Date('Y-m-d', strtotime($recurring_len . 's'));
-                    // get recurring times
-                    $recurring_times = (intval($paypal_conf['meta']['recurringTimes'])) ? intval($paypal_conf['meta']['recurringTimes']) : '';
-
-                    // add edd subscription
-                    if ($cart_details) {
-                        foreach ($cart_details as $cart_detail) {
-                            // get product discount 
-                            $prod_discount = (isset($cart_detail['discount']) && $cart_detail['discount'] ) ? $cart_detail['discount'] : 0;
-                            // get product price 
-                            $prod_price = (isset($cart_detail['price']) && $cart_detail['price'] ) ? $cart_detail['price'] : 0;
-                            $product_total = $prod_price - $prod_discount;
-
-                            // check if trial product
-                            if ($trial_prod && $trial_prod == intval($cart_detail['product_field_id'])) {
-                                $trial_amount = 0;
+                        if (isset($paypal_conf['meta']['trial_enabled']) && intval($paypal_conf['meta']['trial_enabled']) === 1) {
+                            $trial_subscription = true;
+                            // if trial amount is selected 
+                            if (isset($paypal_conf['meta']['trial_product']) && $paypal_conf['meta']['trial_product'] == 'enter_amount') {
+                                $trial_amount = intval(ereg_replace("[^0-9]", "", $paypal_conf['meta']['trial_amount']));
+                            } else {
+                                $trial_prod = $paypal_conf['meta']['trial_product'];
                             }
+                            // get trial period 
+                            if (isset($paypal_conf['meta']['trialPeriod_length']) && $paypal_conf['meta']['trialPeriod_length'] && $paypal_conf['meta']['trialPeriod_unit'])
+                                $trial_period = $paypal_conf['meta']['trialPeriod_length'] . ' ' . $paypal_conf['meta']['trialPeriod_unit'];
+                        }
 
-                            // get initial amount 
-                            $initial_amount = ($trial_subscription && $trial_amount != null) ? $trial_amount : $product_total;
+                        // get billing cycle 
+                        $recurring_len = $paypal_conf['meta']['billingCycle_length'] . ' ' . $paypal_conf['meta']['billingCycle_unit'];
+                        $exp_date = Date('Y-m-d', strtotime($recurring_len . 's'));
+                        // get recurring times
+                        $recurring_times = (intval($paypal_conf['meta']['recurringTimes'])) ? intval($paypal_conf['meta']['recurringTimes']) : '';
 
-                            $args = array(
-                                'product_id' => $cart_detail['item_number']['id'],
-                                'user_id' => $customer_id,
-                                'parent_payment_id' => $payment_id,
-                                'status' => 'Active',
-                                'period' => $recurring_times,
-                                'initial_amount' => $initial_amount,
-                                'recurring_amount' => $product_total,
-                                'bill_times' => $recurring_times,
-                                'expiration' => $exp_date,
-                                'trial_period' => $trial_period,
-                                'profile_id' => $customer_id,
-                                'transaction_id' => $subscription['subscription_id'],
-                            );
+                        // add edd subscription
+                        if ($cart_details) {
+                            foreach ($cart_details as $cart_detail) {
+                                // get product discount 
+                                $prod_discount = (isset($cart_detail['discount']) && $cart_detail['discount'] ) ? $cart_detail['discount'] : 0;
+                                // get product price 
+                                $prod_price = (isset($cart_detail['price']) && $cart_detail['price'] ) ? $cart_detail['price'] : 0;
+                                $product_total = $prod_price - $prod_discount;
 
-                            // set args 
-                            $sub = $subscriber->add_subscription($args);
+                                // check if trial product
+                                if ($trial_prod && $trial_prod == intval($cart_detail['product_field_id'])) {
+                                    $trial_amount = 0;
+                                }
 
-                            if ($trial_period) {
-                                $subscriber->add_meta('edd_recurring_trials', $entry['id']);
+                                // get initial amount 
+                                $initial_amount = ($trial_subscription && $trial_amount != null) ? $trial_amount : $product_total;
+
+                                $args = array(
+                                    'product_id' => $cart_detail['item_number']['id'],
+                                    'user_id' => $customer_id,
+                                    'parent_payment_id' => $payment_id,
+                                    'status' => 'Active',
+                                    'period' => $recurring_times,
+                                    'initial_amount' => $initial_amount,
+                                    'recurring_amount' => $product_total,
+                                    'bill_times' => $recurring_times,
+                                    'expiration' => $exp_date,
+                                    'trial_period' => $trial_period,
+                                    'profile_id' => $customer_id,
+                                    'transaction_id' => $subscription['subscription_id'],
+                                );
+
+                                // set args 
+                                $sub = $subscriber->add_subscription($args);
+
+                                if ($trial_period) {
+                                    $subscriber->add_meta('edd_recurring_trials', $entry['id']);
+                                }
                             }
                         }
                     }
@@ -932,12 +914,13 @@ final class KWS_GF_EDD {
     public function update_edd_transaction_id($entry, $action, $result) {
 
         // add transaction id in complete payment or start subscription payment
-        if ($action['type'] == 'complete_payment' || $action['type'] == 'create_subscription') {
+        if ($action['type'] === 'complete_payment' || $action['type'] === 'create_subscription') {
             // get download id for entry
             $payment_id = get_post_meta($entry['id'], 'edd_payment_id', true);
             $transaction_id = (!empty($action['transaction_id'])) ? $action['transaction_id'] : $action['subscription_id'];
-
-            edd_set_payment_transaction_id($payment_id, $transaction_id);
+            if (!empty($payment_id) && !empty($transaction_id)) {
+                edd_set_payment_transaction_id($payment_id, $transaction_id);
+            }
         }
     }
 
@@ -990,6 +973,90 @@ final class KWS_GF_EDD {
         }
 
         return $products_num;
+    }
+
+    /*
+     * function to return available coupons for entry
+     * @param  array $entry GF Entry array
+     * @param  array $form  GF Form array
+     * 
+     * @return array of available coupons
+     */
+
+    public function get_entry_coupons($form, $entry) {
+
+        $entry_coupons = array();
+        // check if gravity form coupons class exist
+        if (class_exists('GFCoupons')) {
+            // get coupons for entry 
+            $coupon_obj = new GFCoupons();
+            $entry_coupons = $coupon_obj->get_submitted_coupon_codes($form, $entry);
+        }
+
+        return $entry_coupons;
+    }
+
+    /*
+     * function to get entry coupons precent and flat value
+     * @param  array $entry GF Entry array
+     * @param  array $form_products GF Entry Products array
+     * @param  array $entry_coupons  GF Form Available Coupons array
+     * @param  int $products_num  Number of products in form
+     * 
+     * @return array of applied coupons to gravity form entry
+     */
+
+    public function get_entry_applied_coupons($form, $form_products, $entry_coupons, $products_num) {
+
+        $coupon_details = array();
+
+        // check if there are available coupons
+        if ($entry_coupons && class_exists('GFCoupons')) {
+            $coupon_obj = new GFCoupons();
+            foreach ($form_products as $product_field_id => $product) {
+                // If product in coupons array 
+                if (in_array($product_field_id, $entry_coupons)) {
+                    // get coupon data
+                    $coupon_code = $product['name'];
+                    $coupon_data = $coupon_obj->get_coupons_by_codes(array($coupon_code), $form);
+                    if ($coupon_data) {
+                        foreach ($coupon_data as $coupon_code => $coupon_meta) {
+                            // save percentage coupon data
+                            if ($coupon_meta['type'] == 'percentage') {
+                                $coupon_details['percentage'] = (isset($coupon_details['percentage']) && $coupon_details['percentage']) ? $coupon_details['percentage'] + $coupon_meta['amount'] : $coupon_meta['amount'];
+                            } else {
+                                if ($products_num) {
+                                    $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + ($coupon_meta['amount'] / $products_num) : ($coupon_meta['amount'] / $products_num);
+                                } else {
+                                    $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + $coupon_meta['amount'] : $coupon_meta['amount'];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $coupon_details;
+    }
+
+    /**
+     * function to get user entry discount info
+     * @param  array $entry GF Entry array
+     * @param  array $form  GF Form array
+     * 
+     * @return array|string of available coupons
+     */
+    function get_entry_discount($form, $entry) {
+        
+        $user_info_discount = '';
+        
+        if (class_exists('GFCoupons')) {
+            // get entry coupon codes to set user data array
+            $entry_coupons = $this->get_entry_coupons($form, $entry);
+            $user_info_discount = (isset($entry_coupons) && $entry_coupons) ? $entry_coupons : 'none';
+        }
+        return $user_info_discount;
     }
 
 }
