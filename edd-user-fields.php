@@ -36,27 +36,25 @@ class eddUserFields extends GFAddOn {
      */
     public function form_settings_fields($form) {
         // get form fields 
-        $email_fields = $name_fields = array();
         $email_fields[] = $name_fields[] = array(
             'label' => esc_html__('SELECT FIELD', 'edd-gf'),
             'value' => '',
         );
-        if ($form["fields"]):
-            foreach ($form["fields"] as $form_field):
-                if ($form_field->type == 'email'):
+        if ($form["fields"]) {
+            foreach ($form["fields"] as $form_field) {
+                if ($form_field->type == 'email') {
                     $email_fields[] = array(
                         'label' => $form_field->label,
                         'value' => $form_field->id,
                     );
-                elseif ($form_field->type == 'name'):
+                } elseif ($form_field->type == 'name') {
                     $name_fields[] = array(
                         'label' => $form_field->label,
                         'value' => $form_field->id,
                     );
-                endif;
-
-            endforeach;
-        endif;
+                }
+            }
+        }
         // return Name and Email fields settings
         return array(
             array(
@@ -82,4 +80,5 @@ class eddUserFields extends GFAddOn {
     }
 
 }
+
 $obj = new eddUserFields();
