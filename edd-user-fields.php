@@ -42,16 +42,14 @@ class eddUserFields extends GFAddOn {
         );
         if ($form["fields"]) {
             foreach ($form["fields"] as $form_field) {
+                $field_data = array(
+                    'label' => $form_field->label,
+                    'value' => $form_field->id,
+                );
                 if ($form_field->type == 'email') {
-                    $email_fields[] = array(
-                        'label' => $form_field->label,
-                        'value' => $form_field->id,
-                    );
+                    $email_fields[] = $field_data;
                 } elseif ($form_field->type == 'name') {
-                    $name_fields[] = array(
-                        'label' => $form_field->label,
-                        'value' => $form_field->id,
-                    );
+                    $name_fields[] = $field_data;
                 }
             }
         }
@@ -64,14 +62,12 @@ class eddUserFields extends GFAddOn {
                         'label' => esc_html__('Name', 'edd-gf'),
                         'type' => 'select',
                         'name' => 'name_field',
-                        // 'tooltip' => esc_html__('This is the tooltip', 'edd-gf'),
                         'choices' => $name_fields,
                     ),
                     array(
                         'label' => esc_html__('Email', 'edd-gf'),
                         'type' => 'select',
                         'name' => 'email_field',
-                        // 'tooltip' => esc_html__('This is the tooltip', 'edd-gf'),
                         'choices' => $email_fields,
                     ),
                 ),

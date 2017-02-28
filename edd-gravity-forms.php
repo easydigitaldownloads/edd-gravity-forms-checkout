@@ -101,8 +101,8 @@ final class KWS_GF_EDD {
         add_action('gform_post_payment_refunded', array($this, 'post_payment_callback'), 10, 2);
 
         // add edd subscription when GF subscription complete
-        add_action('gform_post_subscription_started', array($this, 'edd_subscription_started'), 10, 2);
-        add_action('gform_post_add_subscription_payment', array($this, 'edd_subscription_payment'), 10, 2);
+        add_action('gform_post_subscription_started', array($this, 'add_entry_subscription_id'), 10, 2);
+        add_action('gform_post_add_subscription_payment', array($this, 'edd_renew_subscription_payment'), 10, 2);
 
         // action to set edd transaction id 
         add_action('gform_post_payment_callback', array($this, 'update_edd_transaction_id'), 10, 3);
@@ -268,12 +268,8 @@ final class KWS_GF_EDD {
             return array();
         }
 
-        // get coupons for entry 
-        $entry_coupons = $this->get_entry_coupons($form, $entry);
-        // get number of products in entry
-        $products_num = $this->entry_num_products($product_info['products'], $entry_coupons);
-        // get applied coupons to entry
-        $coupon_details = $this->get_entry_applied_coupons($form, $product_info['products'], $entry_coupons, $products_num);
+        // get applied coupon details to entry
+        $coupon_details = $this->get_entry_coupon_details($form, $entry, $product_info['products']);
 
         foreach ($product_info['products'] as $product_field_id => $product) {
 
@@ -382,11 +378,11 @@ final class KWS_GF_EDD {
 
             $i = 0;
             while ($quantity > $i) {
-
+                $item_discount = 0;
                 // update cart total with coupon code val 
-                if ($coupon_details['percentage']) {
+                if (isset($coupon_details['percentage']) && $coupon_details['percentage']) {
                     $item_discount = $item_price * ( $coupon_details['percentage'] / 100 );
-                } else {
+                } else if (isset($coupon_details['flat']) && $coupon_details['flat']) {
                     $item_discount = $coupon_details['flat'];
                 }
 
@@ -427,13 +423,20 @@ final class KWS_GF_EDD {
         return $data;
     }
 
-    private function get_user_info_from_submission($form, $entry) {
+    /**
+     * Get user information (name and email) from entry 
+     * 
+     * @param  array $form  Gravity Forms form array
+     * @param  array $entry Gravity Forms entry array
+     * @return $user_info array
+     */
+    function get_user_info_from_submission($form, $entry) {
 
         $user_info = array();
 
         $edd_fields = (isset($form["edd-fields"]) && $form["edd-fields"]) ? $form["edd-fields"] : array();
 
-        // if not name or email fields settings selected then get them from from fields 
+        // if not name or email fields settings selected then get them from fields 
         if ((!isset($edd_fields['name_field']) || !$edd_fields['name_field'] ) || (!isset($edd_fields['email_field']) || !$edd_fields['email_field'] )) {
             foreach ($form['fields'] as $field) {
 
@@ -475,9 +478,7 @@ final class KWS_GF_EDD {
             $user_info['email'] = $edd_fields['email_field'];
         }
 
-        // 		
-        // SET ADDITIONAL USER DETAILS FROM GRAVITY FORM SUBMISSION 		
-        // 
+        // SET ADDITIONAL USER DETAILS FROM GRAVITY FORM SUBMISSION 	
         foreach ($user_info as $key => $entry_key) {
 
             // If somehow the $entry doesn't have the $entry_key item set, keep going 	
@@ -679,6 +680,12 @@ final class KWS_GF_EDD {
         $this->r($purchase_data, false, 'Purchase Data (Line ' . __LINE__ . ')');
 
         $this->r(get_post($payment_id), true, 'Payment Object (Line ' . __LINE__ . ')');
+
+        // get entry subscription id 
+        $subscription_id = gform_get_meta($entry['id'], 'gf_subscription_id');
+        if ($subscription_id) {
+            $this->edd_subscription_started($entry, $subscription_id);
+        }
     }
 
     /**
@@ -765,31 +772,47 @@ final class KWS_GF_EDD {
     }
 
     /**
-     * Add edd subscription when GF subscription started 
+     * Add gf subscription id to entry when GF subscription started 
      * 
      * @param array $entry Entry Object
      * @param array $subscription The new Subscription object
      */
-    public function edd_subscription_started($entry, $subscription) {
+    function add_entry_subscription_id($entry, $subscription) {
+
+        // update entry by subscription id 
+        $entry_id = $entry['id'];
+        gform_update_meta($entry_id, 'gf_subscription_id', $subscription['subscription_id']);
+    }
+
+    /**
+     * Add edd new subscription
+     * 
+     * @param array $entry Entry Object
+     * @param string $subscription_id The new Subscription id
+     */
+    public function edd_subscription_started($entry, $subscription_id) {
+
         // get form feeds  
         $feeds = GFAPI::get_feeds(null, $entry['form_id']);
+
         if ($feeds) {
             // loop for feeds to get subscription data
             foreach ($feeds as $feed) {
                 // get subscription payment id 
                 $payment_id = $this->get_subscription_payment($entry, $feed);
+
                 if ($payment_id) {
                     // get GF by form id
                     $form = GFAPI::get_form($entry['form_id']);
                     if ($form) {
                         // get feed subscription data
-                        $feed_settings = get_subscription_feed_settings($feed);
+                        $feed_settings = $this->get_subscription_feed_settings($feed);
                         // get cart details
                         $data = $this->get_edd_data_array_from_entry($entry, $form);
                         $cart_details = $data['cart_details'];
                         // get customer id 
                         $customer_id = get_post_meta($payment_id, '_edd_payment_customer_id', true);
-                        $this->add_edd_subscription($entry, $subscription, $cart_details, $feed_settings, $customer_id, $payment_id);
+                        $this->add_edd_subscription($entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id);
                     }
                     break;
                 }
@@ -826,20 +849,22 @@ final class KWS_GF_EDD {
     }
 
     /**
-     * Check subscription feed settings data
+     * Get subscription feed settings data from form feeds
      * 
      * @param array $feed The Entry Feed
      * 
      * @return array $feed_settings The Feed Settings data
      */
     public function get_subscription_feed_settings($feed) {
+
         // set subscription feed addon
         $subscription_addon = $this->get_feed_subscription_addon();
         // set feed settings array
         $feed_settings = array(
             'trial_amount' => null,
             'trial_prod' => null,
-            'trial_subscription' => false
+            'trial_subscription' => false,
+            'trial_period' => ''
         );
         // get gf configuraion trial 
         if (intval(rgars($feed, 'meta/trial_enabled')) === 1) {
@@ -847,9 +872,12 @@ final class KWS_GF_EDD {
             // if trial amount is selected 
             if (rgars($feed, 'meta/trial_product') == 'enter_amount') {
                 $feed_settings['trial_amount'] = edd_sanitize_amount($feed['meta']['trial_amount']);
-            } else {
+            } else if (rgars($feed, 'meta/trial_product')) {
                 $feed_settings['trial_prod'] = $feed['meta']['trial_product'];
+            } else if (rgars($feed, 'meta/setupFee_product')) {
+                $feed_settings['trial_prod'] = $feed['meta']['setupFee_product'];
             }
+
             // get trial period 
             $feed_addon = $feed["addon_slug"];
             $trial_length = '1';
@@ -899,16 +927,16 @@ final class KWS_GF_EDD {
     }
 
     /**
-     * Check subscription feed settings data
+     * Start EDD new subscription 
      * 
      * @param array $entry The Entry Feed
-     * @param array $subscription The New Subscription Object
+     * @param array $subscription_id The New Subscription Object
      * @param array $cart_details The Cart details
      * @param array $feed_settings The Feed Settings Data
      * @param int $customer_id The Customer ID
      * @param int $payment_id The Payment ID
      */
-    public function add_edd_subscription($entry, $subscription, $cart_details, $feed_settings, $customer_id, $payment_id) {
+    public function add_edd_subscription($entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id) {
         // add edd subscription
         if ($cart_details) {
             // get edd subscriber
@@ -919,12 +947,13 @@ final class KWS_GF_EDD {
                 // get product price 
                 $prod_price = (isset($cart_detail['price']) && $cart_detail['price'] ) ? $cart_detail['price'] : 0;
                 $product_total = $prod_price - $prod_discount;
-                // check if trial product
-                if ($feed_settings['trial_prod'] && $feed_settings['trial_prod'] == intval($cart_detail['product_field_id'])) {
-                    $feed_settings['trial_amount'] = 0;
-                }
                 // get initial amount 
                 $initial_amount = ($feed_settings['trial_subscription'] && $feed_settings['trial_amount'] != null) ? $feed_settings['trial_amount'] : $product_total;
+                // check if trial product
+                if (intval($feed_settings['trial_prod']) == intval($cart_detail['product_field_id'])) {
+                    $initial_amount = 0;
+                }
+                // set args to add edd new subscription
                 $args = array(
                     'product_id' => $cart_detail['item_number']['id'],
                     'user_id' => $customer_id,
@@ -937,9 +966,8 @@ final class KWS_GF_EDD {
                     'expiration' => $feed_settings['exp_date'],
                     'trial_period' => $feed_settings['trial_period'],
                     'profile_id' => $customer_id,
-                    'transaction_id' => $subscription['subscription_id'],
+                    'transaction_id' => $subscription_id,
                 );
-                // set args 
                 $subscriber->add_subscription($args);
                 if ($feed_settings['trial_period']) {
                     $subscriber->add_meta('edd_recurring_trials', $entry['id']);
@@ -949,12 +977,12 @@ final class KWS_GF_EDD {
     }
 
     /**
-     * Add edd subscription when GF subscription renew 
+     * Renew edd subscription payment when GF subscription payment renew
      * 
      * @param array $feed The Entry Object
      * @param array $action The Action Object
      */
-    public function edd_subscription_payment($entry, $action) {
+    public function edd_renew_subscription_payment($entry, $action) {
 
         // get download id for entry
         $payment_id = get_post_meta($entry['id'], 'edd_payment_id', true);
@@ -968,7 +996,7 @@ final class KWS_GF_EDD {
                 $amount = ( isset($action['amount']) ) ? edd_sanitize_amount($action['amount']) : '0.00';
                 $txn_id = (!empty($action['transaction_id']) ) ? $action['transaction_id'] : $action['subscription_id'];
 
-                // add edd subscription
+                // renew edd subscription payment 
                 $sub = new EDD_Subscription($sub_id);
                 $sub->add_payment(array(
                     'amount' => $amount,
@@ -1039,7 +1067,7 @@ final class KWS_GF_EDD {
 
         $products_num = 0;
 
-        if ($products) {
+        if ($coupons && $products) {
             foreach ($products as $product_key => $product) {
                 if (!in_array($product_key, $coupons)) {
                     $products_num += intval($product['quantity']);
@@ -1072,40 +1100,35 @@ final class KWS_GF_EDD {
     }
 
     /*
-     * function to get entry coupons precent and flat value
+     * function to get entry coupon details precent and flat values
+     * 
      * @param  array $entry GF Entry array
-     * @param  array $form_products GF Entry Products array
      * @param  array $entry_coupons  GF Form Available Coupons array
      * @param  int $products_num  Number of products in form
-     * 
      * @return array of applied coupons to gravity form entry
      */
 
-    public function get_entry_applied_coupons($form, $form_products, $entry_coupons, $products_num) {
+    public function get_entry_coupon_details($form, $entry, $form_prods) {
 
         $coupon_details = array();
-
+        // get coupons for entry 
+        $entry_coupons = $this->get_entry_coupons($form, $entry);
+        // get number of products in entry
+        $products_num = $this->entry_num_products($form_prods, $entry_coupons);
         // check if there are available coupons
         if ($entry_coupons && class_exists('GFCoupons')) {
             $coupon_obj = new GFCoupons();
-            foreach ($form_products as $product_field_id => $product) {
-                // If product in coupons array 
-                if (in_array($product_field_id, $entry_coupons)) {
-                    // get coupon data
-                    $coupon_code = $product['name'];
-                    $coupon_data = $coupon_obj->get_coupons_by_codes(array($coupon_code), $form);
-                    if ($coupon_data) {
-                        foreach ($coupon_data as $coupon_code => $coupon_meta) {
-                            // save percentage coupon data
-                            if ($coupon_meta['type'] == 'percentage') {
-                                $coupon_details['percentage'] = (isset($coupon_details['percentage']) && $coupon_details['percentage']) ? $coupon_details['percentage'] + $coupon_meta['amount'] : $coupon_meta['amount'];
-                            } else {
-                                if ($products_num) {
-                                    $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + ($coupon_meta['amount'] / $products_num) : ($coupon_meta['amount'] / $products_num);
-                                } else {
-                                    $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + $coupon_meta['amount'] : $coupon_meta['amount'];
-                                }
-                            }
+            $coupon_data = $coupon_obj->get_coupons_by_codes($entry_coupons, $form);
+            if ($coupon_data) {
+                foreach ($coupon_data as $coupon_meta) {
+                    // save percentage coupon data
+                    if ($coupon_meta['type'] == 'percentage') {
+                        $coupon_details['percentage'] = (isset($coupon_details['percentage']) && $coupon_details['percentage']) ? $coupon_details['percentage'] + $coupon_meta['amount'] : $coupon_meta['amount'];
+                    } else {
+                        if ($products_num) {
+                            $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + ($coupon_meta['amount'] / $products_num) : ($coupon_meta['amount'] / $products_num);
+                        } else {
+                            $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + $coupon_meta['amount'] : $coupon_meta['amount'];
                         }
                     }
                 }
