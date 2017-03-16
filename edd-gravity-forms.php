@@ -436,32 +436,6 @@ final class KWS_GF_EDD {
 
         $edd_fields = (isset($form["edd-fields"]) && $form["edd-fields"]) ? $form["edd-fields"] : array();
 
-        // if not name or email fields settings selected then get them from fields 
-        if ((!isset($edd_fields['name_field']) || !$edd_fields['name_field'] ) || (!isset($edd_fields['email_field']) || !$edd_fields['email_field'] )) {
-            foreach ($form['fields'] as $field) {
-
-                switch ($field['type']) {
-                    case 'email':
-                        $user_info['email'] = $field['id'];
-                        break;
-                    case 'name':
-                        if (is_array($field['inputs']) && !empty($field['inputs'])) {
-                            foreach ($field['inputs'] as $input) {
-                                if (floatval($input['id']) === floatval($field['id'] . '.3')) {
-                                    $user_info['first_name'] = $input['id'];
-                                } else if (floatval($input['id']) === floatval($field['id'] . '.6')) {
-                                    $user_info['last_name'] = $input['id'];
-                                }
-                            }
-                        } else {
-                            // For a Simple Name field, show full name 	
-                            $user_info['display_name'] = $field['id'];
-                        }
-                        break;
-                }
-            }
-        }
-
         // get name field from form settings
         if (isset($edd_fields['name_field']) && $edd_fields['name_field']) {
             $name_field = $edd_fields['name_field'];
@@ -471,11 +445,38 @@ final class KWS_GF_EDD {
             } else {
                 $user_info['display_name'] = $name_field;
             }
+        } else {
+            // get first name field from form
+            foreach ($form['fields'] as $field) {
+                if ($field['type'] == 'name') {
+                    if (is_array($field['inputs']) && !empty($field['inputs'])) {
+                        foreach ($field['inputs'] as $input) {
+                            if (floatval($input['id']) === floatval($field['id'] . '.3')) {
+                                $user_info['first_name'] = $input['id'];
+                            } else if (floatval($input['id']) === floatval($field['id'] . '.6')) {
+                                $user_info['last_name'] = $input['id'];
+                            }
+                        }
+                    } else {
+                        // For a Simple Name field, show full name 	
+                        $user_info['display_name'] = $field['id'];
+                    }
+                    break;
+                }
+            }
         }
 
         // get email field from form settings
         if (isset($edd_fields['email_field']) && $edd_fields['email_field']) {
             $user_info['email'] = $edd_fields['email_field'];
+        } else {
+            // get first email field from form
+            foreach ($form['fields'] as $field) {
+                if ($field['type'] == 'email') {
+                    $user_info['email'] = $field['id'];
+                    break;
+                }
+            }
         }
 
         // SET ADDITIONAL USER DETAILS FROM GRAVITY FORM SUBMISSION 	
@@ -792,29 +793,34 @@ final class KWS_GF_EDD {
      */
     public function edd_subscription_started($entry, $subscription_id) {
 
-        // get form feeds  
-        $feeds = GFAPI::get_feeds(null, $entry['form_id']);
-
-        if ($feeds) {
-            // loop for feeds to get subscription data
-            foreach ($feeds as $feed) {
-                // get subscription payment id 
-                $payment_id = $this->get_subscription_payment($entry, $feed);
-
-                if ($payment_id) {
-                    // get GF by form id
-                    $form = GFAPI::get_form($entry['form_id']);
-                    if ($form) {
-                        // get feed subscription data
-                        $feed_settings = $this->get_subscription_feed_settings($feed);
-                        // get cart details
-                        $data = $this->get_edd_data_array_from_entry($entry, $form);
-                        $cart_details = $data['cart_details'];
-                        // get customer id 
-                        $customer_id = get_post_meta($payment_id, '_edd_payment_customer_id', true);
-                        $this->add_edd_subscription($entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id);
+        if (isset($entry) && $entry) {
+            // get entry processed feeds 
+            $processed_feeds = gform_get_meta($entry['id'], 'processed_feeds');
+            if ($processed_feeds) {
+                foreach ($processed_feeds as $feed_slug => $processed_feed) {
+                    global $wpdb;
+                    $sql = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}gf_addon_feed WHERE id=%d", $processed_feed[0]);
+                    $feed = $wpdb->get_row($sql, ARRAY_A);
+                    $feed['meta'] = json_decode($feed['meta'], true);
+                    if ($feed) {
+                        // get subscription payment id 
+                        $payment_id = $this->get_subscription_payment($entry, $feed);
+                        if ($payment_id) {
+                            // get GF by form id
+                            $form = GFAPI::get_form($entry['form_id']);
+                            if ($form) {
+                                // get feed subscription data
+                                $feed_settings = $this->get_subscription_feed_settings($feed);
+                                // get cart details
+                                $data = $this->get_edd_data_array_from_entry($entry, $form);
+                                $cart_details = $data['cart_details'];
+                                // get customer id 
+                                $customer_id = get_post_meta($payment_id, '_edd_payment_customer_id', true);
+                                $this->add_edd_subscription($entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id);
+                            }
+                            break;
+                        }
                     }
-                    break;
                 }
             }
         }
@@ -866,6 +872,14 @@ final class KWS_GF_EDD {
             'trial_subscription' => false,
             'trial_period' => ''
         );
+        // get billing cycle 
+        $feed_settings['recurring_len'] = $feed['meta']['billingCycle_length'] . ' ' . $feed['meta']['billingCycle_unit'];
+        $feed_settings['exp_date'] = Date('Y-m-d', strtotime($feed_settings['recurring_len'] . 's'));
+        // get recurring times
+        $feed_settings['recurring_times'] = (rgars($feed, 'meta/recurringTimes')) ? intval($feed['meta']['recurringTimes']) : '';
+        // get recurring amount
+        $feed_settings['recurring_amount'] = (rgars($feed, 'meta/recurringAmount')) ? $feed['meta']['recurringAmount'] : '';
+
         // get gf configuraion trial 
         if (intval(rgars($feed, 'meta/trial_enabled')) === 1) {
             $feed_settings['trial_subscription'] = true;
@@ -891,13 +905,8 @@ final class KWS_GF_EDD {
                 }
             }
             $feed_settings['trial_period'] = $trial_length . ' ' . $trial_unit;
+            $feed_settings['exp_date'] = Date('Y-m-d', strtotime($feed_settings['trial_period']));
         }
-
-        // get billing cycle 
-        $recurring_len = $feed['meta']['billingCycle_length'] . ' ' . $feed['meta']['billingCycle_unit'];
-        $feed_settings['exp_date'] = Date('Y-m-d', strtotime($recurring_len . 's'));
-        // get recurring times
-        $feed_settings['recurring_times'] = (intval($feed['meta']['recurringTimes'])) ? intval($feed['meta']['recurringTimes']) : '';
 
         return $feed_settings;
     }
@@ -938,10 +947,16 @@ final class KWS_GF_EDD {
      */
     public function add_edd_subscription($entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id) {
         // add edd subscription
-        if ($cart_details) {
+        if (class_exists('EDD_Recurring_Subscriber') && $cart_details) {
             // get edd subscriber
             $subscriber = new EDD_Recurring_Subscriber($customer_id);
             foreach ($cart_details as $cart_detail) {
+                //variable initialization  
+                $trial_prod = false;
+                $recurring_prod = true;
+                $recurring_times = $feed_settings['recurring_times'];
+                $exp_date = $feed_settings['exp_date'];
+                $trial_period = '';
                 // get product discount 
                 $prod_discount = (isset($cart_detail['discount']) && $cart_detail['discount'] ) ? $cart_detail['discount'] : 0;
                 // get product price 
@@ -951,26 +966,37 @@ final class KWS_GF_EDD {
                 $initial_amount = ($feed_settings['trial_subscription'] && $feed_settings['trial_amount'] != null) ? $feed_settings['trial_amount'] : $product_total;
                 // check if trial product
                 if (intval($feed_settings['trial_prod']) == intval($cart_detail['product_field_id'])) {
+                    $trial_prod = true;
                     $initial_amount = 0;
+                    $trial_period = $feed_settings['trial_period'];
                 }
-                // set args to add edd new subscription
-                $args = array(
-                    'product_id' => $cart_detail['item_number']['id'],
-                    'user_id' => $customer_id,
-                    'parent_payment_id' => $payment_id,
-                    'status' => 'Active',
-                    'period' => $feed_settings['recurring_times'],
-                    'initial_amount' => $initial_amount,
-                    'recurring_amount' => $product_total,
-                    'bill_times' => $feed_settings['recurring_times'],
-                    'expiration' => $feed_settings['exp_date'],
-                    'trial_period' => $feed_settings['trial_period'],
-                    'profile_id' => $customer_id,
-                    'transaction_id' => $subscription_id,
-                );
-                $subscriber->add_subscription($args);
-                if ($feed_settings['trial_period']) {
-                    $subscriber->add_meta('edd_recurring_trials', $entry['id']);
+                // check if not recurring product
+                if ($feed_settings['recurring_amount'] && $feed_settings['recurring_amount'] != 'form_total' && intval($feed_settings['recurring_amount']) !== intval($cart_detail['product_field_id'])) {
+                    $recurring_prod = false;
+                    $recurring_times = 1;
+                    $exp_date = date('Y-m-d', strtotime('+1 years'));
+                }
+                // if recurring product or not trial product and not recurring products
+                if ($recurring_prod || (!$trial_prod && !$recurring_prod)) {
+                    // set args to add edd new subscription
+                    $args = array(
+                        'product_id' => $cart_detail['item_number']['id'],
+                        'user_id' => $customer_id,
+                        'parent_payment_id' => $payment_id,
+                        'status' => 'Active',
+                        'period' => $feed_settings['recurring_len'],
+                        'initial_amount' => $initial_amount,
+                        'recurring_amount' => $product_total,
+                        'bill_times' => $recurring_times,
+                        'expiration' => $exp_date,
+                        'trial_period' => $trial_period,
+                        'profile_id' => $customer_id,
+                        'transaction_id' => $subscription_id,
+                    );
+                    $subscriber->add_subscription($args);
+                    if ($trial_period) {
+                        $subscriber->add_meta('edd_recurring_trials', $entry['id']);
+                    }
                 }
             }
         }
@@ -991,18 +1017,25 @@ final class KWS_GF_EDD {
             $db = new EDD_Subscriptions_DB;
             $subscriptions = $db->get_subscriptions(array('parent_payment_id' => $payment_id));
             if (!empty($subscriptions)) {
-                $sub_id = $subscriptions[0]->id;
-                // get amount and transaction id
-                $amount = ( isset($action['amount']) ) ? edd_sanitize_amount($action['amount']) : '0.00';
-                $txn_id = (!empty($action['transaction_id']) ) ? $action['transaction_id'] : $action['subscription_id'];
+                foreach ($subscriptions as $subscription) {
+                    $sub_id = $subscription->id;
+                    // check if payment not cancelled and bill times >= billed times
+                    $sub_info = new EDD_Subscription($sub_id);
+                    $times_billed = $sub_info->get_times_billed();
+                    if ($sub_info->status != 'cancelled' && (intval($sub_info->bill_times) === 0 || intval($sub_info->bill_times) > $times_billed)) {
+                        // get amount and transaction id
+                        $amount = ( isset($action['amount']) ) ? edd_sanitize_amount($action['amount']) : '0.00';
+                        $txn_id = (!empty($action['transaction_id']) ) ? $action['transaction_id'] : $action['subscription_id'];
 
-                // renew edd subscription payment 
-                $sub = new EDD_Subscription($sub_id);
-                $sub->add_payment(array(
-                    'amount' => $amount,
-                    'transaction_id' => $txn_id
-                ));
-                $sub->renew();
+                        // renew edd subscription payment 
+                        $sub = new EDD_Subscription($sub_id);
+                        $sub->add_payment(array(
+                            'amount' => $amount,
+                            'transaction_id' => $txn_id
+                        ));
+                        $sub->renew();
+                    }
+                }
             }
         }
     }

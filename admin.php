@@ -31,7 +31,7 @@ class KWS_GF_EDD_Admin {
 		// Enable debug with Gravity Forms Logging Add-on
 		add_filter( 'gform_logging_supported', array( $this, 'enable_gform_logging' ) );
 
-		add_action( 'gform_field_standard_settings', array( $this, 'my_standard_settings' ), 10, 2 );
+//		add_action( 'gform_field_standard_settings', array( $this, 'my_standard_settings' ), 10, 2 );
 	}
 
 	function my_standard_settings( $position, $form_id ) {
