@@ -107,6 +107,9 @@ final class KWS_GF_EDD {
         // cancel edd subscription when GF subscription cancelled
         add_action('gform_subscription_cancelled', array($this, 'edd_cancel_subscription_payment'), 10, 3);
 
+        // expire edd subscription when GF subscription expired
+        add_action('gform_post_payment_action', array($this, 'edd_expire_subscription_payment'), 10, 2);
+
         // action to set edd transaction id 
         add_action('gform_post_payment_callback', array($this, 'update_edd_transaction_id'), 10, 3);
 
@@ -1047,7 +1050,7 @@ final class KWS_GF_EDD {
      * Cancel edd subscription payment when GF subscription payment renew cancelled
      * 
      * @param array $entry The Entry Object
-     * @param array $feed The Entry Object
+     * @param array $feed The Entry Feed
      * @param string $transaction_id Transaction ID
      */
     public function edd_cancel_subscription_payment($entry, $feed, $transaction_id) {
@@ -1059,10 +1062,32 @@ final class KWS_GF_EDD {
             $subscriptions = $db->get_subscriptions(array('parent_payment_id' => $payment_id));
             if (!empty($subscriptions)) {
                 foreach ($subscriptions as $subscription) {
-                    $sub_id = $subscription->id;
-                    // check if payment not cancelled and bill times >= billed times
-                    $sub_info = new EDD_Subscription(absint($sub_id));
                     $subscription->cancel();
+                }
+            }
+        }
+    }
+
+    /**
+     * Expire edd subscription payment when GF subscription payment renew expired
+     * 
+     * @param array $entry The Entry Object
+     * @param array $action
+     */
+    public function edd_expire_subscription_payment($entry, $action) {
+
+        // if action type is expired
+        if ($action['type'] === 'expire_subscription') {
+            // get download id for entry
+            $payment_id = gform_get_meta($entry['id'], 'edd_payment_id', true);
+            if ($payment_id) {
+                // get subscription id 
+                $db = new EDD_Subscriptions_DB;
+                $subscriptions = $db->get_subscriptions(array('parent_payment_id' => $payment_id));
+                if (!empty($subscriptions)) {
+                    foreach ($subscriptions as $subscription) {
+                        $subscription->expire();
+                    }
                 }
             }
         }
