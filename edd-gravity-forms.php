@@ -104,6 +104,9 @@ final class KWS_GF_EDD {
         add_action('gform_post_subscription_started', array($this, 'add_entry_subscription_id'), 10, 2);
         add_action('gform_post_add_subscription_payment', array($this, 'edd_renew_subscription_payment'), 10, 2);
 
+        // cancel edd subscription when GF subscription cancelled
+        add_action('gform_subscription_cancelled', array($this, 'edd_cancel_subscription_payment'), 10, 3);
+
         // action to set edd transaction id 
         add_action('gform_post_payment_callback', array($this, 'update_edd_transaction_id'), 10, 3);
 
@@ -971,7 +974,7 @@ final class KWS_GF_EDD {
                     $trial_period = $feed_settings['trial_period'];
                 }
                 // check if not recurring product
-                if ($feed_settings['recurring_amount'] && $feed_settings['recurring_amount'] != 'form_total' && intval($feed_settings['recurring_amount']) !== intval($cart_detail['product_field_id'])) {
+                if ($feed_settings['recurring_amount'] && $feed_settings['recurring_amount'] !== 'form_total' && intval($feed_settings['recurring_amount']) !== intval($cart_detail['product_field_id'])) {
                     $recurring_prod = false;
                     $recurring_times = 1;
                     $exp_date = date('Y-m-d', strtotime('+1 years'));
@@ -1011,7 +1014,7 @@ final class KWS_GF_EDD {
     public function edd_renew_subscription_payment($entry, $action) {
 
         // get download id for entry
-        $payment_id = get_post_meta($entry['id'], 'edd_payment_id', true);
+        $payment_id = gform_get_meta($entry['id'], 'edd_payment_id', true);
         if ($payment_id) {
             // get subscription id 
             $db = new EDD_Subscriptions_DB;
@@ -1022,7 +1025,7 @@ final class KWS_GF_EDD {
                     // check if payment not cancelled and bill times >= billed times
                     $sub_info = new EDD_Subscription($sub_id);
                     $times_billed = $sub_info->get_times_billed();
-                    if ($sub_info->status != 'cancelled' && (intval($sub_info->bill_times) === 0 || intval($sub_info->bill_times) > $times_billed)) {
+                    if ($sub_info->status !== 'cancelled' && (intval($sub_info->bill_times) === 0 || intval($sub_info->bill_times) > $times_billed)) {
                         // get amount and transaction id
                         $amount = ( isset($action['amount']) ) ? edd_sanitize_amount($action['amount']) : '0.00';
                         $txn_id = (!empty($action['transaction_id']) ) ? $action['transaction_id'] : $action['subscription_id'];
@@ -1041,6 +1044,31 @@ final class KWS_GF_EDD {
     }
 
     /**
+     * Cancel edd subscription payment when GF subscription payment renew cancelled
+     * 
+     * @param array $entry The Entry Object
+     * @param array $feed The Entry Object
+     * @param string $transaction_id Transaction ID
+     */
+    public function edd_cancel_subscription_payment($entry, $feed, $transaction_id) {
+        // get download id for entry
+        $payment_id = gform_get_meta($entry['id'], 'edd_payment_id', true);
+        if ($payment_id) {
+            // get subscription id 
+            $db = new EDD_Subscriptions_DB;
+            $subscriptions = $db->get_subscriptions(array('parent_payment_id' => $payment_id));
+            if (!empty($subscriptions)) {
+                foreach ($subscriptions as $subscription) {
+                    $sub_id = $subscription->id;
+                    // check if payment not cancelled and bill times >= billed times
+                    $sub_info = new EDD_Subscription(absint($sub_id));
+                    $subscription->cancel();
+                }
+            }
+        }
+    }
+
+    /**
      * function to update edd transaction id 
      * 
      * @param array $entry The Entry Object
@@ -1052,7 +1080,7 @@ final class KWS_GF_EDD {
         // add transaction id in complete payment or start subscription payment
         if ($action['type'] === 'complete_payment' || $action['type'] === 'create_subscription') {
             // get download id for entry
-            $payment_id = get_post_meta($entry['id'], 'edd_payment_id', true);
+            $payment_id = gform_get_meta($entry['id'], 'edd_payment_id', true);
             $transaction_id = (!empty($action['transaction_id'])) ? $action['transaction_id'] : $action['subscription_id'];
             if (!empty($payment_id) && !empty($transaction_id)) {
                 edd_set_payment_transaction_id($payment_id, $transaction_id);
