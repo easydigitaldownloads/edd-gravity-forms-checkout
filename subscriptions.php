@@ -276,30 +276,38 @@ class KWS_GF_EDD_Subscriptions {
 
 		// get download id for entry
 		$payment_id = gform_get_meta($entry['id'], 'edd_payment_id', true);
-		if ($payment_id) {
-			// get subscription id
-			$db = new EDD_Subscriptions_DB;
-			$subscriptions = $db->get_subscriptions(array('parent_payment_id' => $payment_id));
-			if (!empty($subscriptions)) {
-				foreach ($subscriptions as $subscription) {
-					$sub_id = $subscription->id;
-					// check if payment not cancelled and bill times >= billed times
-					$sub_info = new EDD_Subscription($sub_id);
-					$times_billed = $sub_info->get_times_billed();
-					if ($sub_info->status !== 'cancelled' && (intval($sub_info->bill_times) === 0 || intval($sub_info->bill_times) > $times_billed)) {
-						// get amount and transaction id
-						$amount = ( isset($action['amount']) ) ? edd_sanitize_amount($action['amount']) : '0.00';
-						$txn_id = (!empty($action['transaction_id']) ) ? $action['transaction_id'] : $action['subscription_id'];
 
-						// renew edd subscription payment
-						$sub = new EDD_Subscription($sub_id);
-						$sub->add_payment(array(
-							'amount' => $amount,
-							'transaction_id' => $txn_id
-						));
-						$sub->renew();
-					}
-				}
+		if ( empty( $payment_id ) ) {
+			$this->parent->r( sprintf( 'No EDD payment ID for entry #%d', $entry['id'] ) );
+			return;
+		}
+
+		// get subscription id
+		$db = new EDD_Subscriptions_DB;
+		$subscriptions = $db->get_subscriptions(array('parent_payment_id' => $payment_id));
+
+		if ( empty( $subscriptions ) ) {
+			$this->parent->r( sprintf( 'No subscriptions to process for Entry #%d', $entry['id'] ) );
+			return;
+		}
+
+		foreach ( (array) $subscriptions as $subscription) {
+			$sub_id = $subscription->id;
+			// check if payment not cancelled and bill times >= billed times
+			$sub_info = new EDD_Subscription($sub_id);
+			$times_billed = $sub_info->get_times_billed();
+			if ($sub_info->status !== 'cancelled' && (intval($sub_info->bill_times) === 0 || intval($sub_info->bill_times) > $times_billed)) {
+				// get amount and transaction id
+				$amount = ( isset($action['amount']) ) ? edd_sanitize_amount($action['amount']) : '0.00';
+				$txn_id = (!empty($action['transaction_id']) ) ? $action['transaction_id'] : $action['subscription_id'];
+
+				// renew edd subscription payment
+				$sub = new EDD_Subscription($sub_id);
+				$sub->add_payment(array(
+					'amount' => $amount,
+					'transaction_id' => $txn_id
+				));
+				$sub->renew();
 			}
 		}
 	}
