@@ -69,6 +69,7 @@ final class KWS_GF_EDD {
             define('EDD_GF_PLUGIN_URL', plugins_url('', __FILE__));
         }
         if (!defined('EDD_GF_PLUGIN_DIR')) {
+        	/** @define "EDD_GF_PLUGIN_DIR" "./" */
             define('EDD_GF_PLUGIN_DIR', plugin_dir_path(__FILE__));
         }
 
