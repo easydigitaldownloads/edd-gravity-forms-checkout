@@ -181,10 +181,10 @@ final class KWS_GF_EDD {
     function get_download_options_from_entry($entry, $field, $download_id, $product, $option_name = '', $option_price = 0) {
 
         if (!function_exists('edd_get_variable_prices')) {
-            return null;
+            return NULL;
         }
 
-        $options = null;
+        $options = NULL;
 
         // Get the variations for the product
         if ($prices = edd_get_variable_prices($download_id)) {
@@ -279,25 +279,25 @@ final class KWS_GF_EDD {
             $field = $this->get_form_field_by_id($product_field_id, $form);
 
             // If product in coupons array 
-            if (in_array($product_field_id, $entry_coupons)) {
+            if (in_array($product_field_id, $entry_coupons)) :
                 // get coupon data
                 $coupon_code = $product['name'];
                 $coupon_data = $coupon_obj->get_coupons_by_codes(array($coupon_code), $form);
-                if ($coupon_data) {
-                    foreach ($coupon_data as $coupon_code => $coupon_meta) {
+                if ($coupon_data):
+                    foreach ($coupon_data as $coupon_code => $coupon_meta):
                         // save percentage coupon data
-                        if ($coupon_meta['type'] == 'percentage') {
+                        if ($coupon_meta['type'] == 'percentage'):
                             $coupon_details['percentage'] = (isset($coupon_details['percentage']) && $coupon_details['percentage']) ? $coupon_details['percentage'] + $coupon_meta['amount'] : $coupon_meta['amount'];
-                        } else {
-                            if ($products_num) {
+                        else:
+                            if ($products_num):
                                 $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + ($coupon_meta['amount'] / $products_num) : ($coupon_meta['amount'] / $products_num);
-                            } else {
+                            else:
                                 $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + $coupon_meta['amount'] : $coupon_meta['amount'];
-                            }
-                        }
-                    }
-                }
-            }
+                            endif;
+                        endif;
+                    endforeach;
+                endif;
+            endif;
 
             // Only process connected products that don't have variable prices.
             if (empty($field['eddDownload'])) {
@@ -404,18 +404,18 @@ final class KWS_GF_EDD {
             while ($quantity > $i) {
 
                 // update cart total with coupon code val 
-                if ($coupon_details['percentage']) {
+                if ($coupon_details['percentage']):
                     $item_discount = $item_price * ( $coupon_details['percentage'] / 100 );
-                } else {
+                else:
                     $item_discount = $coupon_details['flat'];
-                }
+                endif;
 
                 $cart_details[] = array(
                     'name' => get_the_title($download_id),
                     'id' => $download_id,
                     'item_number' => $item,
                     'price' => $item_price,
-                    'tax' => null,
+                    'tax' => NULL,
                     'quantity' => 1,
                     'discount' => $item_discount,
                     'product_field_id' => $prod_id
@@ -454,7 +454,7 @@ final class KWS_GF_EDD {
         $edd_fields = (isset($form["edd-fields"]) && $form["edd-fields"]) ? $form["edd-fields"] : array();
 
         // if not name or email fields settings selected then get them from from fields 
-        if ((!isset($edd_fields['name_field']) || !$edd_fields['name_field'] ) || (!isset($edd_fields['email_field']) || !$edd_fields['email_field'] )) {
+        if ((!isset($edd_fields['name_field']) || !$edd_fields['name_field'] ) || (!isset($edd_fields['email_field']) || !$edd_fields['email_field'] )):
             foreach ($form['fields'] as $field) {
 
                 switch ($field['type']) {
@@ -477,23 +477,23 @@ final class KWS_GF_EDD {
                         break;
                 }
             }
-        }
+        endif;
 
         // get name field from form settings
-        if (isset($edd_fields['name_field']) && $edd_fields['name_field']) {
+        if (isset($edd_fields['name_field']) && $edd_fields['name_field']):
             $name_field = $edd_fields['name_field'];
-            if (isset($entry[$name_field . '.3']) && isset($entry[$name_field . '.6'])) {
+            if (isset($entry[$name_field . '.3']) && isset($entry[$name_field . '.6'])):
                 $user_info['first_name'] = $name_field . '.3';
                 $user_info['last_name'] = $name_field . '.6';
-            } else {
+            else:
                 $user_info['display_name'] = $name_field;
-            }
-        }
+            endif;
+        endif;
 
         // get email field from form settings
-        if (isset($edd_fields['email_field']) && $edd_fields['email_field']) {
+        if (isset($edd_fields['email_field']) && $edd_fields['email_field']):
             $user_info['email'] = $edd_fields['email_field'];
-        }
+        endif;
 
         // 		
         // SET ADDITIONAL USER DETAILS FROM GRAVITY FORM SUBMISSION 		
@@ -568,10 +568,10 @@ final class KWS_GF_EDD {
         $user_info_discount = (isset($entry_coupons) && $entry_coupons) ? $entry_coupons : 'none';
 
         $default_user_info = array(
-            'email' => null,
-            'first_name' => null,
-            'last_name' => null,
-            'display_name' => null,
+            'email' => NULL,
+            'first_name' => NULL,
+            'last_name' => NULL,
+            'display_name' => NULL,
         );
 
         $user_info = wp_parse_args($user_info, $default_user_info);
@@ -792,10 +792,10 @@ final class KWS_GF_EDD {
      */
     public function edd_subscription_started($entry, $subscription) {
 
-        if (class_exists('GFPayPal')) {
+        if (class_exists('GFPayPal')):
             // get form paypal configuraion
             $paypal_conf = GFPayPal::get_config_by_entry($entry);
-            if (isset($paypal_conf['meta']['transactionType']) && $paypal_conf['meta']['transactionType'] == 'subscription') {
+            if (isset($paypal_conf['meta']['transactionType']) && $paypal_conf['meta']['transactionType'] == 'subscription'):
                 // get entry payment id 
                 $entry_payment = get_posts(array(
                     'post_type' => 'edd_payment',
@@ -804,7 +804,7 @@ final class KWS_GF_EDD {
                     'meta_value' => $entry['id']
                         )
                 );
-                if ($entry_payment) {
+                if ($entry_payment):
                     $payment_id = $entry_payment[0]->ID;
                     // set subscription payment
                     $payment = new EDD_Payment($payment_id);
@@ -814,7 +814,7 @@ final class KWS_GF_EDD {
                     $payment->update_meta('_edd_subscription_payment', true);
 
                     // get customer id 
-                    $customer_id = get_post_meta($payment_id, '_edd_payment_customer_id', true);
+                    $customer_id = get_post_meta($payment_id, '_edd_payment_customer_id', TRUE);
                     $subscriber = new EDD_Recurring_Subscriber($customer_id);
 
                     // get GF by form id
@@ -824,22 +824,22 @@ final class KWS_GF_EDD {
                     $cart_details = $data['cart_details'];
 
                     // get gf configuraion trial 
-                    $trial_amount = $trial_prod = null;
-                    $trial_subscription = false;
+                    $trial_amount = $trial_prod = NULL;
+                    $trial_subscription = FALSE;
                     $trial_period = '';
 
-                    if (isset($paypal_conf['meta']['trial_enabled']) && $paypal_conf['meta']['trial_enabled'] == '1') {
-                        $trial_subscription = true;
+                    if (isset($paypal_conf['meta']['trial_enabled']) && $paypal_conf['meta']['trial_enabled'] == '1'):
+                        $trial_subscription = TRUE;
                         // if trial amount is selected 
-                        if (isset($paypal_conf['meta']['trial_product']) && $paypal_conf['meta']['trial_product'] == 'enter_amount') {
+                        if (isset($paypal_conf['meta']['trial_product']) && $paypal_conf['meta']['trial_product'] == 'enter_amount'):
                             $trial_amount = intval(ereg_replace("[^0-9]", "", $paypal_conf['meta']['trial_amount']));
-                        } else {
+                        else:
                             $trial_prod = $paypal_conf['meta']['trial_product'];
-                        }
+                        endif;
                         // get trial period 
                         if (isset($paypal_conf['meta']['trialPeriod_length']) && $paypal_conf['meta']['trialPeriod_length'] && $paypal_conf['meta']['trialPeriod_unit'])
                             $trial_period = $paypal_conf['meta']['trialPeriod_length'] . ' ' . $paypal_conf['meta']['trialPeriod_unit'];
-                    }
+                    endif;
 
                     // get billing cycle 
                     $recurring_len = $paypal_conf['meta']['billingCycle_length'] . ' ' . $paypal_conf['meta']['billingCycle_unit'];
@@ -848,8 +848,8 @@ final class KWS_GF_EDD {
                     $recurring_times = (intval($paypal_conf['meta']['recurringTimes'])) ? intval($paypal_conf['meta']['recurringTimes']) : '';
 
                     // add edd subscription
-                    if ($cart_details) {
-                        foreach ($cart_details as $cart_detail) {
+                    if ($cart_details):
+                        foreach ($cart_details as $cart_detail) :
                             // get product discount 
                             $prod_discount = (isset($cart_detail['discount']) && $cart_detail['discount'] ) ? $cart_detail['discount'] : 0;
                             // get product price 
@@ -857,12 +857,12 @@ final class KWS_GF_EDD {
                             $product_total = $prod_price - $prod_discount;
 
                             // check if trial product
-                            if ($trial_prod && $trial_prod == intval($cart_detail['product_field_id'])) {
+                            if ($trial_prod && $trial_prod == intval($cart_detail['product_field_id'])):
                                 $trial_amount = 0;
-                            }
+                            endif;
 
                             // get initial amount 
-                            $initial_amount = ($trial_subscription && $trial_amount != null) ? $trial_amount : $product_total;
+                            $initial_amount = ($trial_subscription && $trial_amount != NULL) ? $trial_amount : $product_total;
 
                             $args = array(
                                 'product_id' => $cart_detail['item_number']['id'],
@@ -885,11 +885,12 @@ final class KWS_GF_EDD {
                             if ($trial_period) {
                                 $subscriber->add_meta('edd_recurring_trials', $entry['id']);
                             }
-                        }
-                    }
-                }
-            }
-        }
+
+                        endforeach;
+                    endif;
+                endif;
+            endif;
+        endif;
     }
 
     /**
@@ -901,12 +902,12 @@ final class KWS_GF_EDD {
     public function edd_subscription_payment($entry, $action) {
 
         // get download id for entry
-        $payment_id = get_post_meta($entry['id'], 'edd_payment_id', true);
-        if ($payment_id) {
+        $payment_id = get_post_meta($entry['id'], 'edd_payment_id', TRUE);
+        if ($payment_id):
             // get subscription id 
             global $wpdb;
             $sub_id = $wpdb->get_var("SELECT id FROM {$wpdb->prefix}edd_subscriptions WHERE parent_payment_id=$payment_id ");
-            if ($sub_id) {
+            if ($sub_id):
                 // get amount and transaction id
                 $amount = ( isset($action['amount']) ) ? edd_sanitize_amount($action['amount']) : '0.00';
                 $txn_id = (!empty($action['transaction_id']) ) ? $action['transaction_id'] : $action['subscription_id'];
@@ -918,8 +919,9 @@ final class KWS_GF_EDD {
                     'transaction_id' => $txn_id
                 ));
                 $sub->renew();
-            }
-        }
+            endif;
+
+        endif;
     }
 
     /**
@@ -932,13 +934,13 @@ final class KWS_GF_EDD {
     public function update_edd_transaction_id($entry, $action, $result) {
 
         // add transaction id in complete payment or start subscription payment
-        if ($action['type'] == 'complete_payment' || $action['type'] == 'create_subscription') {
+        if ($action['type'] == 'complete_payment' || $action['type'] == 'create_subscription'):
             // get download id for entry
-            $payment_id = get_post_meta($entry['id'], 'edd_payment_id', true);
+            $payment_id = get_post_meta($entry['id'], 'edd_payment_id', TRUE);
             $transaction_id = (!empty($action['transaction_id'])) ? $action['transaction_id'] : $action['subscription_id'];
 
             edd_set_payment_transaction_id($payment_id, $transaction_id);
-        }
+        endif;
     }
 
     /**
@@ -946,7 +948,7 @@ final class KWS_GF_EDD {
      * @param  mixed  $value The output you would like to print
      * @param  boolean $die   Exit after outputting
      */
-    private function r($value, $die = false, $title = null) {
+    private function r($value, $die = false, $title = NULL) {
 
         // Push debug messages to the Gravity Forms Logging Tool
         do_action('edd_gf_log_debug', $title . "\n" . print_r($value, true));
@@ -981,13 +983,13 @@ final class KWS_GF_EDD {
 
         $products_num = 0;
 
-        if ($products) {
-            foreach ($products as $product_key => $product) {
-                if (!in_array($product_key, $coupons)) {
+        if ($products):
+            foreach ($products as $product_key => $product):
+                if (!in_array($product_key, $coupons)):
                     $products_num += intval($product['quantity']);
-                }
-            }
-        }
+                endif;
+            endforeach;
+        endif;
 
         return $products_num;
     }
