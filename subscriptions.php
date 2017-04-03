@@ -321,10 +321,10 @@ class KWS_GF_EDD_Subscriptions {
 	 * Cancel edd subscription payment when GF subscription payment renew cancelled
 	 *
 	 * @param array $entry The Entry Object
-	 * @param array $feed The Entry Feed
-	 * @param string $transaction_id Transaction ID
+	 *
+	 * @return void
 	 */
-	public function edd_cancel_subscription_payment( $entry = array(), $feed = array(), $transaction_id = '' ) {
+	public function edd_cancel_subscription_payment( $entry = array() ) {
 
 		// get download id for entry
 		$payment_id = gform_get_meta( $entry['id'], 'edd_payment_id' );
