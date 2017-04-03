@@ -795,7 +795,7 @@ final class KWS_GF_EDD {
      * @param  mixed  $value The output you would like to print
      * @param  boolean $die   Exit after outputting
      */
-    private function r($value, $die = false, $title = null) {
+    public function r($value, $die = false, $title = null) {
 
         // Push debug messages to the Gravity Forms Logging Tool
         do_action('edd_gf_log_debug', $title . "\n" . print_r($value, true));
