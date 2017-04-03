@@ -61,9 +61,6 @@ class KWS_GF_EDD_Subscriptions {
 		}
 
 		if ( isset( $entry ) && $entry ) {
-			// get entry processed feeds
-			$processed_feeds = gform_get_meta( $entry['id'], 'processed_feeds' );
-			if ( $processed_feeds ) {
 				foreach ( $processed_feeds as $feed_slug => $processed_feed ) {
 						// get subscription payment id
 						$payment_id = $this->get_subscription_payment( $entry, $feed );
@@ -82,6 +79,11 @@ class KWS_GF_EDD_Subscriptions {
 							}
 							break;
 						}
+		$processed_feeds = $this->get_feeds_by_entry( $entry['id'] );
+
+		if ( ! $processed_feeds ) {
+			return;
+		}
 			$feed = $this->get_feed( $processed_feed[0] );
 
 			// TODO: Log error
@@ -94,6 +96,24 @@ class KWS_GF_EDD_Subscriptions {
 	}
 
 	/**
+	 * Get processed feeds by entry.
+	 *
+	 * TODO: Should we use get_single_submission_feed() code instead, to handle single submission feeds?
+	 * @see GFFeedAddOn::get_feeds_by_entry()
+	 *
+	 * @return array|false Array of feeds, false if none found. MODIFIED original code to return all feeds instead of just the current addon
+	 */
+	public function get_feeds_by_entry( $entry_id ) {
+
+		$processed_feeds = gform_get_meta( $entry_id, 'processed_feeds' );
+
+		if ( ! $processed_feeds ) {
+			return false;
+		}
+
+		// MODIFIED: Return all feeds instead of just the current addon's
+		return $processed_feeds;
+	}
 
 	/**
 	 * Clone of GFFeedAddOn::get_feed()
