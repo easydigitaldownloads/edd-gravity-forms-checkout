@@ -34,10 +34,9 @@ class KWS_GF_EDD_Subscriptions {
 	 * @param array $subscription The new Subscription object
 	 */
 	function add_entry_subscription_id( $entry = array(), $subscription = array() ) {
+
 		gform_update_meta( $entry['id'], 'gf_subscription_id', $subscription['subscription_id'] );
 
-		$entry_id = $entry['id'];
-		gform_update_meta($entry_id, 'gf_subscription_id', $subscription['subscription_id']);
 	}
 
 	/**
