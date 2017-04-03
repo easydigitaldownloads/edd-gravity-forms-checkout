@@ -274,7 +274,7 @@ class KWS_GF_EDD_Subscriptions {
 	public function edd_renew_subscription_payment($entry, $action) {
 
 		// get download id for entry
-		$payment_id = gform_get_meta($entry['id'], 'edd_payment_id', true);
+		$payment_id = gform_get_meta( $entry['id'], 'edd_payment_id' );
 
 		if ( empty( $payment_id ) ) {
 			$this->parent->r( sprintf( 'No EDD payment ID for entry #%d', $entry['id'] ) );
