@@ -43,12 +43,12 @@ class KWS_GF_EDD_Subscriptions {
 	 * Add edd new subscription
 	 *
 	 * @param array $entry Entry Object
-	 * @param int $payment_id EDD Payment ID
-	 * @param array $purchase_data Data used to create purchase in EDD
+	 * @param int $edd_payment_id EDD Payment ID
+	 * @param array $edd_purchase_data Data used to create purchase in EDD
 	 *
 	 * @return void
 	 */
-	public function maybe_start_subscription( $entry = array(), $payment_id = 0, $purchase_data = array() ) {
+	public function maybe_start_subscription( $entry = array(), $edd_payment_id = 0, $edd_purchase_data = array() ) {
 
 		$subscription_id = gform_get_meta( $entry['id'], 'gf_subscription_id' );
 
