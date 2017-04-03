@@ -424,6 +424,22 @@ final class KWS_GF_EDD {
         return $data;
     }
 
+	private function get_first_field_id_by_type( $form = array(), $type = 'name' ) {
+
+    	$fields = GFAPI::get_fields_by_type( $form, array( $type ) );
+
+		if ( empty( $fields ) ) {
+			$this->r( 'No fields of type: ' . $type );
+			return false;
+		}
+
+		$field = array_shift( $fields );
+
+		$this->r( $field, false,__METHOD__ . ': Using field as default for ' . $type );
+
+		return $field ? $field->id : false;
+	}
+
     /**
      * Get user information (name and email) from entry 
      * 
@@ -431,68 +447,56 @@ final class KWS_GF_EDD {
      * @param  array $entry Gravity Forms entry array
      * @return $user_info array
      */
-    function get_user_info_from_submission($form, $entry) {
+    function get_user_info_from_submission( $form, $entry ) {
 
         $user_info = array();
 
-        $edd_fields = (isset($form["edd-fields"]) && $form["edd-fields"]) ? $form["edd-fields"] : array();
+        $feed_settings = eddUserFields::get_instance()->get_single_submission_feed( $entry, $form );
 
-        // get name field from form settings
-        if (isset($edd_fields['name_field']) && $edd_fields['name_field']) {
-            $name_field = $edd_fields['name_field'];
-            if (isset($entry[$name_field . '.3']) && isset($entry[$name_field . '.6'])) {
-                $user_info['first_name'] = $name_field . '.3';
-                $user_info['last_name'] = $name_field . '.6';
-            } else {
-                $user_info['display_name'] = $name_field;
-            }
-        } else {
-            // get first name field from form
-            foreach ($form['fields'] as $field) {
-                if ($field['type'] == 'name') {
-                    if (is_array($field['inputs']) && !empty($field['inputs'])) {
-                        foreach ($field['inputs'] as $input) {
-                            if (floatval($input['id']) === floatval($field['id'] . '.3')) {
-                                $user_info['first_name'] = $input['id'];
-                            } else if (floatval($input['id']) === floatval($field['id'] . '.6')) {
-                                $user_info['last_name'] = $input['id'];
-                            }
-                        }
-                    } else {
-                        // For a Simple Name field, show full name 	
-                        $user_info['display_name'] = $field['id'];
-                    }
-                    break;
-                }
-            }
-        }
+	    $field_configuration = rgar( $feed_settings, 'meta' );
 
-        // get email field from form settings
-        if (isset($edd_fields['email_field']) && $edd_fields['email_field']) {
-            $user_info['email'] = $edd_fields['email_field'];
-        } else {
-            // get first email field from form
-            foreach ($form['fields'] as $field) {
-                if ($field['type'] == 'email') {
-                    $user_info['email'] = $field['id'];
-                    break;
-                }
-            }
-        }
+	    $name_field_id = rgar( $field_configuration, 'name', false );
 
-        // SET ADDITIONAL USER DETAILS FROM GRAVITY FORM SUBMISSION 	
-        foreach ($user_info as $key => $entry_key) {
+	    if ( ! $name_field_id ) {
+		    $name_field_id = $this->get_first_field_id_by_type( $form, 'name' );
+	    }
 
-            // If somehow the $entry doesn't have the $entry_key item set, keep going 	
-            if (empty($entry["{$entry_key}"])) {
-                continue;
-            }
-            // Convert the Gravity Forms Field ID keys into Entry values.
-            // See `$user_info['first_name']` code above for examples. 
+	    if( $name_field_id ) {
+		    $user_info['display_name'] = rgar( $entry, $name_field_id, false );
+		    $user_info['first_name'] = rgar( $entry, $name_field_id . '.3', false );
+		    $user_info['last_name'] = rgar( $entry, $name_field_id . '.6', false );
+	    }
 
-            $user_info[$key] = $entry["{$entry_key}"];
-        }
-        return $user_info;
+	    $email_field_id = rgar( $field_configuration, 'email', false );
+
+	    if ( ! $email_field_id ) {
+		    $email_field_id = $this->get_first_field_id_by_type( $form, 'email' );
+	    }
+
+	    if( $email_field_id ) {
+		    $user_info['email'] = rgar( $entry, $email_field_id, false );
+	    }
+
+	    $address_field_id = rgar( $field_configuration, 'address', false );
+
+	    if ( ! $address_field_id ) {
+		    $address_field_id = $this->get_first_field_id_by_type( $form, 'address' );
+	    }
+
+	    if( $address_field_id ) {
+		    $user_info['address'] = array(
+	    	    'line1' => rgar( $entry, $address_field_id . '.1', false ),
+		        'line2' => rgar( $entry, $address_field_id . '.2', false ),
+		        'city' => rgar( $entry, $address_field_id . '.3', false ),
+		        'state' => rgar( $entry, $address_field_id . '.4', false ),
+		        'zip' => rgar( $entry, $address_field_id . '.5', false ),
+		        'country' => GFCommon::get_country_code( rgar( $entry, $address_field_id . '.6', false ) ),
+		    );
+	    }
+
+	    $this->r( $user_info, false, 'User info mapping' );
+
+        return array_filter( $user_info );
     }
 
     /**
@@ -501,71 +505,43 @@ final class KWS_GF_EDD {
      * @param  array $entry Gravity Forms entry array
      * @return array        array with user data. Keys include: 'id' (int user ID), 'email' (string user email), 'first_name', 'last_name', 'discount' (empty)
      */
-    function get_user_info($form, $entry) {
+    function get_user_info( $form = array(), $entry = array() ) {
 
-        $user_id = -1;
+        $wp_user = false;
 
-        $user_info = $this->get_user_info_from_submission($form, $entry);
+        $user_info_from_entry = $this->get_user_info_from_submission($form, $entry);
 
-        if (is_user_logged_in()) {
-
-            // Get the $current_user WP_User object
-            $current_user = wp_get_current_user();
-
-            $user_id = get_current_user_id();
-
-            // If you enable `$overwrite`, the purchase will use data from the submitted form (if available), not from the WP_User object
-            $user_info = array(
-                'id' => $user_id, // Always use the user ID
-                // If email, first & last name exist in Gravity Forms, use those
-                'email' => !empty($user_info['email']) ? $user_info['email'] : $current_user->user_email,
-                'first_name' => !empty($user_info['first_name']) ? $user_info['first_name'] : $current_user->user_firstname,
-                'last_name' => !empty($user_info['last_name']) ? $user_info['last_name'] : $current_user->user_lastname,
-                'display_name' => !empty($user_info['display_name']) ? $user_info['display_name'] : $current_user->display_name,
-            );
-        } else {
-
-            $user_id = -1;
-
-            //
-            // User is not logged in, but the email exists
-            //
-            if (!empty($user_info['email'])) {
-
-                $wp_user = get_user_by('email', $user_info['email']);
-
-                // If the user email exists as a user
-                if (!empty($wp_user)) {
-                    $user_id = $wp_user->ID;
-                    // If first & last name exist in Gravity Forms, use those
-                    $user_info['first_name'] = !empty($user_info['first_name']) ? $user_info['first_name'] : $wp_user->user_firstname;
-                    $user_info['last_name'] = !empty($user_info['last_name']) ? $user_info['last_name'] : $wp_user->user_firstname;
-                    $user_info['display_name'] = !empty($user_info['display_name']) ? $user_info['display_name'] : $wp_user->display_name;
-                }
-            }
+        // Get the $current_user WP_User object
+        if ( is_user_logged_in() ) {
+	        $wp_user = wp_get_current_user();
         }
+        // User is not logged in, but the email exists
+        else if ( ! empty( $user_info_from_entry['email'] ) ) {
+            $wp_user = get_user_by( 'email', $user_info['email'] );
+        }
+
+        $default_user_info = array(
+        	'id' => ( $wp_user ? $wp_user->ID : -1 ),
+            'email' => ( $wp_user ? $wp_user->user_email : null ),
+            'first_name' => ( $wp_user ? $wp_user->user_firstname : null ),
+            'last_name' => ( $wp_user ? $wp_user->user_lastname : null ),
+            'display_name' => ( $wp_user ? $wp_user->display_name : null ),
+            'address' => array(
+	            'line1' => null,
+	            'line2' => null,
+	            'city' => null,
+	            'state' => null,
+	            'zip' => null,
+	            'country' => null,
+            ),
+        );
+
+        $user_info = wp_parse_args( $user_info_from_entry, $default_user_info );
 
         // get entry coupon codes to set user data array
         $user_info_discount = $this->get_entry_discount($form, $entry);
 
-        $default_user_info = array(
-            'email' => null,
-            'first_name' => null,
-            'last_name' => null,
-            'display_name' => null,
-        );
-
-        $user_info = wp_parse_args($user_info, $default_user_info);
-
-        // Set user data array
-        $user_info = array(
-            'id' => $user_id,
-            'email' => $user_info['email'],
-            'first_name' => $user_info['first_name'],
-            'last_name' => $user_info['last_name'],
-            'display_name' => $user_info['display_name'],
-        );
-        if (!empty($user_info_discount)) {
+        if ( ! empty( $user_info_discount ) ) {
             $user_info['discount'] = $user_info_discount;
         }
 
