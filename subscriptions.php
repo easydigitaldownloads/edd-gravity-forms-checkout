@@ -177,7 +177,8 @@ class KWS_GF_EDD_Subscriptions {
 	private function get_subscription_feed_settings( $feed ) {
 
 		// set subscription feed addon
-		$subscription_addon = $this->get_feed_subscription_addon();
+		$subscription_addon = $this->get_payment_addon_feed_configuration();
+
 		// set feed settings array
 		$feed_settings = array(
 			'trial_amount'       => NULL,
@@ -229,21 +230,31 @@ class KWS_GF_EDD_Subscriptions {
 	 *
 	 * @return array $subscription_addon Feed Subscription Addon
 	 */
-	public function get_feed_subscription_addon() {
-		// set subscription feed addon
-		$subscription_addon['gravityformspaypal']       = array(
-			'trial_period'      => 'meta/trialPeriod_length',
-			'trial_period_unit' => 'meta/trialPeriod_unit',
+	public function get_payment_addon_feed_configuration() {
+
+		$subscription_addon = array(
+			'gravityformspaypal' => array(
+				'trial_period'      => 'meta/trialPeriod_length',
+				'trial_period_unit' => 'meta/trialPeriod_unit',
+			),
+			'gravityformsstripe' => array(
+				'trial_period'      => 'meta/trialPeriod',
+				'trial_period_unit' => '',
+			),
+		    'gravityformsauthorizenet' => array(
+			    'trial_period'      => '',
+			    'trial_period_unit' => '',
+		    ),
 		);
-		$subscription_addon['gravityformsstripe']       = array(
-			'trial_period'      => 'meta/trialPeriod',
-			'trial_period_unit' => '',
-		);
-		$subscription_addon['gravityformsauthorizenet'] = array(
-			'trial_period'      => '',
-			'trial_period_unit' => '',
-		);
-		$subscription_addon                             = apply_filters( 'gf_subscription_feed_addon', $subscription_addon );
+
+		/**
+		 * Modify where the trial period and trial period unit values are stored for each payment addon
+		 * @param array $subscription_addon {
+		 *  @type string $trial_period Path to the feed key where the trial period (# of days) is stored (example: `meta/trialPeriod`)
+		 *  @type string $trial_period_unit Path to the feed key where the trial period (days/weeks/months) is stored (example: `meta/trialPeriod_unit`)
+		 * }
+		 */
+		$subscription_addon = apply_filters( 'edd_gf_subscription_feed_addons', $subscription_addon );
 
 		return $subscription_addon;
 	}
