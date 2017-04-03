@@ -50,6 +50,10 @@ class KWS_GF_EDD_Subscriptions {
 	 */
 	public function maybe_start_subscription( $entry = array(), $edd_payment_id = 0, $edd_purchase_data = array() ) {
 
+		if ( empty( $entry ) ) {
+			return;
+		}
+
 		$subscription_id = gform_get_meta( $entry['id'], 'gf_subscription_id' );
 
 		if ( empty( $subscription_id ) ) {
@@ -61,11 +65,6 @@ class KWS_GF_EDD_Subscriptions {
 			$processed_feeds = gform_get_meta( $entry['id'], 'processed_feeds' );
 			if ( $processed_feeds ) {
 				foreach ( $processed_feeds as $feed_slug => $processed_feed ) {
-					global $wpdb;
-					$sql          = $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}gf_addon_feed WHERE id=%d", $processed_feed[0] );
-					$feed         = $wpdb->get_row( $sql, ARRAY_A );
-					$feed['meta'] = json_decode( $feed['meta'], true );
-					if ( $feed ) {
 						// get subscription payment id
 						$payment_id = $this->get_subscription_payment( $entry, $feed );
 						if ( $payment_id ) {
@@ -83,13 +82,43 @@ class KWS_GF_EDD_Subscriptions {
 							}
 							break;
 						}
-					}
+			$feed = $this->get_feed( $processed_feed[0] );
+
+			// TODO: Log error
+			if ( ! $feed ) {
+				continue;
+			}
 				}
 			}
 		}
 	}
 
 	/**
+
+	/**
+	 * Clone of GFFeedAddOn::get_feed()
+	 *
+	 * @see GFFeedAddOn::get_feed()
+	 *
+	 * @param int $id Feed ID
+	 *
+	 * @return array|false
+	 */
+	private function get_feed( $id ) {
+		global $wpdb;
+
+		$sql = $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}gf_addon_feed WHERE id=%d", $id );
+
+		$row = $wpdb->get_row( $sql, ARRAY_A );
+		if ( ! $row ) {
+			return false;
+		}
+
+		$row['meta'] = json_decode( $row['meta'], true );
+
+		return $row;
+	}
+
 	 * Check feed subscription and return customer id
 	 *
 	 * @param array $entry Entry Object
