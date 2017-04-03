@@ -33,9 +33,9 @@ class KWS_GF_EDD_Subscriptions {
 	 * @param array $entry Entry Object
 	 * @param array $subscription The new Subscription object
 	 */
-	function add_entry_subscription_id($entry, $subscription) {
+	function add_entry_subscription_id( $entry = array(), $subscription = array() ) {
+		gform_update_meta( $entry['id'], 'gf_subscription_id', $subscription['subscription_id'] );
 
-		// update entry by subscription id
 		$entry_id = $entry['id'];
 		gform_update_meta($entry_id, 'gf_subscription_id', $subscription['subscription_id']);
 	}
@@ -319,17 +319,23 @@ class KWS_GF_EDD_Subscriptions {
 	 * @param array $feed The Entry Feed
 	 * @param string $transaction_id Transaction ID
 	 */
-	public function edd_cancel_subscription_payment($entry, $feed, $transaction_id) {
+	public function edd_cancel_subscription_payment( $entry = array(), $feed = array(), $transaction_id = '' ) {
+
 		// get download id for entry
-		$payment_id = gform_get_meta($entry['id'], 'edd_payment_id', true);
-		if ($payment_id) {
-			// get subscription id
-			$db = new EDD_Subscriptions_DB;
-			$subscriptions = $db->get_subscriptions(array('parent_payment_id' => $payment_id));
-			if (!empty($subscriptions)) {
-				foreach ($subscriptions as $subscription) {
-					$subscription->cancel();
-				}
+		$payment_id = gform_get_meta( $entry['id'], 'edd_payment_id' );
+
+		if ( empty( $payment_id ) ) {
+			return;
+		}
+
+		// get subscription id
+		$db = new EDD_Subscriptions_DB;
+
+		if ( $subscriptions = $db->get_subscriptions( array('parent_payment_id' => $payment_id) ) ) {
+
+			/** @var EDD_Subscription $subscription */
+			foreach ( $subscriptions as $subscription ) {
+				$subscription->cancel();
 			}
 		}
 	}
