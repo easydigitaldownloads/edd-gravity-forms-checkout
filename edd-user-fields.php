@@ -3,9 +3,9 @@
 /**
  * Add gravity form settings for user fields name and email
  */
-GFForms::include_feed_addon_framework();
+GFForms::include_addon_framework();
 
-class eddUserFields extends GFFeedAddOn {
+class eddUserFields extends GFAddOn {
 
     protected $_version = '1.0';
     protected $_min_gravityforms_version = '1.9';
@@ -15,7 +15,6 @@ class eddUserFields extends GFFeedAddOn {
     protected $_title = 'Gravity Forms EDD User Fields';
     protected $_short_title = 'EDD Payment Fields';
     private static $_instance = null;
-    protected $_multiple_feeds = false;
 
     /**
      * Returns an instance of this class, and stores it in the $_instance property.
@@ -96,9 +95,14 @@ class eddUserFields extends GFFeedAddOn {
 	    return $return_fields;
     }
 
-	public function feed_settings_title() {
-		return esc_html__( 'Easy Digital Downloads', 'edd-gf' ) . '<i style="font-size: 1em; height: 1em; width: 1em;" class="dashicons dashicons-download"></i>';
-	}
+	/**
+	 * EDD ICON, BABY!
+	 *
+	 * @return string
+	 */
+    public function form_settings_icon() {
+	    return '<i class="dashicons dashicons-download" style="font-size: 1.3em; width: 1em; line-height: 1em; height: 1em;"></i>';
+    }
 
 	/**
      * Configures the settings which should be rendered on the Form Settings > EDD User Fields Add-On tab.
@@ -107,9 +111,9 @@ class eddUserFields extends GFFeedAddOn {
      *
      * @return array
      */
-    public function get_feed_settings_fields() {
+    public function form_settings_fields( $form ) {
 
-    	$form = $this->get_current_form();
+	    $form_settings = eddUserFields::get_instance()->get_current_settings( $form );
 
 	    $edd_fields = $this->get_edd_field_settings( $form );
 
@@ -132,8 +136,9 @@ class eddUserFields extends GFFeedAddOn {
 				    'choices' => $edd_fields[ $key ],
 			    );
 
+		    	// Shouldn't be visible, unless people manually add query string. Don't want to prevent altogether.
 			    if( sizeof( $edd_fields[ $key ] ) === 1 ) {
-				    $_setting_field['type'] = 'text'; // TODO: Switch back to hidden
+				    $_setting_field['type'] = 'text';
 				    $_setting_field['value'] = $edd_fields[ $key ][0]['value'];
 			    }
 
@@ -145,6 +150,7 @@ class eddUserFields extends GFFeedAddOn {
         // return Name and Email fields settings
         return array(
             array(
+	            'title' => esc_html__('EDD Settings', 'edd-gf'),
                 'description' => sprintf('<p class="subheading">%s</p>', 'What field do you want to use as the data source for Easy Digital Downloads purchase?' ),
                 'fields' => $settings_fields,
             ),

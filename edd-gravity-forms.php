@@ -451,9 +451,7 @@ final class KWS_GF_EDD {
 
         $user_info = array();
 
-        $feed_settings = eddUserFields::get_instance()->get_single_submission_feed( $entry, $form );
-
-	    $field_configuration = rgar( $feed_settings, 'meta' );
+	    $field_configuration = eddUserFields::get_instance()->get_form_settings( $form );
 
 	    $name_field_id = rgar( $field_configuration, 'name', false );
 
