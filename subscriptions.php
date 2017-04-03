@@ -354,18 +354,26 @@ class KWS_GF_EDD_Subscriptions {
 	public function edd_expire_subscription_payment( $entry, $action ) {
 
 		// if action type is expired
-		if ( $action['type'] === 'expire_subscription' ) {
-			// get download id for entry
-			$payment_id = gform_get_meta( $entry['id'], 'edd_payment_id', true );
-			if ( $payment_id ) {
-				// get subscription id
-				$db            = new EDD_Subscriptions_DB;
-				$subscriptions = $db->get_subscriptions( array( 'parent_payment_id' => $payment_id ) );
-				if ( ! empty( $subscriptions ) ) {
-					foreach ( $subscriptions as $subscription ) {
-						$subscription->expire();
-					}
-				}
+		if ( 'expire_subscription' !== $action['type'] ) {
+			return;
+		}
+
+		// get download id for entry
+		$edd_payment_id = gform_get_meta( $entry['id'], 'edd_payment_id' );
+
+		if ( ! $edd_payment_id ) {
+			return;
+		}
+
+		// get subscription id
+		$db            = new EDD_Subscriptions_DB;
+		$subscriptions = $db->get_subscriptions( array( 'parent_payment_id' => $edd_payment_id ) );
+
+		if ( ! empty( $subscriptions ) ) {
+
+			/** @var EDD_Subscription $subscription */
+			foreach ( $subscriptions as $subscription ) {
+				$subscription->expire();
 			}
 		}
 	}

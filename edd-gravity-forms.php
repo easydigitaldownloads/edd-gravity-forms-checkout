@@ -573,7 +573,7 @@ final class KWS_GF_EDD {
     }
 
     /**
-     * Take a GF submission and add a purcase to EDD.
+     * Take a GF submission and add a purchase to EDD.
      *
      * This converts the GF submission to an EDD order.
      *
