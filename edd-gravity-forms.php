@@ -93,6 +93,7 @@ final class KWS_GF_EDD {
         include( EDD_GF_PLUGIN_DIR . 'edd-user-fields.php' );
 
 	    include( EDD_GF_PLUGIN_DIR . 'subscriptions.php' );
+
 	    new KWS_GF_EDD_Subscriptions( $this );
 
         // Run the EDD functionality
@@ -819,8 +820,9 @@ final class KWS_GF_EDD {
         return $products_num;
     }
 
-    /*
+    /**
      * function to return available coupons for entry
+     *
      * @param  array $entry GF Entry array
      * @param  array $form  GF Form array
      * 
@@ -832,7 +834,7 @@ final class KWS_GF_EDD {
         $entry_coupons = array();
         // check if gravity form coupons class exist
         if (class_exists('GFCoupons')) {
-            // get coupons for entry 
+            // get coupons for entry
             $coupon_obj = new GFCoupons();
             $entry_coupons = $coupon_obj->get_submitted_coupon_codes($form, $entry);
         }
@@ -840,15 +842,15 @@ final class KWS_GF_EDD {
         return $entry_coupons;
     }
 
-    /*
+    /**
      * function to get entry coupon details precent and flat values
      * 
      * @param  array $entry GF Entry array
      * @param  array $entry_coupons  GF Form Available Coupons array
      * @param  int $products_num  Number of products in form
+     *
      * @return array of applied coupons to gravity form entry
      */
-
     public function get_entry_coupon_details($form, $entry, $form_prods) {
 
         $coupon_details = array();
