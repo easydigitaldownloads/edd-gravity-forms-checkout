@@ -660,7 +660,7 @@ final class KWS_GF_EDD {
 
         $this->r($purchase_data, false, 'Purchase Data (Line ' . __LINE__ . ')');
 
-        $this->r(get_post($payment_id), true, 'Payment Object (Line ' . __LINE__ . ')');
+        $this->r(get_post($payment_id), false, 'Payment Object (Line ' . __LINE__ . ')');
 
         do_action( 'edd_gf_payment_added', $entry, $payment_id, $purchase_data );
 
