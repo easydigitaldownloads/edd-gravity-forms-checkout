@@ -411,6 +411,7 @@ final class KWS_GF_EDD {
         $data['user_info'] = $this->get_user_info($form, $entry);
         $data['cart_details'] = $cart_details;
         $data['total'] = GFCommon::to_number($total);
+	    $data['gateway'] = gform_get_meta( $entry['id'], 'payment_gateway' );
 
         if ($data['total'] < 0) {
 
@@ -615,6 +616,7 @@ final class KWS_GF_EDD {
             'currency' => $entry['currency'],
             'downloads' => $data['downloads'],
             'cart_details' => $data['cart_details'],
+            'gateway' => $data['gateway'],
             #'transaction_type' => $entry['transaction_type'],
             #'discount'	   => $data['discount_codes'], // TODO: Figure out discount code integration
             'status' => 'pending' // start with pending so we can call the update function, which logs all stats
