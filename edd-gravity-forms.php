@@ -628,6 +628,9 @@ final class KWS_GF_EDD {
         // Was there a transaction ID to add to `edd_insert_payment_note()`?
         $transaction_id_note = empty($entry['transaction_id']) ? '' : sprintf(__('Transaction ID: %s - ', 'edd-gf'), $entry['transaction_id']);
 
+        // Set transaction ID
+	    edd_set_payment_transaction_id( $payment_id, rgar( $entry, 'transaction_id' ) );
+
         // Record the GF Entry
         edd_insert_payment_note($payment_id, sprintf(__('%s%sView Gravity Forms Entry%s', 'edd-gf'), $transaction_id_note, '<a href="' . admin_url(sprintf('admin.php?page=gf_entries&amp;view=entry&amp;id=%d&amp;lid=%d', $form['id'], $entry['id'])) . '">', '</a>'));
 
