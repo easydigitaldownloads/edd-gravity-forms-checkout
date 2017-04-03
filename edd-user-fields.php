@@ -32,7 +32,22 @@ class eddUserFields extends GFFeedAddOn {
         return self::$_instance;
     }
 
-    /**
+	/**
+	 * Only show form settings menu if there are multiple fields to pick
+	 *
+	 * @param array $tabs Array of form settings tabs
+	 * @param int $form_id GF Form ID
+	 *
+	 * @return array
+	 */
+	public function add_form_settings_menu( $tabs, $form_id ) {
+
+		if ( $this->has_multiple_fields( $form_id ) ) {
+			return parent::add_form_settings_menu( $tabs, $form_id );
+		}
+
+		return $tabs;
+	}
 
 	/**
 	 *
