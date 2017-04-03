@@ -618,7 +618,6 @@ final class KWS_GF_EDD {
             'cart_details' => $data['cart_details'],
             'gateway' => $data['gateway'],
             #'transaction_type' => $entry['transaction_type'],
-            #'discount'	   => $data['discount_codes'], // TODO: Figure out discount code integration
             'status' => 'pending' // start with pending so we can call the update function, which logs all stats
         );
 
