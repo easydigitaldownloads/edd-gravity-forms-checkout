@@ -169,11 +169,13 @@ class KWS_GF_EDD_Subscriptions {
 	 * @param array $entry Entry Object
 	 * @param array $feed The Entry Feed
 	 *
-	 * @return int $payment_id The Payment ID
+	 * @return EDD_Payment $payment The EDD Payment object
 	 */
 	public function get_subscription_payment( $entry, $feed ) {
+		global $wpdb;
 
-		$payment_id = NULL;
+		$payment = NULL;
+
 		// check if subscription
 		if ( 'subscription' === rgars( $feed, 'meta/transactionType' ) ) {
 
@@ -189,7 +191,7 @@ class KWS_GF_EDD_Subscriptions {
 			}
 		}
 
-		return $payment_id;
+		return $payment;
 	}
 
 	/**
