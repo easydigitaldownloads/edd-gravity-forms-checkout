@@ -90,11 +90,8 @@ final class KWS_GF_EDD {
 
 	    new KWS_GF_EDD_Subscriptions( $this );
 
-        // Run the EDD functionality
-        add_action("gform_after_submission", array($this, 'send_purchase_to_edd'), PHP_INT_MAX, 2);
+		$this->add_actions();
 
-        // Backward compatibility
-        add_action('gform_post_payment_status', array($this, 'gform_post_payment_status'), 10, 3);
 	/**
 	 * Include required files
 	 */
@@ -105,12 +102,10 @@ final class KWS_GF_EDD {
 	    require_once( EDD_GF_PLUGIN_DIR . 'subscriptions.php' );
     }
 
-        // Update whenever GF updates payment statii
-        add_action('gform_post_payment_completed', array($this, 'post_payment_callback'), 10, 2);
-        add_action('gform_post_payment_refunded', array($this, 'post_payment_callback'), 10, 2);
+    private function add_actions() {
 
-        // action to set edd transaction id 
-        add_action('gform_post_payment_callback', array($this, 'update_edd_transaction_id'), 10, 3);
+	    // Run the EDD functionality
+	    add_action("gform_after_submission", array($this, 'send_purchase_to_edd'), PHP_INT_MAX, 2);
 
         /**
          * Check for plugin updates. Built into EDD version 1.9+
@@ -118,6 +113,15 @@ final class KWS_GF_EDD {
         if (class_exists('EDD_License')) {
             new EDD_License(EDD_GF_PLUGIN_FILE, self::name, self::version, 'Katz Web Services, Inc.');
         }
+	    // Backward compatibility
+	    add_action('gform_post_payment_status', array($this, 'gform_post_payment_status'), 10, 3);
+
+	    // Update whenever GF updates payment statii
+	    add_action('gform_post_payment_completed', array($this, 'post_payment_callback'), 10, 2);
+	    add_action('gform_post_payment_refunded', array($this, 'post_payment_callback'), 10, 2);
+
+	    // action to set edd transaction id
+	    add_action('gform_post_payment_callback', array($this, 'update_edd_transaction_id'), 10, 3);
     }
 
     /**
