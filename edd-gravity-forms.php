@@ -56,6 +56,11 @@ final class KWS_GF_EDD {
      */
     const debug = false;
 
+	/**
+	 * @var KWS_GF_EDD_Logging
+	 */
+    public $logger = null;
+
     /**
      * Set constants, load textdomain, and trigger init()
      * @uses  KWS_GF_EDD::init()
@@ -86,6 +91,7 @@ final class KWS_GF_EDD {
 
 		$this->require_files();
 
+		$this->logger = new KWS_GF_EDD_Logging;
 
 		new KWS_GF_EDD_Subscriptions( $this );
 
@@ -775,6 +781,36 @@ final class KWS_GF_EDD {
             }
         }
     }
+
+	/**
+	 * Push errors messages to the Gravity Forms Logging Tool
+	 * @param string $title
+	 * @param null $data
+	 */
+    public function log_error( $title = '', $data = null ) {
+
+	    $data = '';
+	    if( null !== $value ) {
+	    	$data = print_r($value, true );
+	    }
+
+	    $this->logger->log_error( $title . "\n" . $data );
+    }
+
+	/**
+	 * Push errors messages to the Gravity Forms Logging Tool
+	 * @param string $title
+	 * @param null $data
+	 */
+	public function log_debug( $title = '', $data = null ) {
+
+		$data = '';
+		if( null !== $value ) {
+			$data = print_r($value, true );
+		}
+
+		$this->logger->log_debug( $title . "\n" . $data );
+	}
 
     /**
      * Print debug output if $this->debug is set to true

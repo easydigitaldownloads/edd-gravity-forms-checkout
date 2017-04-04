@@ -37,5 +37,3 @@ class KWS_GF_EDD_Logging {
 	}
 
 }
-
-new KWS_GF_EDD_Logging;
