@@ -76,15 +76,13 @@ final class KWS_GF_EDD {
         // Load the default language files
         load_plugin_textdomain('edd-gf', false, dirname(plugin_basename(EDD_GF_PLUGIN_FILE)) . '/languages/');
 
-        $this->init();
+        add_action( 'gform_loaded', array( $this, 'init' ) );
     }
 
-    /**
-     * Include the admin script and non-admin hooks
-     *
-     * @todo Check for whether Gravity Forms exists.
-     */
-    private function init() {
+	/**
+	 * Include the admin script and non-admin hooks
+	 */
+	public function init() {
 
         include( EDD_GF_PLUGIN_DIR . 'logging.php' );
         include( EDD_GF_PLUGIN_DIR . 'admin.php' );
