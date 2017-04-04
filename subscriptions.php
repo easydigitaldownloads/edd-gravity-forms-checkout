@@ -175,8 +175,8 @@ class KWS_GF_EDD_Subscriptions {
 
 		$payment_id = NULL;
 		// check if subscription
-		if ( rgars( $feed, 'meta/transactionType' ) == 'subscription' ) {
-			global $wpdb;
+		if ( 'subscription' === rgars( $feed, 'meta/transactionType' ) ) {
+
 			// get entry payment id
 			$payment_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %s LIMIT 1", $entry['id'] ) );
 
@@ -329,7 +329,7 @@ class KWS_GF_EDD_Subscriptions {
 			$initial_amount = ( $feed_settings['trial_subscription'] && $feed_settings['trial_amount'] != NULL ) ? $feed_settings['trial_amount'] : $product_total;
 
 			// Check if trial product
-			if ( intval( $feed_settings['trial_prod'] ) == intval( $cart_detail['product_field_id'] ) ) {
+			if ( intval( $feed_settings['trial_prod'] ) === intval( $cart_detail['product_field_id'] ) ) {
 				$trial_prod     = true;
 				$initial_amount = 0;
 				$trial_period   = $feed_settings['trial_period'];
