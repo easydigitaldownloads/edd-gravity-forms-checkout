@@ -43,11 +43,27 @@ module.exports = function(grunt) {
             }
         },
 
-        // Pull in the latest translations
-        exec: {
-            // Create a ZIP file
-            zip: 'git-archive-all ../edd-gravity-forms.zip'
-        }
+	    // Pull in the latest translations
+	    exec: {
+		    transifex: 'tx pull -a',
+
+		    // Create a ZIP file
+		    zip: {
+			    cmd: function ( filename = 'edd-gravity-forms' ) {
+
+				    // First, create the full archive
+				    var command = 'git-archive-all edd-gravity-forms.zip &&';
+
+				    command += 'unzip -o edd-gravity-forms.zip &&';
+
+				    command += 'zip -r ../' + filename + '.zip "edd-gravity-forms" &&';
+
+				    command += 'rm -rf edd-gravity-forms/ && rm -f edd-gravity-forms.zip';
+
+				    return command;
+			    }
+		    }
+	    }
     });
 
     // Load the plugin(s).
