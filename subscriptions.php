@@ -219,33 +219,38 @@ class KWS_GF_EDD_Subscriptions {
 		// get recurring amount
 		$feed_settings['recurring_amount'] = ( rgars( $feed, 'meta/recurringAmount' ) ) ? $feed['meta']['recurringAmount'] : '';
 
-		// get gf configuraion trial
-		if ( intval( rgars( $feed, 'meta/trial_enabled' ) ) === 1 ) {
-			$feed_settings['trial_subscription'] = true;
-			// if trial amount is selected
-			if ( rgars( $feed, 'meta/trial_product' ) == 'enter_amount' ) {
-				$feed_settings['trial_amount'] = edd_sanitize_amount( $feed['meta']['trial_amount'] );
-			} else if ( rgars( $feed, 'meta/trial_product' ) ) {
-				$feed_settings['trial_prod'] = $feed['meta']['trial_product'];
-			} else if ( rgars( $feed, 'meta/setupFee_product' ) ) {
-				$feed_settings['trial_prod'] = $feed['meta']['setupFee_product'];
-			}
+		// No trial; return feed as-is
+		if ( 1 !== intval( rgars( $feed, 'meta/trial_enabled' ) ) ) {
+			return $feed_settings;
+		}
 
-			// get trial period
-			$feed_addon   = $feed["addon_slug"];
-			$trial_length = '1';
-			$trial_unit   = 'day';
-			if ( isset( $subscription_addon[ $feed_addon ] ) && $subscription_addon[ $feed_addon ] ) {
-				if ( rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period'] ) ) {
-					$trial_length = rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period'] );
-				}
-				if ( rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period_unit'] ) ) {
-					$trial_unit = rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period_unit'] );
-				}
+		// Configure the trial settings now
+		$feed_settings['trial_subscription'] = true;
+
+		// if trial amount is selected
+		if ( 'enter_amount' === rgars( $feed, 'meta/trial_product' ) ) {
+			$feed_settings['trial_amount'] = edd_sanitize_amount( $feed['meta']['trial_amount'] );
+		} else if ( rgars( $feed, 'meta/trial_product' ) ) {
+			$feed_settings['trial_prod'] = $feed['meta']['trial_product'];
+		} else if ( rgars( $feed, 'meta/setupFee_product' ) ) {
+			$feed_settings['trial_prod'] = $feed['meta']['setupFee_product'];
+		}
+
+		// get trial period
+		$feed_addon   = $feed["addon_slug"];
+		$trial_length = '1';
+		$trial_unit   = 'day';
+		if ( isset( $subscription_addon[ $feed_addon ] ) && $subscription_addon[ $feed_addon ] ) {
+			if ( rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period'] ) ) {
+				$trial_length = rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period'] );
+			}
+			if ( rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period_unit'] ) ) {
+				$trial_unit = rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period_unit'] );
 			}
 			$feed_settings['trial_period'] = $trial_length . ' ' . $trial_unit;
-			$feed_settings['exp_date']     = Date( 'Y-m-d', strtotime( $feed_settings['trial_period'] ) );
 		}
+		$feed_settings['trial_period'] = $trial_length . ' ' . $trial_unit;
+		$feed_settings['exp_date']     = Date( 'Y-m-d', strtotime( $feed_settings['trial_period'] ) );
 
 		return $feed_settings;
 	}
