@@ -127,20 +127,22 @@ class eddUserFields extends GFAddOn {
 
 	    $settings_fields = array();
 
+	    $allow_override = isset( $_GET['allow-override'] );
+
 	    foreach ( $edd_field_array as $key => $edd_field ) {
 
 		    if ( ! empty( $edd_fields[ $key ] ) ) {
 
 		    	$_setting_field = array(
 				    'label' => $edd_field,
-				    'type' => 'select',
+				    'type' => ( $allow_override ? 'text' : 'select' ),
 				    'name' => $key,
 				    'choices' => $edd_fields[ $key ],
 			    );
 
 		    	// Shouldn't be visible, unless people manually add query string. Don't want to prevent altogether.
 			    if( sizeof( $edd_fields[ $key ] ) === 1 ) {
-				    $_setting_field['type'] = 'text';
+				    $_setting_field['type'] = $allow_override ? 'text' : 'hidden';
 				    $_setting_field['value'] = $edd_fields[ $key ][0]['value'];
 			    }
 
@@ -149,11 +151,19 @@ class eddUserFields extends GFAddOn {
 
 	    }
 
+	    $title = esc_html__('EDD Fields', 'edd-gf');
+	    $description = sprintf('<p class="subheading">%s</p>', esc_html__( 'Choose the fields to use as the data sources for Easy Digital Downloads purchases.', 'edd-gf' ) );
+
+	    if ( $allow_override ) {
+		    $title .= ' ' . esc_html__( '(Custom Override)', 'edd-gf' );
+		    $description .= sprintf( '<p><strong>%s</strong></p>', esc_html__( 'Enter the ID or custom key of the field you want to use as the source of the corresponding EDD data.' ) );
+	    }
+
         // return Name and Email fields settings
         return array(
             array(
-	            'title' => esc_html__('EDD Settings', 'edd-gf'),
-                'description' => sprintf('<p class="subheading">%s</p>', 'What field do you want to use as the data source for Easy Digital Downloads purchase?' ),
+	            'title' => $title,
+                'description' => $description,
                 'fields' => $settings_fields,
             ),
         );
