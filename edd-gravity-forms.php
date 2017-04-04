@@ -87,8 +87,14 @@ final class KWS_GF_EDD {
 		$this->require_files();
 
 
+		new KWS_GF_EDD_Subscriptions( $this );
 
-	    new KWS_GF_EDD_Subscriptions( $this );
+		/**
+		 * Check for plugin updates. Built into EDD version 1.9+
+		 */
+		if (class_exists('EDD_License')) {
+			new EDD_License(EDD_GF_PLUGIN_FILE, self::name, self::version, 'Katz Web Services, Inc.');
+		}
 
 		$this->add_actions();
 
@@ -107,12 +113,6 @@ final class KWS_GF_EDD {
 	    // Run the EDD functionality
 	    add_action("gform_after_submission", array($this, 'send_purchase_to_edd'), PHP_INT_MAX, 2);
 
-        /**
-         * Check for plugin updates. Built into EDD version 1.9+
-         */
-        if (class_exists('EDD_License')) {
-            new EDD_License(EDD_GF_PLUGIN_FILE, self::name, self::version, 'Katz Web Services, Inc.');
-        }
 	    // Backward compatibility
 	    add_action('gform_post_payment_status', array($this, 'gform_post_payment_status'), 10, 3);
 
