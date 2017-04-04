@@ -84,13 +84,9 @@ final class KWS_GF_EDD {
 	 */
 	public function init() {
 
-        include( EDD_GF_PLUGIN_DIR . 'logging.php' );
-        include( EDD_GF_PLUGIN_DIR . 'admin.php' );
+		$this->require_files();
 
-        // add gravity form edd user fields
-        include( EDD_GF_PLUGIN_DIR . 'edd-user-fields.php' );
 
-	    include( EDD_GF_PLUGIN_DIR . 'subscriptions.php' );
 
 	    new KWS_GF_EDD_Subscriptions( $this );
 
@@ -99,6 +95,15 @@ final class KWS_GF_EDD {
 
         // Backward compatibility
         add_action('gform_post_payment_status', array($this, 'gform_post_payment_status'), 10, 3);
+	/**
+	 * Include required files
+	 */
+    private function require_files() {
+        require_once( EDD_GF_PLUGIN_DIR . 'logging.php' );
+        require_once( EDD_GF_PLUGIN_DIR . 'admin.php' );
+        require_once( EDD_GF_PLUGIN_DIR . 'edd-user-fields.php' );
+	    require_once( EDD_GF_PLUGIN_DIR . 'subscriptions.php' );
+    }
 
         // Update whenever GF updates payment statii
         add_action('gform_post_payment_completed', array($this, 'post_payment_callback'), 10, 2);
