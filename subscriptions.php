@@ -60,38 +60,51 @@ class KWS_GF_EDD_Subscriptions {
 			return;
 		}
 
-		if ( isset( $entry ) && $entry ) {
-				foreach ( $processed_feeds as $feed_slug => $processed_feed ) {
-						// get subscription payment id
-						$payment_id = $this->get_subscription_payment( $entry, $feed );
-						if ( $payment_id ) {
-							// get GF by form id
-							$form = GFAPI::get_form( $entry['form_id'] );
-							if ( $form ) {
-								// get feed subscription data
-								$feed_settings = $this->get_subscription_feed_settings( $feed );
-								// get cart details
-								$data         = $this->parent->get_edd_data_array_from_entry( $entry, $form );
-								$cart_details = $data['cart_details'];
-								// get customer id
-								$customer_id = get_post_meta( $payment_id, '_edd_payment_customer_id', true );
-								$this->add_edd_subscription( $entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id );
-							}
-							break;
-						}
 		$processed_feeds = $this->get_feeds_by_entry( $entry['id'] );
 
 		if ( ! $processed_feeds ) {
+			$this->parent->r( 'No feeds exist for Entry ID ' . $entry['id'] );
 			return;
 		}
+
+		$this->parent->r( $processed_feeds, false, 'Processed Feeds' );
+
+		foreach ( (array) $processed_feeds as $feed_slug => $processed_feed ) {
+
 			$feed = $this->get_feed( $processed_feed[0] );
 
-			// TODO: Log error
 			if ( ! $feed ) {
+				$this->parent->log_error( __METHOD__  . 'Feed does not exist, even though it should' );
 				continue;
 			}
-				}
+
+			// get subscription payment id
+			$edd_payment = $this->get_subscription_payment( $entry, $feed );
+
+			if ( ! $edd_payment ) {
+				$this->parent->r( 'There is no subscription payment associated with this entry' );
+				continue;
 			}
+
+			$this->parent->r( $edd_payment, false, 'EDD Subscription Payment' );
+
+			// get GF by form id
+			$form = GFAPI::get_form( $entry['form_id'] );
+
+			if ( ! $form ) {
+				$this->parent->log_error( 'The form no longer exists (ID #' . $entry['form_id'] . ') - cannot process feed.' );
+				break;
+			}
+
+			// get feed subscription data
+			$feed_settings = $this->get_subscription_feed_settings( $feed );
+
+			// get cart details
+			$data = $this->parent->get_edd_data_array_from_entry( $entry, $form );
+
+			$this->add_edd_subscription( $entry, $subscription_id, $data['cart_details'], $feed_settings, $edd_payment->customer_id, $edd_payment->ID );
+
+			break;
 		}
 	}
 
