@@ -13,7 +13,7 @@ class eddUserFields extends GFAddOn {
     protected $_path = 'edd-gravity-forms/edd-gravity-forms.php';
     protected $_full_path = __FILE__;
     protected $_title = 'Gravity Forms EDD User Fields';
-    protected $_short_title = 'EDD Payment Fields';
+    protected $_short_title = 'EDD Fields';
     private static $_instance = null;
 
     /**

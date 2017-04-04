@@ -524,8 +524,17 @@ final class KWS_GF_EDD {
 
         $user_info_from_entry = $this->get_user_info_from_submission($form, $entry);
 
+	    /**
+	     * @filter `edd_gf_use_details_from_logged_in_user` Whether to use details from the logged-in user if the information is not in the form
+	     * @see http://support.katz.co/article/334-override-user-data
+	     * @param bool $use_logged_in_user_details True: use user defaults, false: don't [Default: true]
+	     * @param array $entry Gravity Forms Entry object
+	     * @param array $form Gravity Forms
+	     */
+	    $use_logged_in_user_details = apply_filters( 'edd_gf_use_details_from_logged_in_user', true, $entry, $form );
+
         // Get the $current_user WP_User object
-        if ( is_user_logged_in() ) {
+        if ( $use_logged_in_user_details && is_user_logged_in() ) {
 	        $wp_user = wp_get_current_user();
         }
         // User is not logged in, but the email exists
