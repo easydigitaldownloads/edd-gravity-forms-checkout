@@ -74,22 +74,15 @@ class eddUserFields extends GFAddOn {
 
 	    $return_fields = array();
 
-	    if ( $form["fields"] ) {
+        $fields = GFAPI::get_fields_by_type( $form, array( 'email', 'name', 'address' ) );
 
-		    /** @var GF_Field $form_field */
-		    foreach ( $form["fields"] as $form_field ) {
-			    switch ( $form_field->type ) {
-				    case 'email':
-				    case 'name':
-				    case 'address':
-				    	$return_fields[ $form_field->type ][] = array(
-						    'label' => sprintf( esc_html__( '%s (Field ID #%d)', 'edd-gf' ), $form_field->get_field_label( true, '' ), $form_field->id ),
-						    'value' => $form_field->id,
-						    'default' => intval( ! isset( $return_fields[ $form_field->type ] ) ),
-					    );
-					    break;
-			    }
-		    }
+	    /** @var GF_Field $form_field */
+	    foreach ( $fields as $form_field ) {
+	        $return_fields[ $form_field->type ][] = array(
+			    'label' => sprintf( esc_html__( '%s (Field ID #%d)', 'edd-gf' ), $form_field->get_field_label( true, '' ), $form_field->id ),
+			    'value' => $form_field->id,
+			    'default' => intval( ! isset( $return_fields[ $form_field->type ] ) ), // Is this the first one set? If so, mark as default.
+		    );
 	    }
 
 	    return $return_fields;
@@ -113,9 +106,18 @@ class eddUserFields extends GFAddOn {
      */
     public function form_settings_fields( $form ) {
 
-	    $form_settings = eddUserFields::get_instance()->get_current_settings( $form );
+	    $edd_fields = array();
 
-	    $edd_fields = $this->get_edd_field_settings( $form );
+	    $form_fields_to_use = GFAPI::get_fields_by_type( $form, array( 'email', 'name', 'address' ) );
+
+	    /** @var GF_Field $form_field */
+	    foreach ( $form_fields_to_use as $form_field ) {
+		    $edd_fields[ $form_field->type ][] = array(
+			    'label' => sprintf( esc_html__( '%s (Field ID #%d)', 'edd-gf' ), $form_field->get_field_label( true, '' ), $form_field->id ),
+			    'value' => $form_field->id,
+			    'default' => intval( ! isset( $edd_fields[ $form_field->type ] ) ), // Is this the first one set? If so, mark as default.
+		    );
+	    }
 
 	    $edd_field_array = array(
 	    	'name' => esc_html__('Name', 'edd-gf'),
