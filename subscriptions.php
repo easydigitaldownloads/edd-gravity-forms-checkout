@@ -12,6 +12,20 @@ class KWS_GF_EDD_Subscriptions {
 	 */
 	public function __construct( KWS_GF_EDD $parent ) {
 
+		$this->add_hooks();
+
+		$this->parent = $parent;
+	}
+
+	/**
+	 * Setup hooks for subscriptions
+	 *
+	 * @since 2.0
+	 *
+	 * @return void
+	 */
+	private function add_hooks() {
+
 		// add edd subscription when GF subscription complete
 		add_action( 'gform_post_subscription_started', array( $this, 'add_entry_subscription_id' ), 10, 2 );
 		add_action( 'gform_post_add_subscription_payment', array( $this, 'edd_renew_subscription_payment' ), 10, 2 );
@@ -22,9 +36,7 @@ class KWS_GF_EDD_Subscriptions {
 		// expire edd subscription when GF subscription expired
 		add_action( 'gform_post_payment_action', array( $this, 'edd_expire_subscription_payment' ), 10, 2 );
 
-		add_action( 'edd_gf_payment_added', array( $this, 'maybe_start_subscription' ), 10, 2 );
-
-		$this->parent = $parent;
+		add_action( 'edd_gf_payment_added', array( $this, 'maybe_start_subscription' ), 10, 3 );
 	}
 
 	/**
