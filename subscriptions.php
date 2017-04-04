@@ -285,58 +285,68 @@ class KWS_GF_EDD_Subscriptions {
 	public function add_edd_subscription( $entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id ) {
 
 		// add edd subscription
-		if ( class_exists( 'EDD_Recurring_Subscriber' ) && $cart_details ) {
+		if ( ! class_exists( 'EDD_Recurring_Subscriber' ) || empty( $cart_details ) ) {
+			return;
+		}
 
-			// get edd subscriber
-			$subscriber = new EDD_Recurring_Subscriber( $customer_id );
+		// get edd subscriber
+		$subscriber = new EDD_Recurring_Subscriber( $customer_id );
 
-			foreach ( $cart_details as $cart_detail ) {
-				//variable initialization
-				$trial_prod      = false;
-				$recurring_prod  = true;
-				$recurring_times = $feed_settings['recurring_times'];
-				$exp_date        = $feed_settings['exp_date'];
-				$trial_period    = '';
-				// get product discount
-				$prod_discount = ( isset( $cart_detail['discount'] ) && $cart_detail['discount'] ) ? $cart_detail['discount'] : 0;
-				// get product price
-				$prod_price    = ( isset( $cart_detail['price'] ) && $cart_detail['price'] ) ? $cart_detail['price'] : 0;
-				$product_total = $prod_price - $prod_discount;
-				// get initial amount
-				$initial_amount = ( $feed_settings['trial_subscription'] && $feed_settings['trial_amount'] != NULL ) ? $feed_settings['trial_amount'] : $product_total;
-				// check if trial product
-				if ( intval( $feed_settings['trial_prod'] ) == intval( $cart_detail['product_field_id'] ) ) {
-					$trial_prod     = true;
-					$initial_amount = 0;
-					$trial_period   = $feed_settings['trial_period'];
-				}
-				// check if not recurring product
-				if ( $feed_settings['recurring_amount'] && $feed_settings['recurring_amount'] !== 'form_total' && intval( $feed_settings['recurring_amount'] ) !== intval( $cart_detail['product_field_id'] ) ) {
-					$recurring_prod  = false;
-					$recurring_times = 1;
-					$exp_date        = date( 'Y-m-d', strtotime( '+1 years' ) );
-				}
-				// if recurring product or not trial product and not recurring products
-				if ( $recurring_prod || ( ! $trial_prod && ! $recurring_prod ) ) {
-					// set args to add edd new subscription
-					$args = array(
-						'product_id'        => $cart_detail['item_number']['id'],
-						'user_id'           => $customer_id,
-						'parent_payment_id' => $payment_id,
-						'status'            => 'Active',
-						'period'            => $feed_settings['recurring_len'],
-						'initial_amount'    => $initial_amount,
-						'recurring_amount'  => $product_total,
-						'bill_times'        => $recurring_times,
-						'expiration'        => $exp_date,
-						'trial_period'      => $trial_period,
-						'profile_id'        => $customer_id,
-						'transaction_id'    => $subscription_id,
-					);
-					$subscriber->add_subscription( $args );
-					if ( $trial_period ) {
-						$subscriber->add_meta( 'edd_recurring_trials', $entry['id'] );
-					}
+		foreach ( $cart_details as $cart_detail ) {
+
+			//variable initialization
+			$trial_prod      = false;
+			$recurring_prod  = true;
+			$recurring_times = $feed_settings['recurring_times'];
+			$exp_date        = $feed_settings['exp_date'];
+			$trial_period    = '';
+
+			// get product discount
+			$prod_discount = ( isset( $cart_detail['discount'] ) && $cart_detail['discount'] ) ? $cart_detail['discount'] : 0;
+
+			// get product price
+			$prod_price    = ( isset( $cart_detail['price'] ) && $cart_detail['price'] ) ? $cart_detail['price'] : 0;
+			$product_total = $prod_price - $prod_discount;
+
+			// get initial amount
+			$initial_amount = ( $feed_settings['trial_subscription'] && $feed_settings['trial_amount'] != NULL ) ? $feed_settings['trial_amount'] : $product_total;
+
+			// Check if trial product
+			if ( intval( $feed_settings['trial_prod'] ) == intval( $cart_detail['product_field_id'] ) ) {
+				$trial_prod     = true;
+				$initial_amount = 0;
+				$trial_period   = $feed_settings['trial_period'];
+			}
+
+			// Check if not recurring product
+			if ( $feed_settings['recurring_amount'] && $feed_settings['recurring_amount'] !== 'form_total' && intval( $feed_settings['recurring_amount'] ) !== intval( $cart_detail['product_field_id'] ) ) {
+				$recurring_prod  = false;
+				$recurring_times = 1;
+				$exp_date        = date( 'Y-m-d', strtotime( '+1 years' ) );
+			}
+
+			// Check if recurring product or not trial product and not recurring products
+			if ( $recurring_prod || ( ! $trial_prod && ! $recurring_prod ) ) {
+				// set args to add edd new subscription
+				$args = array(
+					'product_id'        => $cart_detail['item_number']['id'],
+					'user_id'           => $customer_id,
+					'parent_payment_id' => $payment_id,
+					'status'            => 'Active',
+					'period'            => $feed_settings['recurring_len'],
+					'initial_amount'    => $initial_amount,
+					'recurring_amount'  => $product_total,
+					'bill_times'        => $recurring_times,
+					'expiration'        => $exp_date,
+					'trial_period'      => $trial_period,
+					'profile_id'        => $customer_id,
+					'transaction_id'    => $subscription_id,
+				);
+
+				$subscriber->add_subscription( $args );
+
+				if ( $trial_period ) {
+					$subscriber->add_meta( 'edd_recurring_trials', $entry['id'] );
 				}
 			}
 		}
