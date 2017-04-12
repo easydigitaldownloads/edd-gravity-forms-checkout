@@ -356,6 +356,12 @@ final class KWS_GF_EDD {
             }
         }
 
+        // get entry subscription trial data
+        if (gform_get_meta($entry['id'], 'gf_subscription_id')) {
+            $sub = $this->get_entry_subscription_data($form, $entry, $product_info['products']);
+        }
+
+        // initial total variable
         $total = 0;
 
         foreach ($downloads as $download) {
@@ -390,6 +396,12 @@ final class KWS_GF_EDD {
                     $item_discount = $item_price * ( $coupon_details['percentage'] / 100 );
                 } else if (isset($coupon_details['flat']) && $coupon_details['flat']) {
                     $item_discount = $coupon_details['flat'];
+                }
+                // update cart total with subscription trial product
+                if (isset($sub['trial_prod']) && $sub['trial_prod'] && $sub['trial_prod'] == $prod_id) {
+                    $item_discount = $item_price;
+                } else if (isset($sub['trial_amount']) && $sub['trial_amount']) {
+                    $item_discount += $sub['trial_amount'];
                 }
 
                 $cart_details[] = array(
@@ -792,6 +804,32 @@ final class KWS_GF_EDD {
     }
 
     /**
+     * Get garvity forms feed by entry id
+     * 
+     * @param array $entry_id Entry ID
+     */
+    public function gf_entry_feed($entry_id) {
+        $feed = null;
+        // get feed for this entry
+        if ($entry_id) {
+            // get entry processed feeds 
+            $processed_feeds = gform_get_meta($entry_id, 'processed_feeds');
+            if ($processed_feeds) {
+                foreach ($processed_feeds as $feed_slug => $processed_feed) {
+                    global $wpdb;
+                    $sql = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}gf_addon_feed WHERE id=%d", $processed_feed[0]);
+                    $feed = $wpdb->get_row($sql, ARRAY_A);
+                    $feed['meta'] = json_decode($feed['meta'], true);
+                    if ($feed) {
+                        return $feed;
+                    }
+                }
+            }
+        }
+        return $feed;
+    }
+
+    /**
      * Add edd new subscription
      * 
      * @param array $entry Entry Object
@@ -800,32 +838,23 @@ final class KWS_GF_EDD {
     public function edd_subscription_started($entry, $subscription_id) {
 
         if (isset($entry) && $entry) {
-            // get entry processed feeds 
-            $processed_feeds = gform_get_meta($entry['id'], 'processed_feeds');
-            if ($processed_feeds) {
-                foreach ($processed_feeds as $feed_slug => $processed_feed) {
-                    global $wpdb;
-                    $sql = $wpdb->prepare("SELECT * FROM {$wpdb->prefix}gf_addon_feed WHERE id=%d", $processed_feed[0]);
-                    $feed = $wpdb->get_row($sql, ARRAY_A);
-                    $feed['meta'] = json_decode($feed['meta'], true);
-                    if ($feed) {
-                        // get subscription payment id 
-                        $payment_id = $this->get_subscription_payment($entry, $feed);
-                        if ($payment_id) {
-                            // get GF by form id
-                            $form = GFAPI::get_form($entry['form_id']);
-                            if ($form) {
-                                // get feed subscription data
-                                $feed_settings = $this->get_subscription_feed_settings($feed);
-                                // get cart details
-                                $data = $this->get_edd_data_array_from_entry($entry, $form);
-                                $cart_details = $data['cart_details'];
-                                // get customer id 
-                                $customer_id = get_post_meta($payment_id, '_edd_payment_customer_id', true);
-                                $this->add_edd_subscription($entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id);
-                            }
-                            break;
-                        }
+            // get entry feed 
+            $feed = $this->gf_entry_feed($entry['id']);
+            if ($feed) {
+                // get subscription payment id 
+                $payment_id = $this->get_subscription_payment($entry, $feed);
+                if ($payment_id) {
+                    // get GF by form id
+                    $form = GFAPI::get_form($entry['form_id']);
+                    if ($form) {
+                        // get feed subscription data
+                        $feed_settings = $this->get_subscription_feed_settings($feed);
+                        // get cart details
+                        $data = $this->get_edd_data_array_from_entry($entry, $form);
+                        $cart_details = $data['cart_details'];
+                        // get customer id 
+                        $customer_id = get_post_meta($payment_id, '_edd_payment_customer_id', true);
+                        $this->add_edd_subscription($entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id);
                     }
                 }
             }
@@ -1159,6 +1188,10 @@ final class KWS_GF_EDD {
                     $products_num += intval($product['quantity']);
                 }
             }
+        } else if ($products) {
+            foreach ($products as $product_key => $product) {
+                $products_num += intval($product['quantity']);
+            }
         }
 
         return $products_num;
@@ -1222,6 +1255,33 @@ final class KWS_GF_EDD {
         }
 
         return $coupon_details;
+    }
+
+    /*
+     * function to get subscription details for entry
+     */
+
+    function get_entry_subscription_data($form, $entry, $form_prods) {
+        // get entry subscription trial data
+        $feed = $this->gf_entry_feed($entry['id']);
+        $sub = array();
+        if ($feed) {
+            if (intval(rgars($feed, 'meta/trial_enabled')) === 1 && intval(rgars($feed, 'meta/setupFee_enabled')) === 1) {
+                // if trial amount is selected 
+                if (rgars($feed, 'meta/trial_product') == 'enter_amount') {
+                    // get coupons for entry 
+                    $entry_coupons = $this->get_entry_coupons($form, $entry);
+                    // get number of products in entry
+                    $products_num = $this->entry_num_products($form_prods, $entry_coupons);
+                    $sub['trial_amount'] = ($products_num) ? edd_sanitize_amount($feed['meta']['trial_amount']) / $products_num : edd_sanitize_amount($feed['meta']['trial_amount']);
+                } else if (rgars($feed, 'meta/trial_product')) {
+                    $sub['trial_prod'] = $feed['meta']['trial_product'];
+                } else if (rgars($feed, 'meta/setupFee_product')) {
+                    $sub['trial_prod'] = $feed['meta']['setupFee_product'];
+                }
+            }
+        }
+        return $sub;
     }
 
     /**
