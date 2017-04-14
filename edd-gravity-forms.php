@@ -1,5 +1,4 @@
 <?php
-
 /**
  * \mainpage Gravity Forms Checkout for EDD
  *
@@ -103,6 +102,7 @@ final class KWS_GF_EDD {
 		}
 
 		$this->add_actions();
+	}
 
 	/**
 	 * Include required files
