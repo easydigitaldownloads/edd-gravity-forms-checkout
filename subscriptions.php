@@ -42,17 +42,24 @@ class KWS_GF_EDD_Subscriptions {
 	/**
 	 * Add gf subscription id to entry when GF subscription started
 	 *
+	 * Uses Gravity Forms's `gform_post_subscription_started` hook
+	 *
+	 * @since 2.0
+	 *
 	 * @param array $entry Entry Object
 	 * @param array $subscription The new Subscription object
+	 *
+	 * @return void
 	 */
 	function add_entry_subscription_id( $entry = array(), $subscription = array() ) {
-
 		gform_update_meta( $entry['id'], 'gf_subscription_id', $subscription['subscription_id'] );
-
 	}
 
 	/**
-	 * Add EDD new subscription if there's a
+	 * When a new payment is processed in Gravity Forms (gform_after_submission), and the payment is converted to
+	 * an order in EDD, then handle the subscription.
+	 *
+	 * @since 2.0
 	 *
 	 * @param array $entry Entry Object
 	 * @param int $edd_payment_id EDD Payment ID
@@ -68,7 +75,12 @@ class KWS_GF_EDD_Subscriptions {
 
 		$subscription_id = gform_get_meta( $entry['id'], 'gf_subscription_id' );
 
+		/**
+		 * No subscription was created
+		 * @see KWS_GF_EDD_Subscriptions::add_entry_subscription_id() Uses Gravity Forms's `gform_post_subscription_started` hook
+		 */
 		if ( empty( $subscription_id ) ) {
+			$this->parent->r( 'No subscription was created in Gravity Forms for Entry ID ' . $entry['id'] );
 			return;
 		}
 
@@ -124,11 +136,12 @@ class KWS_GF_EDD_Subscriptions {
 	 * Get processed feeds by entry.
 	 *
 	 * TODO: Should we use get_single_submission_feed() code instead, to handle single submission feeds?
+	 * @since 2.0
 	 * @see GFFeedAddOn::get_feeds_by_entry()
 	 *
 	 * @return array|false Array of feeds, false if none found. MODIFIED original code to return all feeds instead of just the current addon
 	 */
-	public function get_feeds_by_entry( $entry_id ) {
+	private function get_feeds_by_entry( $entry_id ) {
 
 		$processed_feeds = gform_get_meta( $entry_id, 'processed_feeds' );
 
@@ -136,7 +149,7 @@ class KWS_GF_EDD_Subscriptions {
 			return false;
 		}
 
-		// MODIFIED: Return all feeds instead of just the current addon's
+		// MODIFIED from original GF code: Return all feeds instead of just the current addon's
 		return $processed_feeds;
 	}
 
@@ -144,8 +157,9 @@ class KWS_GF_EDD_Subscriptions {
 	 * Clone of GFFeedAddOn::get_feed()
 	 *
 	 * @see GFFeedAddOn::get_feed()
+	 * @since 2.0
 	 *
-	 * @param int $id Feed ID
+	 * @param int $id GF Feed ID
 	 *
 	 * @return array|false
 	 */
@@ -164,6 +178,7 @@ class KWS_GF_EDD_Subscriptions {
 		return $row;
 	}
 
+	/**
 	 * Check feed subscription and return customer id
 	 *
 	 * @param array $entry Entry Object
@@ -213,11 +228,14 @@ class KWS_GF_EDD_Subscriptions {
 			'trial_subscription' => false,
 			'trial_period'       => '',
 		);
+
 		// get billing cycle
 		$feed_settings['recurring_len'] = $feed['meta']['billingCycle_length'] . ' ' . $feed['meta']['billingCycle_unit'];
 		$feed_settings['exp_date']      = Date( 'Y-m-d', strtotime( $feed_settings['recurring_len'] . 's' ) );
+
 		// get recurring times
 		$feed_settings['recurring_times'] = ( rgars( $feed, 'meta/recurringTimes' ) ) ? intval( $feed['meta']['recurringTimes'] ) : '';
+
 		// get recurring amount
 		$feed_settings['recurring_amount'] = ( rgars( $feed, 'meta/recurringAmount' ) ) ? $feed['meta']['recurringAmount'] : '';
 
@@ -249,7 +267,6 @@ class KWS_GF_EDD_Subscriptions {
 			if ( rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period_unit'] ) ) {
 				$trial_unit = rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period_unit'] );
 			}
-			$feed_settings['trial_period'] = $trial_length . ' ' . $trial_unit;
 		}
 		$feed_settings['trial_period'] = $trial_length . ' ' . $trial_unit;
 		$feed_settings['exp_date']     = Date( 'Y-m-d', strtotime( $feed_settings['trial_period'] ) );
@@ -282,7 +299,7 @@ class KWS_GF_EDD_Subscriptions {
 		/**
 		 * Modify where the trial period and trial period unit values are stored for each payment addon
 		 * @param array $subscription_addon {
-		 *  @type string $trial_period Path to the feed key where the trial period (# of days) is stored (example: `meta/trialPeriod`)
+		 *  @type string $trial_period Path to the feed key where the trial period (# of units) is stored (example: `meta/trialPeriod`)
 		 *  @type string $trial_period_unit Path to the feed key where the trial period (days/weeks/months) is stored (example: `meta/trialPeriod_unit`)
 		 * }
 		 */
@@ -374,8 +391,21 @@ class KWS_GF_EDD_Subscriptions {
 	/**
 	 * Renew edd subscription payment when GF subscription payment renew
 	 *
-	 * @param array $feed The Entry Object
+	 * Fires after a payment is made on an existing subscription.
+	 *
+	 * @param array $entry The Entry Object
 	 * @param array $action The Action Object
+	 *
+	 * $action = array(
+	 *     'type' => 'cancel_subscription',     // See Below
+	 *     'transaction_id' => '',              // What is the ID of the transaction made?
+	 *     'subscription_id' => '',             // What is the ID of the Subscription made?
+	 *     'amount' => '0.00',                  // Amount to charge?
+	 *     'entry_id' => 1,                     // What entry to check?
+	 *     'transaction_type' => '',
+	 *     'payment_status' => '',
+	 *     'note' => ''
+	 * );
 	 */
 	public function edd_renew_subscription_payment( $entry, $action ) {
 
@@ -453,6 +483,8 @@ class KWS_GF_EDD_Subscriptions {
 	 *
 	 * @param array $entry The Entry Object
 	 * @param array $action
+	 *
+	 * @return void
 	 */
 	public function edd_expire_subscription_payment( $entry, $action ) {
 
