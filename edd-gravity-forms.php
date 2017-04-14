@@ -425,7 +425,7 @@ final class KWS_GF_EDD {
         $data['user_info'] = $this->get_user_info($form, $entry);
         $data['cart_details'] = $cart_details;
         $data['total'] = GFCommon::to_number($total);
-	    $data['gateway'] = gform_get_meta( $entry['id'], 'payment_gateway' );
+	    $data['gateway'] = $this->get_edd_gateway_from_entry( $entry );
 
         if ($data['total'] < 0) {
 
@@ -438,6 +438,51 @@ final class KWS_GF_EDD {
 
         return $data;
     }
+
+	/**
+	 * Get the payment gateway used for an entry, and convert to EDD gateway
+	 *
+	 * @since 2.0
+	 *
+	 * @param $entry
+	 *
+	 * @return false|string FALSE if gateway isn't found; EDD gateway slug otherwise
+	 */
+	private function get_edd_gateway_from_entry( $entry ) {
+
+    	$original_gateway = gform_get_meta( $entry['id'], 'payment_gateway' );
+
+		$gateway = $original_gateway;
+
+		switch ( $original_gateway ) {
+			case 'gravityformspaypalpaymentspro':
+			case 'paypalpaymentspro':
+				$gateway = 'paypalpro';
+				break;
+
+			case 'gravityformsstripe':
+				$gateway = 'stripe';
+				break;
+
+			case 'gravityformsauthorizenet':
+			case 'authorize.net':
+				$gateway = 'authorize';
+				break;
+
+			case 'gravityformspaypal':
+				$gateway = 'paypal';
+				break;
+		}
+
+		/**
+		 * Override the gateway slug stored for a purchase generated via Gravity Forms
+		 * @since 2.0
+		 * @param string|false $gateway Gateway slug passed to EDD
+		 */
+		$gateway = apply_filters( 'edd_gf_gateway_slug', $gateway, $original_gateway );
+
+		return $gateway;
+	}
 
 	private function get_first_field_id_by_type( $form = array(), $type = 'name' ) {
 
