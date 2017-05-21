@@ -867,32 +867,17 @@ final class KWS_GF_EDD {
 	}
 
     /**
-     * Print debug output if $this->debug is set to true
+     * @deprecated 2.0 Use log_debug or log_error instead
+     *
+     * Print debug output if the self::debug CONST is set to true
+     *
      * @param  mixed  $value The output you would like to print
      * @param  boolean $die   Exit after outputting
      */
     public function r($value, $die = false, $title = null) {
 
-        // Push debug messages to the Gravity Forms Logging Tool
-        do_action('edd_gf_log_debug', $title . "\n" . print_r($value, true));
+    	$this->log_debug( $title . "\n" . print_r($value, true) );
 
-        if (current_user_can('administrator') && self::debug) {
-
-            // Output buffering fatal errors when seeing `print_r()`
-            if (ob_get_level() > 0) {
-                ob_end_flush();
-            }
-
-            if ($title) {
-                echo '<h3>' . $title . '</h3>';
-            }
-            echo '<pre>';
-            print_r($value);
-            echo '</pre>';
-            if ($die) {
-                die();
-            }
-        }
     }
 
     /**

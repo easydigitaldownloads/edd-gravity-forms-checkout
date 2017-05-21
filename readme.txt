@@ -27,6 +27,8 @@ __To translate the plugin__ into your language, please [submit your translation 
 == Changelog ==
 
 * Fixed: Restored [`edd_gf_use_details_from_logged_in_user`](http://support.katz.co/article/334-override-user-data) filter
+* Deprecated `r()` logging method
+
 = 1.4.2 on June 23, 2016 =
 * Compatible with Easy Digital Downloads 2.6 and Gravity Forms 2.0
 * Fixed: Purchase quantity is now properly handled; a download is added for each defined quantity
