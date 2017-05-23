@@ -37,6 +37,83 @@ class KWS_GF_EDD_Subscriptions {
 		add_action( 'gform_post_payment_action', array( $this, 'edd_expire_subscription_payment' ), 10, 2 );
 
 		add_action( 'edd_gf_payment_added', array( $this, 'maybe_start_subscription' ), 10, 3 );
+		add_filter( 'edd_recurring_periods', array( $this, 'get_edd_gf_recurring_periods' ) );
+		add_filter( 'edd_recurring_subscription_frequency', array( $this, 'get_edd_recurring_subscription_frequency' ), 10, 2 );
+	}
+
+	/**
+	 * Get the string for a subscription frequency that was added by this plugin
+	 *
+	 * @see KWS_GF_EDD_Subscriptions::get_edd_gf_recurring_periods
+	 *
+	 * @param string $frequency Empty string if label not set already
+	 * @param string $period Key of frequency; day, week, month, quarter, semi-year, year, 2 day, 6 week, 7 month, etc.
+	 *
+	 * @return string Frequency label, based on $period value. Example: `24 day` would return "24 Days"
+	 */
+	public function get_edd_recurring_subscription_frequency( $frequency, $period ) {
+
+		// String not yet populated; let's fetch ours
+		if( '' === $frequency ) {
+
+			$periods = $this->get_edd_gf_recurring_periods();
+
+			// We have a match; use it
+			if ( isset( $periods[ $period ] ) ) {
+				$frequency = $periods[ $period ];
+			}
+		}
+
+		return $frequency;
+	}
+
+	/**
+	 * Add all day/week/month period options to EDD periods
+	 *
+	 * Before: day, week, month, quarter, semi-year, year
+	 * After: 2 day, 6 week, 7 month, etc.
+	 *
+	 * @see EDD_Recurring::periods()
+	 *
+	 * @param array $edd_periods
+	 *
+	 * @return array
+	 */
+	public function get_edd_gf_recurring_periods( $edd_periods = array() ) {
+
+		// Not in the filter; we're fetching all the periods
+		if ( empty( $edd_periods ) && class_exists('EDD_Recurring') ) {
+			$edd_periods = EDD_Recurring()->periods();
+		}
+
+		$days = $months = $weeks = array();
+
+		// GF allows for up to 12 months or 12 weeks
+		$counter = 1;
+		while( $counter <= 12 ) {
+			$months["{$counter} month"] = '&nbsp;&nbsp;' . sprintf( esc_html__('%d Months', 'edd-gf' ), $counter );
+			$weeks["{$counter} week"] = '&nbsp;&nbsp;' . sprintf( esc_html__('%d Weeks', 'edd-gf' ), $counter );
+			$counter++;
+		}
+		unset( $months["12 month"] );
+
+		// GF allows for one whole year of days
+		$day = 1;
+		while( $day < 365 ) {
+			$days["{$day} day"] = '&nbsp;&nbsp;' . sprintf( esc_html__('%d Days', 'edd-gf' ), $day );
+			$day++;
+		}
+
+		// Combine months, weeks, days, in that order (reverse order of length)
+		$edd_gf_periods = $months + $weeks + $days;
+
+		// Use EDD strings when set
+		$edd_gf_periods['1 day']   = isset( $edd_periods['day'] ) ? $edd_periods['day'] : $edd_gf_periods['1 day'];
+		$edd_gf_periods['1 week']   = isset( $edd_periods['week'] ) ? $edd_periods['week'] : $edd_gf_periods['1 week'];
+		$edd_gf_periods['1 month']   = isset( $edd_periods['month'] ) ? $edd_periods['month'] : $edd_gf_periods['1 month'];
+
+		// Tack our values onto the end
+		return $edd_periods + $edd_gf_periods;
 	}
 
 	/**
