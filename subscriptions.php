@@ -133,6 +133,20 @@ class KWS_GF_EDD_Subscriptions {
 	}
 
 	/**
+	 * Get the subscription ID from an entry
+	 *
+	 * @param array $entry
+	 *
+	 * @return bool|int
+	 */
+	function get_entry_subscription_id( $entry = array() ) {
+
+		$subscription_id = gform_get_meta( $entry['id'], 'gf_subscription_id' );
+
+		return $subscription_id;
+	}
+
+	/**
 	 * When a new payment is processed in Gravity Forms (gform_after_submission), and the payment is converted to
 	 * an order in EDD, then handle the subscription.
 	 *
@@ -150,7 +164,7 @@ class KWS_GF_EDD_Subscriptions {
 			return;
 		}
 
-		$subscription_id = gform_get_meta( $entry['id'], 'gf_subscription_id' );
+		$subscription_id = $this->get_entry_subscription_id( $entry );
 
 		/**
 		 * No subscription was created
