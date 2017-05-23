@@ -325,7 +325,7 @@ class KWS_GF_EDD_Subscriptions {
 		$feed_settings['exp_date']      = Date( 'Y-m-d', strtotime( $feed_settings['recurring_len'] . 's' ) );
 
 		// get recurring times
-		$feed_settings['recurring_times'] = ( rgars( $feed, 'meta/recurringTimes' ) ) ? intval( $feed['meta']['recurringTimes'] ) : '';
+		$feed_settings['recurring_times'] = ( rgars( $feed, 'meta/recurringTimes' ) ) ? intval( $feed['meta']['recurringTimes'] ) : 0;
 
 		// get recurring amount
 		$feed_settings['recurring_amount'] = ( rgars( $feed, 'meta/recurringAmount' ) ) ? $feed['meta']['recurringAmount'] : '';
