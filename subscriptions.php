@@ -202,7 +202,7 @@ class KWS_GF_EDD_Subscriptions {
 			}
 
 			// get subscription payment id
-			$edd_payment = $this->get_subscription_payment( $entry, $feed );
+			$edd_payment = $this->get_subscription_payment_for_feed( $entry, $feed );
 
 			if ( ! $edd_payment ) {
 				$this->parent->log_debug( 'There is no subscription payment associated with this entry' );
@@ -276,7 +276,7 @@ class KWS_GF_EDD_Subscriptions {
 	 *
 	 * @return EDD_Payment $payment The EDD Payment object
 	 */
-	public function get_subscription_payment( $entry, $feed ) {
+	public function get_subscription_payment_for_feed( $entry, $feed ) {
 		global $wpdb;
 
 		$payment = NULL;
