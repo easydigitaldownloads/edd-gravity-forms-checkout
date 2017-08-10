@@ -858,9 +858,8 @@ final class KWS_GF_EDD {
 	 */
 	public function log_debug( $title = '', $data = null ) {
 
-		$data = '';
-		if( null !== $value ) {
-			$data = print_r($value, true );
+		if( null !== $data ) {
+			$data = print_r( $data, true );
 		}
 
 		$this->logger->log_debug( $title . "\n" . $data );
@@ -871,12 +870,13 @@ final class KWS_GF_EDD {
      *
      * Print debug output if the self::debug CONST is set to true
      *
-     * @param  mixed  $value The output you would like to print
+     * @param  mixed  $data The output you would like to print
      * @param  boolean $die   Exit after outputting
+     * @param  string $title The label to give to the output
      */
-    public function r($value, $die = false, $title = null) {
+    public function r( $data, $die = false, $title = null) {
 
-    	$this->log_debug( $title . "\n" . print_r($value, true) );
+    	$this->log_debug( $title, $data );
 
     }
 

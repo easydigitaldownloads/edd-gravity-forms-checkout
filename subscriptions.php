@@ -171,25 +171,25 @@ class KWS_GF_EDD_Subscriptions {
 		 * @see KWS_GF_EDD_Subscriptions::add_entry_subscription_id() Uses Gravity Forms's `gform_post_subscription_started` hook
 		 */
 		if ( empty( $subscription_id ) ) {
-			$this->parent->r( 'No subscription was created in Gravity Forms for Entry ID ' . $entry['id'] );
+			$this->parent->log_debug( 'No subscription was created in Gravity Forms for Entry ID ' . $entry['id'] );
 			return;
 		}
 
 		$processed_feeds = $this->get_feeds_by_entry( $entry['id'] );
 
 		if ( ! $processed_feeds ) {
-			$this->parent->r( 'No feeds exist for Entry ID ' . $entry['id'] );
+			$this->parent->log_debug( 'No feeds exist for Entry ID ' . $entry['id'] );
 			return;
 		}
 
-		$this->parent->r( $processed_feeds, false, 'Processed Feeds' );
+		$this->parent->log_debug( 'Processed Feeds', $processed_feeds );
 
 		foreach ( (array) $processed_feeds as $feed_slug => $processed_feed ) {
 
 			$feed = $this->get_feed( $processed_feed[0] );
 
 			if ( ! $feed ) {
-				$this->parent->log_error( __METHOD__  . 'Feed does not exist, even though it should' );
+				$this->parent->log_error( __METHOD__  . 'Feed does not exist, even though it should', $processed_feed );
 				continue;
 			}
 
@@ -197,11 +197,10 @@ class KWS_GF_EDD_Subscriptions {
 			$edd_payment = $this->get_subscription_payment( $entry, $feed );
 
 			if ( ! $edd_payment ) {
-				$this->parent->r( 'There is no subscription payment associated with this entry' );
+				$this->parent->log_debug( 'There is no subscription payment associated with this entry' );
 				continue;
 			}
 
-			$this->parent->r( $edd_payment, false, 'EDD Subscription Payment' );
 
 			// get GF by form id
 			$form = GFAPI::get_form( $entry['form_id'] );
@@ -213,6 +212,7 @@ class KWS_GF_EDD_Subscriptions {
 
 			// get feed subscription data
 			$feed_settings = $this->get_subscription_feed_settings( $feed );
+			$this->parent->log_debug( 'EDD Subscription Payment', $edd_payment );
 
 			// get cart details
 			$data = $this->parent->get_edd_data_array_from_entry( $entry, $form );
@@ -504,8 +504,7 @@ class KWS_GF_EDD_Subscriptions {
 		$payment_id = gform_get_meta( $entry['id'], 'edd_payment_id' );
 
 		if ( empty( $payment_id ) ) {
-			$this->parent->r( sprintf( 'No EDD payment ID for entry #%d', $entry['id'] ) );
-
+			$this->parent->log_debug( sprintf( 'No EDD payment ID for entry #%d', $entry['id'] ) );
 			return;
 		}
 
@@ -514,7 +513,7 @@ class KWS_GF_EDD_Subscriptions {
 		$subscriptions = $db->get_subscriptions( array( 'parent_payment_id' => $payment_id ) );
 
 		if ( empty( $subscriptions ) ) {
-			$this->parent->r( sprintf( 'No subscriptions to process for Entry #%d', $entry['id'] ) );
+			$this->parent->log_error( sprintf( 'No subscriptions to process for Entry #%d', $entry['id'] ) );
 			return;
 		}
 
@@ -554,6 +553,7 @@ class KWS_GF_EDD_Subscriptions {
 		$payment_id = gform_get_meta( $entry['id'], 'edd_payment_id' );
 
 		if ( empty( $payment_id ) ) {
+			$this->parent->log_debug( sprintf( 'No EDD payment ID for entry #%d', $entry['id'] ) );
 			return;
 		}
 
