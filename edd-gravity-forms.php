@@ -110,7 +110,7 @@ final class KWS_GF_EDD {
     private function require_files() {
         require_once( EDD_GF_PLUGIN_DIR . 'logging.php' );
         require_once( EDD_GF_PLUGIN_DIR . 'admin.php' );
-        require_once( EDD_GF_PLUGIN_DIR . 'edd-user-fields.php' );
+        require_once( EDD_GF_PLUGIN_DIR . 'class-gf-edd-user-fields.php' );
 	    require_once( EDD_GF_PLUGIN_DIR . 'subscriptions.php' );
     }
 

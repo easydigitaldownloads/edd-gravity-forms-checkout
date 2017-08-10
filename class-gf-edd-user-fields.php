@@ -1,11 +1,15 @@
 <?php
 
+if ( ! class_exists( 'GFForms' ) ) {
+	return;
+}
+
 /**
  * Add gravity form settings for user fields name and email
  */
 GFForms::include_addon_framework();
 
-class eddUserFields extends GFAddOn {
+class GF_EDD_User_Fields extends GFAddOn {
 
     protected $_version = '1.0';
     protected $_min_gravityforms_version = '1.9';
@@ -16,13 +20,22 @@ class eddUserFields extends GFAddOn {
     protected $_short_title = 'EDD Fields';
     private static $_instance = null;
 
+	/**
+	 * Make the titles translatable
+	 */
+    public function pre_init() {
+	    parent::pre_init();
+
+	    $this->_title = __('Gravity Forms EDD User Fields', 'edd-gf')
+	    $this->_short_title = __('EDD Fields', 'edd-gf');
+    }
+
     /**
      * Returns an instance of this class, and stores it in the $_instance property.
      *
-     * @return eddUserFields $_instance An instance of this class.
+     * @return GF_EDD_User_Fields $_instance An instance of this class.
      */
     public static function get_instance() {
-
 
         if (self::$_instance == null) {
             self::$_instance = new self();
@@ -49,6 +62,8 @@ class eddUserFields extends GFAddOn {
 	}
 
 	/**
+	 * Whether the form has multiple fields of the same type
+	 * @since 2.0
 	 *
 	 * @param $form_id
 	 *
@@ -151,8 +166,8 @@ class eddUserFields extends GFAddOn {
 
 	    }
 
-	    $title = esc_html__('EDD Fields', 'edd-gf');
-	    $description = sprintf('<p class="subheading">%s</p>', esc_html__( 'Choose the fields to use as the data sources for Easy Digital Downloads purchases.', 'edd-gf' ) );
+	    $title = sprintf( __('%sEDD%s Fields', 'edd-gf'), '<abbr title="' . esc_html__( 'Easy Digital Downloads', 'edd-gf' ) . '">', '</abbr>' );
+	    $description = sprintf('<h4 class="section-title">%s</h4>', esc_html__( 'The form has multiple fields of the same type. Please specify which fields should be used when creating a customer in Easy Digital Downloads.', 'edd-gf' ) );
 
 	    if ( $allow_override ) {
 		    $title .= ' ' . esc_html__( '(Custom Override)', 'edd-gf' );
@@ -171,4 +186,4 @@ class eddUserFields extends GFAddOn {
 
 }
 
-eddUserFields::get_instance();
+GF_EDD_User_Fields::get_instance();
