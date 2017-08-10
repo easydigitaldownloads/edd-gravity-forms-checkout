@@ -164,6 +164,14 @@ class KWS_GF_EDD_Subscriptions {
 			return;
 		}
 
+		// get GF by form id
+		$form = GFAPI::get_form( $entry['form_id'] );
+
+		if ( ! $form ) {
+			$this->parent->log_error( 'The form no longer exists (ID #' . $entry['form_id'] . ') - cannot process.' );
+			return;
+		}
+
 		$subscription_id = $this->get_entry_subscription_id( $entry );
 
 		/**
@@ -199,15 +207,6 @@ class KWS_GF_EDD_Subscriptions {
 			if ( ! $edd_payment ) {
 				$this->parent->log_debug( 'There is no subscription payment associated with this entry' );
 				continue;
-			}
-
-
-			// get GF by form id
-			$form = GFAPI::get_form( $entry['form_id'] );
-
-			if ( ! $form ) {
-				$this->parent->log_error( 'The form no longer exists (ID #' . $entry['form_id'] . ') - cannot process feed.' );
-				break;
 			}
 
 			// get feed subscription data
