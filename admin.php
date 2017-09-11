@@ -31,21 +31,23 @@ class KWS_GF_EDD_Admin {
 		// Enable debug with Gravity Forms Logging Add-on
 		add_filter( 'gform_logging_supported', array( $this, 'enable_gform_logging' ) );
 
-//		add_action( 'gform_field_standard_settings', array( $this, 'my_standard_settings' ), 10, 2 );
+		add_action( 'gform_field_standard_settings', array( $this, 'show_edd_fields_notice' ), 10, 2 );
 	}
 
-	function my_standard_settings( $position, $form_id ) {
+	/**
+	 * @param $position
+	 * @param $form_id
+	 */
+	function show_edd_fields_notice( $position, $form_id ) {
 
-		//create settings on position 1150 (right after Name Fields)
-		if ( 1150 === $position ) {
+		//create settings on position 1100 (right before Name Fields)
+		if ( 1100 === $position ) {
 			?>
-			<li class="edd_gf_customer_data field_setting">
-				<h4 class="section_label"><?php esc_html_e( 'Use as source of EDD Customer', 'edd-gf' ); ?></h4>
-				<label for="edd_gf_customer_data">
-					<input type="checkbox" id="edd_gf_customer_data" onclick="SetFieldProperty('eddCustomerData', this.checked );" onkeypress="SetFieldProperty('eddCustomerData', this.checked );" />
-					<?php esc_html_e( 'Use this information for EDD Customer details' ); ?>
-					<?php gform_tooltip( 'form_field_edd_customer_data' ) ?>
-				</label>
+			<li class="edd_gf_customer_data field_setting gold_notice">
+                <div class="alert_gray" style="padding: .25em 1em;">
+                    <h4><?php esc_html_e('There are multiple fields of this type.', 'edd-gf' ); ?></h4>
+                    <p><span class="description"><?php esc_html_e('In the form settings, you can choose which field EDD should use when creating the order. Select "EDD Fields" in the form&rsquo;s Settings menu.', 'edd-gf'); ?></a></span></p>
+                </div>
 			</li>
 			<?php
 		}
