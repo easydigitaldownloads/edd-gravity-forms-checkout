@@ -26,7 +26,7 @@ class GF_EDD_User_Fields extends GFAddOn {
     public function pre_init() {
 	    parent::pre_init();
 
-	    $this->_title = __('Gravity Forms EDD User Fields', 'edd-gf')
+	    $this->_title = __('Gravity Forms EDD User Fields', 'edd-gf');
 	    $this->_short_title = __('EDD Fields', 'edd-gf');
     }
 
@@ -171,7 +171,7 @@ class GF_EDD_User_Fields extends GFAddOn {
 
 	    if ( $allow_override ) {
 		    $title .= ' ' . esc_html__( '(Custom Override)', 'edd-gf' );
-		    $description .= sprintf( '<p><strong>%s</strong></p>', esc_html__( 'Enter the ID or custom key of the field you want to use as the source of the corresponding EDD data.' ) );
+		    $description .= sprintf( '<p><strong>%s</strong></p>', esc_html__( 'Enter the ID or custom key of the field you want to use as the source of the corresponding EDD data.', 'edd-gf' ) );
 	    }
 
         // return Name and Email fields settings
