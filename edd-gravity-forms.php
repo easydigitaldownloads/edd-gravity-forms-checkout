@@ -365,7 +365,24 @@ final class KWS_GF_EDD {
             }
         }
 
-        $total = 0;
+	    /**
+	     * Get product subscription data for an entry, if exists.
+	     *
+	     * @used-by KWS_GF_EDD_Subscriptions::get_entry_subscription_data
+	     * @see GFCommon::get_product_fields for $product_info array
+	     * @since 2.0
+	     *
+	     * @param array $subscription Array of {
+	     * @type string $trial_prod
+	     * }
+	     * @param array $form Gravity Forms form object
+	     * @param array $entry Gravity Forms entry object
+	     * @param array $product_info['products'] The products returned from {@see GFCommon::get_product_fields}
+	     */
+        $subscription = apply_filters( 'edd_gf_get_entry_subscription_data', array(), $form, $entry, $product_info['products'] );
+
+	    // initial total variable
+	    $total = 0;
 
         foreach ($downloads as $download) {
 
@@ -401,11 +418,21 @@ final class KWS_GF_EDD {
                     $item_discount = $coupon_details['flat'];
                 }
 
-                $cart_details[] = array(
+                if( $subscription ) {
+	                // update cart total with subscription trial product
+	                if ( ! empty( $subscription['trial_prod'] ) && $subscription['trial_prod'] == $download['product_field_id'] ) {
+		                $item_discount = $item_price;
+	                } else if ( ! empty( $subscription['trial_amount'] ) ) {
+		                $item_discount += $subscription['trial_amount'];
+	                }
+                }
+
+	            $cart_details[] = array(
                     'name' => get_the_title($download_id),
                     'id' => $download_id,
                     'item_number' => $item,
-                    'price' => $item_price,
+                    'price' => ( rgar( $subscription, 'is_trial' ) ? '0.00' : $item_price ),
+                    '_item_price' => $item_price,
                     'tax' => null,
                     'quantity' => 1,
                     'discount' => $item_discount,

@@ -37,6 +37,9 @@ class KWS_GF_EDD_Subscriptions {
 		add_action( 'gform_post_payment_action', array( $this, 'edd_expire_subscription_payment' ), 10, 2 );
 
 		add_action( 'edd_gf_payment_added', array( $this, 'maybe_start_subscription' ), 10, 3 );
+
+		add_filter( 'edd_gf_get_entry_subscription_data', array( $this, 'modify_entry_subscription_trial_and_fee' ), 10, 4 );
+
 		add_filter( 'edd_recurring_periods', array( $this, 'get_edd_gf_recurring_periods' ) );
 		add_filter( 'edd_recurring_subscription_frequency', array( $this, 'get_edd_recurring_subscription_frequency' ), 10, 2 );
 	}
@@ -297,6 +300,85 @@ class KWS_GF_EDD_Subscriptions {
 		}
 
 		return $payment;
+	}
+
+	/**
+     * Get subscription details for entry
+	 *
+	 * @param array $subscription Array of {
+	 *  @type string $trial_prod
+	 * }
+	 * @param array $form Gravity Forms form object
+	 * @param array $entry Gravity Forms entry object
+	 * @param array $form_products The products returned from {@see GFCommon::get_product_fields}
+	 *
+	 * @return array $return_sub Subscription array, with trial or setup fee information added
+     */
+	function modify_entry_subscription_trial_and_fee( $subscription = array(), $form, $entry, $form_products = array() ) {
+
+		// No subscription exists
+		if ( ! $this->get_entry_subscription_id( $entry ) ) {
+			$this->parent->log_debug( 'No subscription exists' );
+			return array();
+		}
+
+		// get entry subscription trial data
+		$feeds = $this->get_feeds_by_entry( $entry['id'] );
+
+		if ( empty( $feeds ) ) {
+			return array();
+		}
+
+		$first_feed = array_shift( $feeds );
+
+		if ( empty( $first_feed[0] ) ) {
+			return array();
+		}
+
+		$feed = $this->get_feed( $first_feed[0] );
+
+		if ( empty( $feed ) ) {
+			return array();
+		}
+
+		$return_sub = $subscription;
+
+		$is_trial_enabled = rgars( $feed, 'meta/trial_enabled');
+		$is_setup_fee_enabled = rgars($feed, 'meta/setupFee_enabled');
+
+		if ( $is_trial_enabled ) {
+			$return_sub['is_trial'] = 1;
+			$return_sub['trial_amount'] = 0;
+		}
+
+		if ( empty( $is_trial_enabled ) || empty( $is_setup_fee_enabled ) ) {
+			return $return_sub;
+		}
+
+		// if trial amount is selected
+		if ( 'enter_amount' === rgars($feed, 'meta/trial_product') ) {
+
+			// get coupons for entry
+			$entry_coupons = $this->parent->get_entry_coupons( $form, $entry );
+
+			// get number of products in entry
+			$products_num = $this->parent->entry_num_products( $form_products, $entry_coupons );
+
+			$trial_amount = rgars( $feed, 'meta/trial_amount' );
+
+			if ( ! empty( $products_num ) ) {
+				$return_sub['trial_amount'] = edd_sanitize_amount( $trial_amount ) / $products_num;
+			} else {
+				$return_sub['trial_amount'] = edd_sanitize_amount( $trial_amount );
+			}
+
+		} elseif ( $trial_product = rgars($feed, 'meta/trial_product')) {
+			$return_sub['trial_prod'] = $trial_product;
+		} elseif ( $setup_fee_product = rgars($feed, 'meta/setupFee_product')) {
+			$return_sub['trial_prod'] = $setup_fee_product;
+		}
+
+		return $return_sub;
 	}
 
 	/**
