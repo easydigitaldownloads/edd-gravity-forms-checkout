@@ -498,6 +498,39 @@ class KWS_GF_EDD_Subscriptions {
 	}
 
 	/**
+	 * Alias of GFPaymentAddOn::get_order_data(), but for whatever payment addon is active
+	 *
+	 * @see GFPaymentAddOn::get_order_data() Trying to fetch a payment addon
+	 *
+	 * @return false|array {
+	 *     The order data.
+	 *
+	 *     @type float $payment_amount The payment amount of the order.
+	 *     @type float $setup_fee      The setup fee, if any.
+	 *     @type float $trial          The trial fee, if any.
+	 *     @type float $discounts      Discounts applied, if any.
+	 * }
+	 */
+	private function get_order_data( $feed, $form, $entry ) {
+
+		$payment_addons = array(
+			'gf_authorizenet',
+		    'gf_stripe',
+		    'gf_paypal'
+		);
+
+		foreach ( $payment_addons as $addon ) {
+
+			if ( function_exists( $addon ) ) {
+				/** @var GFStripe $addon */
+				return $addon()->get_order_data( $feed, $form, $entry );
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Start EDD new subscription
 	 *
 	 * @param array $entry The Entry Feed
