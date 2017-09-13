@@ -855,9 +855,9 @@ final class KWS_GF_EDD {
         // Make sure GF and EDD have statuses that mean the same things.
         $payment_status = $this->get_payment_status_from_gf_status($action['payment_status']);
 
-        $this->r(sprintf('Setting $payment_id to %s and $payment_status to %s.', $payment_id, $payment_status));
+        $this->log_debug( sprintf('Setting $payment_id to %s and $payment_status to %s.', $payment_id, $payment_status));
 
-        $this->r(array('$entry' => $entry, '$payment_status' => $payment_status, '$action' => $action), false, 'Data passed to post_payment_callback');
+        $this->log_debug( 'Data passed to post_payment_callback', array('$entry' => $entry, '$payment_status' => $payment_status, '$action' => $action) );
 
         // Update the payment status
         edd_update_payment_status($payment_id, $payment_status);
@@ -888,11 +888,17 @@ final class KWS_GF_EDD {
 	 * @param string $title
 	 * @param null $data
 	 */
-    public function log_error( $title = '', $data = null ) {
+    public function log_error( $title = '', $value = null ) {
 
 	    $data = '';
 	    if( null !== $value ) {
 	    	$data = print_r($value, true );
+	    }
+
+	    if ( defined( 'DOING_EDD_GF_TESTS' ) && defined('EDD_GF_TESTS_DEBUG') && EDD_GF_TESTS_DEBUG ) {
+		    echo "\n" . $title . "\n";
+		    var_dump( $data );
+		    echo "\n";
 	    }
 
 	    $this->logger->log_error( $title . "\n" . $data );
