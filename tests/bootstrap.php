@@ -50,6 +50,8 @@ $edd_options = get_option( 'edd_settings' );
 $current_user = new WP_User(1);
 $current_user->set_role('administrator');
 
+gf_upgrade()->maybe_upgrade();
+
 do_action( 'plugins_loaded' );
 
 ob_end_clean();
