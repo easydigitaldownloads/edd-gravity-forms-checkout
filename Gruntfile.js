@@ -35,7 +35,7 @@ module.exports = function(grunt) {
                 files: [{
                     expand: true,
                     cwd: '<%= dirs.lang %>',
-                    src: ['*.po'],
+                    src: ['*.pot'],
                     dest: '<%= dirs.lang %>',
                     ext: '.mo',
                     nonull: true
