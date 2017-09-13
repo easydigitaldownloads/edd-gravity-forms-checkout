@@ -20,19 +20,20 @@
  * Text Domain: edd-gf
  * Domain Path: languages
  */
+
 /*
-  Copyright (C) 2015 Katz Web Services, Inc.
+Copyright (C) 2015 Katz Web Services, Inc.
 
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  GNU General Public License for more details.
- */
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+*/
 
 final class KWS_GF_EDD {
 
@@ -325,34 +326,43 @@ final class KWS_GF_EDD {
                         $option_name = $product['options'][$key]['option_name'];
                         $option_price = $product['options'][$key]['price'];
 
-                        $download_item['quantity'] = 1;
-                        $download_item['price'] = GFCommon::to_number($product['price'] + $option_price);
+		foreach ($form['fields'] as $field) {
+			if( $field['id' ] === $id ) {
+				return $field;
+			}
+		}
 
-                        $download_item['options'] = $this->get_download_options_from_entry($entry, $field, $edd_product_id, $product, $option_name, $option_price);
+		return false;
+	}
 
-                        // Create an additional download for each option
-                        $downloads[] = $download_item;
-                    }
-                } else {
-                    $option_price = $product['price'];
-                    $option_name = $product['name'];
+	/**
+	 * Take the submitted GF entry and form and generate an array of data for a new EDD order
+	 *
+	 * This is the work horse for the plugin. It processes an array with the keys: `cart_details`, `user_info`, `downloads`.
+	 *
+	 * @link http://support.katz.co/article/334-override-user-data Learn about how not to use logged-in user data
+	 * @param  array $entry GF Entry array
+	 * @param  array $form  GF Form array
+	 * @todo More user info for logged-in users.
+	 * @return array        Associative array with keys `cart_details`, `user_info`, `downloads`
+	 */
+	function get_edd_data_array_from_entry($entry, $form) {
 
-                    $download_item['options'] = $this->get_download_options_from_entry($entry, $field, $edd_product_id, $product, $option_name, $option_price);
+		$data = $downloads = $user_info = $cart_details = array();
 
-                    $downloads[] = $download_item;
-                }
-            } else {
+		// Get the products for the entry
+		$product_info = GFCommon::get_product_fields($form, $entry);
 
                 $this->log_debug('Download item when empty $field[\'eddHasVariables\']', $download_item );
 
-                $downloads[] = $download_item;
-            }
-        }
+		if( empty( $product_info['products'] ) ) {
+			$this->r( $product_info, false, 'There are no products in the entry.' );
+			return array();
+		}
 
         $this->log_debug('Downloads after product info, before removing empty downloads', $downloads );
 
-        // Clean up the downloads and remove items with no quantity.
-        foreach ($downloads as $key => $download) {
+		foreach ( $product_info['products'] as $product_field_id => $product ) {
 
             // If the quantity is 0, get rid of the download.
             if (empty($download['quantity'])) {
@@ -1014,6 +1024,13 @@ final class KWS_GF_EDD {
 	    return $user_info_discount;
     }
 
+			if($title) {
+				echo '<h3>'.$title.'</h3>';
+			}
+			echo '<pre>'; print_r($value); echo '</pre>';
+			if($die) { die(); }
+		}
+	}
 }
 
 new KWS_GF_EDD;
