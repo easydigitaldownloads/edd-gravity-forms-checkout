@@ -10,14 +10,13 @@ jQuery(document).ready(function($) {
 
     var EDD_GF_Admin = EDD_GF_Admin || {
 
-            debug: ( EDDGF.debug === '1' ),
+            debug: ( EDDGF.debug * 1 === 1 ),
 
             init: function() {
 
                 var self = EDD_GF_Admin;
 
-                $(document).on('gform_load_field_settings', self.hide_connect_for_options );
-
+                $(document).on('gform_load_field_settings', self.on_load_field_settings );
 
                 $('body')
 
@@ -61,6 +60,15 @@ jQuery(document).ready(function($) {
             },
 
             /**
+             * Triggered when field settings are loaded
+             * @since {1.5}
+             * @return {void}
+             */
+            on_load_field_settings: function() {
+                EDD_GF_Admin.hide_connect_for_options();
+            },
+
+            /**
              * Hide EDD connection info for other Product fields like Coupon, Quantity and Total
              * @return {void}
              */
@@ -69,10 +77,9 @@ jQuery(document).ready(function($) {
                 // Get the current field
                 var field = GetSelectedField();
 
-                if( field.type !== 'product' && field.type !== 'option' ) {
+	            if( field.type !== 'product' && field.type !== 'option' ) {
                     EDD_GF_Admin.product_hide_all( field );
                 }
-
             },
 
             /**

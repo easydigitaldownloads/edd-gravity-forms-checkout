@@ -1,7 +1,7 @@
 === Gravity Forms Checkout for Easy Digital Downloads ===
 Tags: easy digital downloads, edd, gravity forms, gravityforms
 Requires at least: 3.3
-Tested up to: 4.5.2
+Tested up to: 4.8.1
 Contributors: katzwebservices
 License: GPL 3 or higher
 
@@ -25,6 +25,17 @@ __To translate the plugin__ into your language, please [submit your translation 
 == Frequently Asked Questions ==
 
 == Changelog ==
+
+= 1.5 =
+
+* Added: Gravity Forms Transaction ID now stored in EDD
+* Added: Customer address now stored
+* Fixed: Restored [`edd_gf_use_details_from_logged_in_user`](http://support.katz.co/article/334-override-user-data) filter
+
+__Developer Notes:__
+
+* Deprecated `r()` logging method
+* Added unit testing
 
 = 1.4.2 on June 23, 2016 =
 * Compatible with Easy Digital Downloads 2.6 and Gravity Forms 2.0

@@ -1,0 +1,47 @@
+actor: Tester
+paths:
+    tests: tests/acceptance-tests
+    log: tests/acceptance-tests/_output
+    data: tests/acceptance-tests/_data
+    helpers: tests/acceptance-tests/_support
+settings:
+    bootstrap: _bootstrap.php
+    colors: true
+    memory_limit: 1024M
+modules:
+    config:
+        WPLoader:
+            wpRootFolder: /path/to/wordpress
+            dbName: acceptance-tests
+            dbHost: acceptance-tests.dev
+            dbUser: external
+            dbPassword: external
+            wpDebug: true
+            tablePrefix: wp_
+            domain: acceptance-tests.dev
+            plugins: ['gravityforms/gravityforms.php']
+            activatePlugins: ['gravityforms/gravityforms.php']
+        WPBrowser:
+            url: 'http://acceptance-tests.dev'
+            adminUsername: admin
+            adminPassword: password
+            adminUrl: /wp-admin
+        WPDb:
+            dsn: 'mysql:host=acceptance-tests.dev;dbname=acceptance-tests'
+            user: external
+            password: external
+            populate: true
+            cleanup: true
+            url: 'http://acceptance-tests.dev'
+            tablePrefix: wp_
+        WPWebDriver:
+            url: 'http://acceptance-tests.dev'
+            browser: chrome
+            host: localhost
+            port: 4444
+            window_size: '1524x1768'
+            restart: true
+            wait: 0
+            adminUsername: admin
+            adminPassword: password
+            adminUrl: /wp-admin

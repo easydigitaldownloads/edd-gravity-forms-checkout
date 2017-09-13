@@ -1,0 +1,213 @@
+{
+  "0": {
+    "title": "Conditional logic non-numeric values",
+    "description": "",
+    "labelPlacement": "top_label",
+    "descriptionPlacement": "below",
+    "button": {
+      "type": "text",
+      "text": "Submit",
+      "imageUrl": ""
+    },
+    "fields": [
+      {
+        "type": "text",
+        "id": 1,
+        "label": "single line",
+        "adminLabel": "",
+        "isRequired": false,
+        "size": "medium",
+        "errorMessage": "",
+        "inputs": null,
+        "formId": 177,
+        "description": "",
+        "allowsPrepopulate": false,
+        "inputMask": false,
+        "inputMaskValue": "",
+        "inputType": "",
+        "labelPlacement": "",
+        "descriptionPlacement": "",
+        "subLabelPlacement": "",
+        "placeholder": "",
+        "cssClass": "",
+        "inputName": "",
+        "visibility": "visible",
+        "noDuplicates": false,
+        "defaultValue": "",
+        "choices": "",
+        "conditionalLogic": "",
+        "productField": "",
+        "enablePasswordInput": "",
+        "maxLength": "",
+        "multipleFiles": false,
+        "maxFiles": "",
+        "calculationFormula": "",
+        "calculationRounding": "",
+        "enableCalculation": "",
+        "disableQuantity": false,
+        "displayAllCategories": false,
+        "useRichTextEditor": false,
+        "displayOnly": ""
+      },
+      {
+        "type": "select",
+        "id": 2,
+        "label": "dropdown",
+        "adminLabel": "",
+        "isRequired": false,
+        "size": "medium",
+        "errorMessage": "",
+        "inputs": null,
+        "choices": [
+          {
+            "text": "First Choice",
+            "value": "First Choice",
+            "isSelected": false,
+            "price": ""
+          },
+          {
+            "text": "One",
+            "value": "1",
+            "isSelected": false,
+            "price": ""
+          },
+          {
+            "text": "Second Choice",
+            "value": "Second Choice",
+            "isSelected": false,
+            "price": ""
+          },
+          {
+            "text": "Two",
+            "value": "2",
+            "isSelected": false,
+            "price": ""
+          },
+          {
+            "text": "Third Choice",
+            "value": "Third Choice",
+            "isSelected": false,
+            "price": ""
+          },
+          {
+            "text": "Three",
+            "value": "3",
+            "isSelected": false,
+            "price": ""
+          }
+        ],
+        "formId": 177,
+        "description": "",
+        "allowsPrepopulate": false,
+        "inputMask": false,
+        "inputMaskValue": "",
+        "inputType": "",
+        "labelPlacement": "",
+        "descriptionPlacement": "",
+        "subLabelPlacement": "",
+        "placeholder": "",
+        "cssClass": "",
+        "inputName": "",
+        "visibility": "visible",
+        "noDuplicates": false,
+        "defaultValue": "",
+        "conditionalLogic": "",
+        "productField": "",
+        "enablePrice": "",
+        "multipleFiles": false,
+        "maxFiles": "",
+        "calculationFormula": "",
+        "calculationRounding": "",
+        "enableCalculation": "",
+        "disableQuantity": false,
+        "displayAllCategories": false,
+        "useRichTextEditor": false,
+        "enableChoiceValue": true,
+        "displayOnly": ""
+      },
+      {
+        "type": "text",
+        "id": 4,
+        "label": "Single line required",
+        "adminLabel": "",
+        "isRequired": true,
+        "size": "medium",
+        "errorMessage": "",
+        "inputs": null,
+        "formId": 177,
+        "description": "This field will show if the dropdown value is greater than zero",
+        "allowsPrepopulate": false,
+        "inputMask": false,
+        "inputMaskValue": "",
+        "inputType": "",
+        "labelPlacement": "",
+        "descriptionPlacement": "",
+        "subLabelPlacement": "",
+        "placeholder": "",
+        "cssClass": "",
+        "inputName": "",
+        "visibility": "visible",
+        "noDuplicates": false,
+        "defaultValue": "",
+        "choices": "",
+        "conditionalLogic": {
+          "actionType": "show",
+          "logicType": "all",
+          "rules": [
+            {
+              "fieldId": "2",
+              "operator": ">",
+              "value": "0"
+            }
+          ]
+        },
+        "productField": "",
+        "enablePasswordInput": "",
+        "maxLength": "",
+        "multipleFiles": false,
+        "maxFiles": "",
+        "calculationFormula": "",
+        "calculationRounding": "",
+        "enableCalculation": "",
+        "disableQuantity": false,
+        "displayAllCategories": false,
+        "useRichTextEditor": false,
+        "displayOnly": ""
+      }
+    ],
+    "version": "2.2.3.15",
+    "id": 177,
+    "useCurrentUserAsAuthor": true,
+    "postContentTemplateEnabled": false,
+    "postTitleTemplateEnabled": false,
+    "postTitleTemplate": "",
+    "postContentTemplate": "",
+    "lastPageButton": null,
+    "pagination": null,
+    "firstPageCssClass": null,
+    "confirmations": [
+      {
+        "id": "596cbc6fd9e57",
+        "name": "Default Confirmation",
+        "isDefault": true,
+        "type": "message",
+        "message": "Thanks for contacting us! We will get in touch with you shortly.",
+        "url": "",
+        "pageId": "",
+        "queryString": ""
+      }
+    ],
+    "notifications": [
+      {
+        "id": "596cbc6fd868c",
+        "to": "{admin_email}",
+        "name": "Admin Notification",
+        "event": "form_submission",
+        "toType": "email",
+        "subject": "New submission from {form_title}",
+        "message": "{all_fields}"
+      }
+    ]
+  },
+  "version": "2.2.3.15"
+}

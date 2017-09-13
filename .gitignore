@@ -1,14 +1,31 @@
+# Help from https://www.gitignore.io
+
+### Mac ###
 .DS_Store
-*.config
-config.codekit
-.codekit-cache
-doxygen.config
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
 
+### SublimeText ###
 *.sublime-project
-
-edd-gravity-forms.sublime-project
-
-doxygen.config
-
 *.sublime-workspace
-node_modules/
+
+### Composer ###
+composer.lock
+
+### Libraries ###
+vendor/.git
+vendor/*/.git
+
+
+# Grunt
+node_modules
+
+# Vendor
+vendor
+
+# Temporary files
+*~

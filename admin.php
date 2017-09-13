@@ -7,8 +7,13 @@ class KWS_GF_EDD_Admin {
 	 */
 	function __construct() {
 
-		// We want to be in the admin.
-		if (!(is_admin() || (defined('DOING_CRON') && DOING_CRON))) { return; }
+		if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+		    return;
+		}
+
+		if ( ! is_admin() && ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) ) {
+			return;
+		}
 
 		$this->add_hooks();
 	}
@@ -20,7 +25,8 @@ class KWS_GF_EDD_Admin {
 	 * @return void
 	 */
 	function add_hooks() {
-		add_action( 'plugins_loaded', array(&$this, 'admin_init') );
+
+		add_action( 'admin_init', array(&$this, 'admin_init') );
 		add_action( 'admin_enqueue_scripts', array(&$this, 'admin_enqueue_scripts') );
 
 		add_filter( 'gform_noconflict_styles', array( $this, 'register_no_conflict') );
@@ -30,6 +36,27 @@ class KWS_GF_EDD_Admin {
 
 		// Enable debug with Gravity Forms Logging Add-on
 		add_filter( 'gform_logging_supported', array( $this, 'enable_gform_logging' ) );
+
+		add_action( 'gform_field_standard_settings', array( $this, 'show_edd_fields_notice' ), 10, 2 );
+	}
+
+	/**
+	 * @param $position
+	 * @param $form_id
+	 */
+	function show_edd_fields_notice( $position, $form_id ) {
+
+		//create settings on position 1100 (right before Name Fields)
+		if ( 1100 === $position ) {
+			?>
+			<li class="edd_gf_customer_data field_setting gold_notice">
+                <div class="alert_gray" style="padding: .25em 1em;">
+                    <h4><?php esc_html_e('There are multiple fields of this type.', 'edd-gf' ); ?></h4>
+                    <p><span class="description"><?php esc_html_e('In the form settings, you can choose which field EDD should use when creating the order. Select "EDD Fields" in the form&rsquo;s Settings menu.', 'edd-gf'); ?></a></span></p>
+                </div>
+			</li>
+			<?php
+		}
 	}
 
 	/**
@@ -96,7 +123,7 @@ class KWS_GF_EDD_Admin {
 	 * @access public
 	 * @static
 	 * @param string $location (default: '')
-	 * @return void
+	 * @return string "active", "inactive" or "notinstalled"
 	 */
 	private function get_plugin_status( $location = '' ) {
 
@@ -115,6 +142,8 @@ class KWS_GF_EDD_Admin {
 		if( is_plugin_inactive( $location ) ) {
 			return 'inactive';
 		}
+
+		return 'notinstalled';
 	}
 
 	/**
@@ -129,6 +158,7 @@ class KWS_GF_EDD_Admin {
 		wp_localize_script( 'edd-gf-admin', 'EDDGF', array(
 			'debug' => ( $min || KWS_GF_EDD::debug ),
 			'text_value' => __('Value', 'edd-gf'),
+			'field_types' => array( 'email', 'name' ),
 			'text_price_id' => __('EDD Price ID or Name', 'edd-gf')
 		));
 	}
@@ -153,7 +183,7 @@ class KWS_GF_EDD_Admin {
 
 	/**
 	 * Get the price variations for an EDD product
-	 * @return string JSON-encoded array of price variations
+	 * @return void Exits with JSON-encoded array of price variations
 	 */
 	public function check_for_variations() {
 		if( isset($_POST['nonce'] ) && wp_verify_nonce($_POST['nonce'], 'edd_gf_download_nonce') ) {
@@ -204,6 +234,10 @@ class KWS_GF_EDD_Admin {
 	        //adding setting to fields of type "options"
 	        fieldSettings["option"] += ", .edd_gf_connect_variations";
 
+	        //adding setting to fields of type "text"
+	        fieldSettings["name"] += ", .edd_gf_customer_data";
+	        fieldSettings["email"] += ", .edd_gf_customer_data";
+
 	        //binding to the load field settings event to initialize the checkbox
 	        jQuery(document).bind("gform_load_field_settings", function(event, field, form){
 
@@ -211,6 +245,9 @@ class KWS_GF_EDD_Admin {
 	        	console.info('in gform_load_field_settings (event, field, form)');
 	        	console.log(event, field, form);
 	        	*/
+
+		        // If the customer name hasn't been set yet or it's active
+		        jQuery('#edd_gf_customer_data').attr( 'checked', ( true === field.eddCustomerData ) );
 
 	        	// Set the value of the download ID
 	        	// We trigger change to force display of variations message.
@@ -260,7 +297,7 @@ class KWS_GF_EDD_Admin {
 ?>
 		<li class="edd_gf_connect_download field_setting">
 
-		    <label for="field_admin_label">
+		    <label for="field_edd_download">
 		    	<span class="fa fa-lg fa-arrow-circle-o-down"></span>
 		        <?php printf(__("Connect to EDD %s", 'edd-gf'), edd_get_label_singular()); ?>
 		        <?php gform_tooltip("form_field_edd_download_value") ?>
@@ -341,6 +378,7 @@ class KWS_GF_EDD_Admin {
 	function gf_tooltips($tooltips) {
 		$tooltips['edd_gf_load_variations'] = sprintf('<h6>%s</h6> %s', __('Use EDD Settings', 'edd-gf'), __( 'Load the variation names and prices from the Easy Digital Downloads product. You can change the options after loading.', 'edd-gf'));
 		$tooltips["form_field_edd_download_value"] = sprintf("<h6>%s</h6>%s", __('EDD Download', 'edd-gf'), __('Connect this product to an Easy Digital Downloads product. If connected, when this product is purchased it will generate a sale in Easy Digital Downloads.', 'edd-gf'));
+		$tooltips["form_field_edd_customer_data"] = sprintf("<h6>%s</h6>%s", __('Use for EDD Customer', 'edd-gf'), __('This form contains multiple fields of this type. Select this option to use this field\'s data when creating a Customer in Easy Digital Downloads.', 'edd-gf'));
 		return $tooltips;
 	}
 }
