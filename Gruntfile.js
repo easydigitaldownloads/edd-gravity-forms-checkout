@@ -63,6 +63,24 @@ module.exports = function(grunt) {
 				    return command;
 			    }
 		    }
+	    },
+	    // Add textdomain to all strings, and modify existing textdomains in included packages.
+	    addtextdomain: {
+		    options: {
+			    textdomain: 'edd-gf',    // Project text domain.
+			    updateDomains: [ 'edd_sl', 'edd', 'gravityforms' ]  // List of text domains to replace.
+		    },
+		    target: {
+			    files: {
+				    src: [
+					    '*.php',
+					    '**/*.php',
+					    '!node_modules/**',
+					    '!tests/**',
+					    '!tmp/**'
+				    ]
+			    }
+		    }
 	    }
     });
 
@@ -71,7 +89,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-exec');
+	grunt.loadNpmTasks('grunt-potomo');
 
     // Task(s).
     grunt.registerTask('default', [ 'uglify', 'watch' ]);
+
+	// Task(s).
+	grunt.registerTask('translate', [ 'exec:transifex', 'potomo' ]);
 };

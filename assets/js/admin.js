@@ -10,7 +10,7 @@ jQuery(document).ready(function($) {
 
     var EDD_GF_Admin = EDD_GF_Admin || {
 
-            debug: ( EDDGF.debug === '1' ),
+            debug: ( EDDGF.debug * 1 === 1 ),
 
             init: function() {
 
@@ -77,10 +77,9 @@ jQuery(document).ready(function($) {
                 // Get the current field
                 var field = GetSelectedField();
 
-                if( field.type !== 'product' && field.type !== 'option' ) {
+	            if( field.type !== 'product' && field.type !== 'option' ) {
                     EDD_GF_Admin.product_hide_all( field );
                 }
-
             },
 
             /**

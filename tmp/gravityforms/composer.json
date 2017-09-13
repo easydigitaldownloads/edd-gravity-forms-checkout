@@ -1,0 +1,23 @@
+{
+	"name": "gravityforms",
+	"description": "Gravity Forms",
+	"keywords": ["wordpress", "gravity forms"],
+	"type": "wordpress-plugin",
+	"homepage": "https://www.gravityforms.com",
+	"license": "GPL-3.0+",
+	"authors": [
+		{
+			"name": "rocketgenius",
+			"email": "support@gravityhelp.com",
+			"homepage": "https://gravityforms.com"
+		}
+	],
+	"support": {
+		"issues": "https://gravityforms.com"
+    },
+    "require-dev": {
+      "apigen/apigen": "~4.0",
+      "lucatume/wp-browser": "1.19.12",
+      "codeception/codeception": "2.2.12"
+    }
+}

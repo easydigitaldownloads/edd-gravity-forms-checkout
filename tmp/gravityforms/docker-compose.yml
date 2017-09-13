@@ -1,0 +1,46 @@
+version: '2'
+
+services:
+  codeception:
+    build: .
+    depends_on:
+      - wordpress
+    volumes:
+      - ./:/project
+      - wp-core:/wp-core
+      - ./:/wp-core/wp-content/plugins/gravityforms
+    entrypoint: /docker-entrypoint.sh
+  wordpress:
+    image: wordpress:latest
+    depends_on:
+      - mysql
+      - chrome
+    volumes:
+      - wp-core:/var/www/html
+      - ./:/var/www/html/wp-content/plugins/gravityforms
+    ports:
+      - 8080:80
+    environment:
+      WORDPRESS_DB_PASSWORD: wordpress
+
+  mysql:
+    image: mariadb
+    environment:
+       MYSQL_ROOT_PASSWORD: wordpress
+       MYSQL_DATABASE: wordpress
+       MYSQL_USER: wordpress
+       MYSQL_PASSWORD: wordpress
+
+  chrome:
+    environment:
+      # Workaround for bug in the image
+      - DBUS_SESSION_BUS_ADDRESS=/dev/null
+    volumes:
+      # Workaround for bug in the image
+      - /dev/shm:/dev/shm
+    image: selenium/standalone-chrome-debug
+    ports:
+      - '4444'
+      - '5900:5900'
+volumes:
+  wp-core:
