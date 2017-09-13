@@ -291,7 +291,7 @@ class KWS_GF_EDD_Admin {
 ?>
 		<li class="edd_gf_connect_download field_setting">
 
-		    <label for="field_admin_label">
+		    <label for="field_edd_download">
 		    	<span class="fa fa-lg fa-arrow-circle-o-down"></span>
 		        <?php printf(__("Connect to EDD %s", 'edd-gf'), edd_get_label_singular()); ?>
 		        <?php gform_tooltip("form_field_edd_download_value") ?>
