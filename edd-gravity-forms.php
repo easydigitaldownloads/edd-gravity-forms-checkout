@@ -448,7 +448,7 @@ final class KWS_GF_EDD {
 	 *
 	 * @return false|string FALSE if gateway isn't found; EDD gateway slug otherwise
 	 */
-	private function get_edd_gateway_from_entry( $entry ) {
+	public function get_edd_gateway_from_entry( $entry ) {
 
     	$original_gateway = gform_get_meta( $entry['id'], 'payment_gateway' );
 
