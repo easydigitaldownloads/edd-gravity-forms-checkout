@@ -1,12 +1,6 @@
 var searchData=
 [
-  ['get_5fdownload_5foptions_5ffrom_5fentry',['get_download_options_from_entry',['../class_k_w_s___g_f___e_d_d.html#a12a19a926271d45de84ac47024158f39',1,'KWS_GF_EDD']]],
-  ['get_5fedd_5fdata_5farray_5ffrom_5fentry',['get_edd_data_array_from_entry',['../class_k_w_s___g_f___e_d_d.html#a957f6050e92f37a0c11d9350a32accdd',1,'KWS_GF_EDD']]],
-  ['get_5fform_5ffield_5fby_5fid',['get_form_field_by_id',['../class_k_w_s___g_f___e_d_d.html#accff3282375f065ebf14dc35abf9ecf0',1,'KWS_GF_EDD']]],
-  ['get_5fpayment_5fstatus_5ffrom_5fgf_5fstatus',['get_payment_status_from_gf_status',['../class_k_w_s___g_f___e_d_d.html#aa718a24cb749c979ed56e798a7e9ae52',1,'KWS_GF_EDD']]],
-  ['get_5fuser_5finfo',['get_user_info',['../class_k_w_s___g_f___e_d_d.html#ad4b020b6ed2c3375042d41ef265369b8',1,'KWS_GF_EDD']]],
-  ['gf_5ftooltips',['gf_tooltips',['../class_k_w_s___g_f___e_d_d___admin.html#a1215a4d42500db88628f6a58b91fe254',1,'KWS_GF_EDD_Admin']]],
-  ['gform_5fpost_5fpayment_5fstatus',['gform_post_payment_status',['../class_k_w_s___g_f___e_d_d.html#a2a92e51bbb77140a3f927bdc97c36f03',1,'KWS_GF_EDD']]],
-  ['gravity_5fforms_5frequired',['gravity_forms_required',['../class_k_w_s___g_f___e_d_d___admin.html#acf634d700bed69570331329d489ce04f',1,'KWS_GF_EDD_Admin']]],
-  ['gravity_20forms_20checkout_20for_20edd',['Gravity Forms Checkout for EDD',['../index.html',1,'']]]
+  ['editor_5fscript',['editor_script',['../class_k_w_s___g_f___e_d_d___admin.html#a23ff5e1e7805e1df82beec7346f70d47',1,'KWS_GF_EDD_Admin']]],
+  ['enable_5fgform_5flogging',['enable_gform_logging',['../class_k_w_s___g_f___e_d_d___admin.html#a22353c4a28c3be981cb0bb9c3f3071d8',1,'KWS_GF_EDD_Admin\enable_gform_logging()'],['../class_k_w_s___g_f___e_d_d___logging.html#a749bd6fb2f5e2ca2ded7ec7b27db72df',1,'KWS_GF_EDD_Logging\enable_gform_logging()']]],
+  ['entry_5fnum_5fproducts',['entry_num_products',['../class_k_w_s___g_f___e_d_d.html#ace56a14280f4b279a73ad175d5d63550',1,'KWS_GF_EDD']]]
 ];
