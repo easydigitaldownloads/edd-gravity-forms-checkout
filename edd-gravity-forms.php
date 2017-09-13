@@ -484,6 +484,16 @@ final class KWS_GF_EDD {
 		return $gateway;
 	}
 
+	/**
+	 * Get the field ID from the first field of type $type
+	 *
+	 * @uses GFAPI::get_fields_by_type
+	 *
+	 * @param array $form GF Form object
+	 * @param string $type Field type
+	 *
+	 * @return int|bool The field ID from the first field of type $type, if exists. If no fields of $type exist, false
+	 */
 	private function get_first_field_id_by_type( $form = array(), $type = 'name' ) {
 
     	$fields = GFAPI::get_fields_by_type( $form, array( $type ) );
@@ -505,7 +515,8 @@ final class KWS_GF_EDD {
      * 
      * @param  array $form  Gravity Forms form array
      * @param  array $entry Gravity Forms entry array
-     * @return $user_info array
+     *
+     * @return array $user_info
      */
     function get_user_info_from_submission( $form, $entry ) {
 
@@ -526,6 +537,7 @@ final class KWS_GF_EDD {
 	    }
 
 	    $email_field_id = rgar( $field_configuration, 'email', false );
+
 
 	    if ( ! $email_field_id ) {
 		    $email_field_id = $this->get_first_field_id_by_type( $form, 'email' );
@@ -559,8 +571,11 @@ final class KWS_GF_EDD {
 
     /**
      * Get user info from the entry
+     *
      * @param  array $form  Gravity Forms form array
      * @param  array $entry Gravity Forms entry array
+     * @param  null|WP_User $wp_user User object
+     *
      * @return array        array with user data. Keys include: 'id' (int user ID), 'email' (string user email), 'first_name', 'last_name', 'discount' (empty)
      */
     function get_user_info( $form = array(), $entry = array() ) {
@@ -647,6 +662,7 @@ final class KWS_GF_EDD {
 
         // If there are no EDD downloads connected, get outta here.
         if (empty($has_edd_download)) {
+	        $this->log_debug( 'No EDD-connected downloads' );
             return;
         }
 
@@ -669,6 +685,7 @@ final class KWS_GF_EDD {
 
         // If there are no downloads connected, get outta here.
         if (empty($data['downloads'])) {
+	        $this->log_debug( 'No downloads in the data' );
             return;
         }
 
@@ -729,6 +746,9 @@ final class KWS_GF_EDD {
 
         $this->r(get_post($payment_id), false, 'Payment Object (Line ' . __LINE__ . ')');
 
+	    /**
+	     * @used-by KWS_GF_EDD_Subscriptions::maybe_start_subscription
+	     */
         do_action( 'edd_gf_payment_added', $entry, $payment_id, $purchase_data );
 
     }
@@ -881,7 +901,8 @@ final class KWS_GF_EDD {
     }
 
     /**
-     * function to return numbers of product in entry 
+     * Return numbers of product in an entry
+     *
      * @param array $products entry products 
      * @param array $coupons entry coupons
      * 
@@ -899,7 +920,7 @@ final class KWS_GF_EDD {
             }
         }
 
-        return $products_num;
+	    return $products_num;
     }
 
     /**
@@ -910,18 +931,17 @@ final class KWS_GF_EDD {
      * 
      * @return array of available coupons
      */
-
     public function get_entry_coupons($form, $entry) {
 
-        $entry_coupons = array();
-        // check if gravity form coupons class exist
-        if (class_exists('GFCoupons')) {
-            // get coupons for entry
-            $coupon_obj = new GFCoupons();
-            $entry_coupons = $coupon_obj->get_submitted_coupon_codes($form, $entry);
-        }
+	    $entry_coupons = array();
+	    // check if gravity form coupons class exist
+	    if ( class_exists( 'GFCoupons' ) ) {
+		    // get coupons for entry
+		    $coupon_obj    = function_exists( 'gf_coupons' ) ? gf_coupons() : new GFCoupons();
+		    $entry_coupons = $coupon_obj->get_submitted_coupon_codes( $form, $entry );
+	    }
 
-        return $entry_coupons;
+	    return (array) $entry_coupons;
     }
 
     /**
@@ -935,51 +955,58 @@ final class KWS_GF_EDD {
      */
     public function get_entry_coupon_details($form, $entry, $form_prods) {
 
-        $coupon_details = array();
-        // get coupons for entry 
-        $entry_coupons = $this->get_entry_coupons($form, $entry);
-        // get number of products in entry
-        $products_num = $this->entry_num_products($form_prods, $entry_coupons);
-        // check if there are available coupons
-        if ($entry_coupons && class_exists('GFCoupons')) {
-            $coupon_obj = new GFCoupons();
-            $coupon_data = $coupon_obj->get_coupons_by_codes($entry_coupons, $form);
-            if ($coupon_data) {
-                foreach ($coupon_data as $coupon_meta) {
-                    // save percentage coupon data
-                    if ($coupon_meta['type'] == 'percentage') {
-                        $coupon_details['percentage'] = (isset($coupon_details['percentage']) && $coupon_details['percentage']) ? $coupon_details['percentage'] + $coupon_meta['amount'] : $coupon_meta['amount'];
-                    } else {
-                        if ($products_num) {
-                            $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + ($coupon_meta['amount'] / $products_num) : ($coupon_meta['amount'] / $products_num);
-                        } else {
-                            $coupon_details['flat'] = (isset($coupon_details['flat']) && $coupon_details['flat']) ? $coupon_details['flat'] + $coupon_meta['amount'] : $coupon_meta['amount'];
-                        }
-                    }
-                }
-            }
-        }
+	    $coupon_details = array();
 
-        return $coupon_details;
+	    // get coupons for entry
+	    $entry_coupons = $this->get_entry_coupons( $form, $entry );
+
+	    // get number of products in entry
+	    $products_num = $this->entry_num_products( $form_prods, $entry_coupons );
+
+	    // check if there are available coupons
+	    if ( $entry_coupons && class_exists( 'GFCoupons' ) ) {
+		    $coupon_obj  = new GFCoupons();
+		    $coupon_data = $coupon_obj->get_coupons_by_codes( $entry_coupons, $form );
+		    if ( $coupon_data ) {
+			    foreach ( $coupon_data as $coupon_meta ) {
+				    // save percentage coupon data
+				    if ( $coupon_meta['type'] == 'percentage' ) {
+					    $coupon_details['percentage'] = ( isset( $coupon_details['percentage'] ) && $coupon_details['percentage'] ) ? $coupon_details['percentage'] + $coupon_meta['amount'] : $coupon_meta['amount'];
+				    } else {
+					    if ( $products_num ) {
+						    $coupon_details['flat'] = ( isset( $coupon_details['flat'] ) && $coupon_details['flat'] ) ? $coupon_details['flat'] + ( $coupon_meta['amount'] / $products_num ) : ( $coupon_meta['amount'] / $products_num );
+					    } else {
+						    $coupon_details['flat'] = ( isset( $coupon_details['flat'] ) && $coupon_details['flat'] ) ? $coupon_details['flat'] + $coupon_meta['amount'] : $coupon_meta['amount'];
+					    }
+				    }
+			    }
+		    }
+	    }
+
+	    return $coupon_details;
     }
 
     /**
-     * function to get user entry discount info
+     * Get discount codes used in an entry
+     *
      * @param  array $entry GF Entry array
      * @param  array $form  GF Form array
      * 
-     * @return array|string of available coupons
+     * @return array Array of coupon codes in a submission
      */
-    function get_entry_discount($form, $entry) {
+    function get_entry_discount( $form, $entry ) {
 
-        $user_info_discount = '';
+	    $user_info_discount = array();
 
-        if (class_exists('GFCoupons')) {
-            // get entry coupon codes to set user data array
-            $entry_coupons = $this->get_entry_coupons($form, $entry);
-            $user_info_discount = (isset($entry_coupons) && $entry_coupons) ? $entry_coupons : 'none';
-        }
-        return $user_info_discount;
+	    if ( class_exists( 'GFCoupons' ) ) {
+		    // get entry coupon codes to set user data array
+		    $entry_coupons      = $this->get_entry_coupons( $form, $entry );
+		    $user_info_discount = ( isset( $entry_coupons ) && $entry_coupons ) ? $entry_coupons : array();
+	    }
+
+	    $user_info_discount = array_filter( $user_info_discount );
+
+	    return $user_info_discount;
     }
 
 }
