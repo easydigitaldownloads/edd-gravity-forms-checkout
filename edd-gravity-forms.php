@@ -60,6 +60,11 @@ final class KWS_GF_EDD {
 	 */
     public $logger = null;
 
+	/**
+	 * @var KWS_GF_EDD_Subscriptions
+	 */
+    public $subscriptions = null;
+
     /**
      * Set constants, load textdomain, and trigger init()
      * @uses  KWS_GF_EDD::init()
@@ -92,7 +97,7 @@ final class KWS_GF_EDD {
 
 		$this->logger = new KWS_GF_EDD_Logging;
 
-		new KWS_GF_EDD_Subscriptions( $this );
+		$this->subscriptions = new KWS_GF_EDD_Subscriptions( $this );
 
 		/**
 		 * Check for plugin updates. Built into EDD version 1.9+
@@ -135,9 +140,8 @@ final class KWS_GF_EDD {
      * @return array Existing statuses
      * @filter edd_gf_default_status Modify the default status when there's no status match. Default: `pending`. Passes default and `$status` arguments.
      * @filter edd_gf_payment_status Override the status when there is a match. Passes matched value and `$status` arguments.
-     * @todo  Ensure the default status is right when there's no status match.
      */
-    public function get_payment_status_from_gf_status($status) {
+    public function get_payment_status_from_gf_status( $status ) {
 
         $this->r('Status passed to get_payment_status_from_gf_status: ' . $status);
 
@@ -393,8 +397,6 @@ final class KWS_GF_EDD {
 
             $quantity = ( absint($download['quantity']) > 0 ? absint($download['quantity']) : 1 );
 
-            $prod_id = $download['product_field_id'];
-
             /** @see edd_update_payment_details() in functions.php */
             $item = array(
                 'id' => $download_id,
@@ -411,7 +413,7 @@ final class KWS_GF_EDD {
             $i = 0;
             while ($quantity > $i) {
                 $item_discount = 0;
-                // update cart total with coupon code val 
+                // update cart total with coupon code val
                 if (isset($coupon_details['percentage']) && $coupon_details['percentage']) {
                     $item_discount = $item_price * ( $coupon_details['percentage'] / 100 );
                 } else if (isset($coupon_details['flat']) && $coupon_details['flat']) {
@@ -436,7 +438,7 @@ final class KWS_GF_EDD {
                     'tax' => null,
                     'quantity' => 1,
                     'discount' => $item_discount,
-                    'product_field_id' => $prod_id,
+                    'product_field_id' => $download['product_field_id'],
                 );
                 $i++;
             }
@@ -643,6 +645,7 @@ final class KWS_GF_EDD {
 	            'zip' => null,
 	            'country' => null,
             ),
+            'discount' => 0,
         );
 
         $user_info = wp_parse_args( $user_info_from_entry, $default_user_info );
@@ -703,12 +706,12 @@ final class KWS_GF_EDD {
         if (function_exists('gform_update_meta')) {
             $entry_payment_id_meta = gform_get_meta($entry['id'], 'edd_payment_id');
             if (!empty($entry_payment_id_meta)) {
-                $this->r(array('$entry' => $entry, '$entry_payment_id_meta' => $entry_payment_id_meta), true, 'Payment already recorded for entry in `send_purchase_to_edd`, (' . __LINE__ . ')');
+                $this->log_debug( 'Payment already recorded for entry in `send_purchase_to_edd`, (' . __LINE__ . ')', array('$entry' => $entry, '$entry_payment_id_meta' => $entry_payment_id_meta) );
                 return;
             }
         }
 
-        $data = $this->get_edd_data_array_from_entry($entry, $form);
+	    $data = $this->get_edd_data_array_from_entry( $entry, $form );
 
         // If there are no downloads connected, get outta here.
         if (empty($data['downloads'])) {
@@ -729,14 +732,18 @@ final class KWS_GF_EDD {
             'downloads' => $data['downloads'],
             'cart_details' => $data['cart_details'],
             'gateway' => $data['gateway'],
-            #'transaction_type' => $entry['transaction_type'],
             'status' => 'pending' // start with pending so we can call the update function, which logs all stats
         );
+
+		// TODO: If it's a free trial, don't charge any money
+		// #'transaction_type' => $entry['transaction_type'],
 
         // Add the payment
         $payment_id = edd_insert_payment($purchase_data);
 
         add_post_meta($payment_id, '_edd_gf_entry_id', $entry['id']);
+
+	    // TODO: Store API mode so that the links to Stripe are correct (include the /test/ path). Requires Gravity Forms core update.
 
         // Was there a transaction ID to add to `edd_insert_payment_note()`?
         $transaction_id_note = empty($entry['transaction_id']) ? '' : sprintf(__('Transaction ID: %s - ', 'edd-gf'), $entry['transaction_id']);

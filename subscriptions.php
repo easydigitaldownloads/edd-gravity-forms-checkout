@@ -28,7 +28,8 @@ class KWS_GF_EDD_Subscriptions {
 
 		// add edd subscription when GF subscription complete
 		add_action( 'gform_post_subscription_started', array( $this, 'add_entry_subscription_id' ), 10, 2 );
-		add_action( 'gform_post_add_subscription_payment', array( $this, 'edd_renew_subscription_payment' ), 10, 2 );
+
+		add_action( 'gform_post_add_subscription_payment', array( $this, 'edd_add_subscription_payment' ), 10, 2 );
 
 		// cancel edd subscription when GF subscription cancelled
 		add_action( 'gform_subscription_cancelled', array( $this, 'edd_cancel_subscription_payment' ), 10, 3 );
@@ -217,14 +218,12 @@ class KWS_GF_EDD_Subscriptions {
 				continue;
 			}
 
-			// get feed subscription data
-			$feed_settings = $this->get_subscription_feed_settings( $feed );
 			$this->parent->log_debug( 'EDD Subscription Payment', $edd_payment );
 
 			// get cart details
 			$data = $this->parent->get_edd_data_array_from_entry( $entry, $form );
 
-			$this->add_edd_subscription( $entry, $subscription_id, $data['cart_details'], $feed_settings, $edd_payment->customer_id, $edd_payment->ID );
+			$this->add_edd_subscription( $entry, $subscription_id, $data['cart_details'], $feed, $edd_payment );
 
 			break;
 		}
@@ -269,6 +268,7 @@ class KWS_GF_EDD_Subscriptions {
 		$sql = $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}gf_addon_feed WHERE id=%d", $id );
 
 		$row = $wpdb->get_row( $sql, ARRAY_A );
+
 		if ( ! $row ) {
 			return false;
 		}
@@ -502,6 +502,7 @@ class KWS_GF_EDD_Subscriptions {
 
 		/**
 		 * Modify where the trial period and trial period unit values are stored for each payment addon
+		 * @since 2.0
 		 * @param array $subscription_addon {
 		 *  @type string $trial_period Path to the feed key where the trial period (# of units) is stored (example: `meta/trialPeriod`)
 		 *  @type string $trial_period_unit Path to the feed key where the trial period (days/weeks/months) is stored (example: `meta/trialPeriod_unit`)
@@ -549,53 +550,84 @@ class KWS_GF_EDD_Subscriptions {
 	 * Start EDD new subscription
 	 *
 	 * @param array $entry The Entry Feed
-	 * @param array $subscription_id The New Subscription Object
+	 * @param string $subscription_id The New Subscription Object
 	 * @param array $cart_details The Cart details
-	 * @param array $feed_settings The Feed Settings Data
-	 * @param int $customer_id The Customer ID
-	 * @param int $payment_id The Payment ID
+	 * @param array $feed Gravity Forms feed array
+	 * @param EDD_Payment $edd_payment Connected payment
 	 */
-	public function add_edd_subscription( $entry, $subscription_id, $cart_details, $feed_settings, $customer_id, $payment_id ) {
+	public function add_edd_subscription( $entry, $subscription_id, $cart_details, $feed = array(), $edd_payment = null ) {
 
 		// add edd subscription
 		if ( ! class_exists( 'EDD_Recurring_Subscriber' ) || empty( $cart_details ) ) {
 			return;
 		}
 
+		// Set subscription_payment
+		$edd_payment->update_meta( '_edd_subscription_payment', true );
+
 		// get edd subscriber
-		$subscriber = new EDD_Recurring_Subscriber( $customer_id );
+		$subscriber = new EDD_Recurring_Subscriber( $edd_payment->customer_id );
+
+
+		/**
+		 *
+		 * EDD issues to check:
+		 *
+		 * TODO: Free trials and non-trials may not be purchased at the same time. Please purchase each separately.
+		 * TODO: Subscriptions and non-subscriptions may not be purchased at the same time. Please purchase each separately.
+		 *
+		 */
+
+		$form = GFAPI::get_form( $entry['form_id'] );
+
+		// get feed subscription data
+		$feed_settings = $this->get_subscription_feed_settings( $feed, $form, $entry );
+
+		$order_data = $this->get_order_data( $feed, $form, $entry );
+
+
+		//variable initialization
+		$trial_prod      = false;
+		$recurring_prod  = true;
+		$recurring_times = $feed_settings['recurring_times'];
+		$exp_date        = $feed_settings['exp_date'];
+
+		// TODO: Where to get the trial period from - from the order data or the feed settings?
+		$trial_period = rgar( $order_data, 'trial', false );
+		$trial_period   = $feed_settings['trial_period'];
+
+		// If the GF subscription is for the form total, then do that
+
+		// Otherwise, just create subscription for that single product
 
 		foreach ( $cart_details as $cart_detail ) {
 
-			//variable initialization
-			$trial_prod      = false;
-			$recurring_prod  = true;
-			$recurring_times = $feed_settings['recurring_times'];
-			$exp_date        = $feed_settings['exp_date'];
-			$trial_period    = '';
-
 			// get product discount
-			$prod_discount = ( isset( $cart_detail['discount'] ) && $cart_detail['discount'] ) ? $cart_detail['discount'] : 0;
+			$prod_discount = rgar( $cart_detail, 'discount', 0 );
 
 			// get product price
-			$prod_price    = ( isset( $cart_detail['price'] ) && $cart_detail['price'] ) ? $cart_detail['price'] : 0;
+			$prod_price    = rgar( $cart_detail, '_item_price', 0 );
 			$product_total = $prod_price - $prod_discount;
 
 			// get initial amount
-			$initial_amount = ( $feed_settings['trial_subscription'] && $feed_settings['trial_amount'] != NULL ) ? $feed_settings['trial_amount'] : $product_total;
+			$initial_amount = $product_total;
 
-			// Check if trial product
+			// If the trial is set,
+			if( $feed_settings['trial_subscription'] && $feed_settings['trial_amount'] != NULL ) {
+				$initial_amount = $feed_settings['trial_amount'];
+			}
+
+			// Check if the current EDD product is a GF trial product
 			if ( intval( $feed_settings['trial_prod'] ) === intval( $cart_detail['product_field_id'] ) ) {
 				$trial_prod     = true;
 				$initial_amount = 0;
-				$trial_period   = $feed_settings['trial_period'];
 			}
 
 			// Check if not recurring product
-			if ( $feed_settings['recurring_amount'] && $feed_settings['recurring_amount'] !== 'form_total' && intval( $feed_settings['recurring_amount'] ) !== intval( $cart_detail['product_field_id'] ) ) {
+			if ( isset( $feed_settings['recurring_amount'] ) && $feed_settings['recurring_amount'] !== 'form_total' && intval( $feed_settings['recurring_amount'] ) !== intval( $cart_detail['product_field_id'] ) ) {
 				$recurring_prod  = false;
 				$recurring_times = 1;
-				$exp_date        = date( 'Y-m-d', strtotime( '+1 years' ) );
+				$exp_date        = date( 'Y-m-d', strtotime( '+1 years' ) ); // TODO: Why is this hard-coded to 1 year, instead of using $exp_date?
 			}
 
 			// Check if recurring product or not trial product and not recurring products
@@ -603,17 +635,17 @@ class KWS_GF_EDD_Subscriptions {
 				// set args to add edd new subscription
 				$args = array(
 					'product_id'        => $cart_detail['item_number']['id'],
-					'user_id'           => $customer_id,
-					'parent_payment_id' => $payment_id,
-					'status'            => 'Active',
+					'user_id'           => $edd_payment->get_meta( '_edd_payment_user_id', true ),
+					'parent_payment_id' => $edd_payment->ID,
+					'status'            => ( $trial_prod ? 'trialling' : 'Active' ),
 					'period'            => $feed_settings['recurring_len'],
 					'initial_amount'    => $initial_amount,
-					'recurring_amount'  => $product_total,
+					'recurring_amount'  => $feed_settings['recurring_amount'], //$product_total,
 					'bill_times'        => $recurring_times,
+					'created'           => $entry['date_created'],
 					'expiration'        => $exp_date,
 					'trial_period'      => $trial_period,
-					'profile_id'        => $customer_id,
-					'transaction_id'    => $subscription_id,
+					'profile_id'        => $subscription_id,
 				);
 
 				$subscriber->add_subscription( $args );
@@ -643,15 +675,20 @@ class KWS_GF_EDD_Subscriptions {
 	 *     'payment_status' => '',
 	 *     'note' => ''
 	 * );
+	 *
+	 * @return WP_Error|true
 	 */
-	public function edd_renew_subscription_payment( $entry, $action ) {
+	public function edd_add_subscription_payment( $entry, $action ) {
 
 		// get download id for entry
 		$payment_id = gform_get_meta( $entry['id'], 'edd_payment_id' );
 
 		if ( empty( $payment_id ) ) {
-			$this->parent->log_debug( sprintf( 'No EDD payment ID for entry #%d', $entry['id'] ) );
-			return;
+			$error = sprintf( 'No EDD payment ID for entry #%d', $entry['id'] );
+
+			$this->parent->log_error( $error );
+
+			return new WP_Error( 'missing-payment-id', $error );
 		}
 
 		// Get EDD Subscription ID
@@ -659,41 +696,56 @@ class KWS_GF_EDD_Subscriptions {
 		$subscriptions = $db->get_subscriptions( array( 'parent_payment_id' => $payment_id ) );
 
 		if ( empty( $subscriptions ) ) {
-			$this->parent->log_error( sprintf( 'No subscriptions to process for Entry #%d', $entry['id'] ) );
-			return;
+			$error = sprintf( 'No subscriptions to process for Entry #%d', $entry['id'] );
+
+			$this->parent->log_error( $error );
+
+			return new WP_Error( 'no-edd-subscription', $error );
 		}
 
 		foreach ( (array) $subscriptions as $subscription_info ) {
 
 			// check if payment not cancelled and bill times >= billed times
-			$Subscription     = new EDD_Subscription( $subscription_info->id );
+			$EDD_Subscription     = new EDD_Subscription( $subscription_info->id );
 
-			$times_billed = $Subscription->get_times_billed();
-
-			if ( 'cancelled' !== $Subscription->status && ( 0 === intval( $Subscription->bill_times ) || intval( $Subscription->bill_times ) > $times_billed ) ) {
-
-				// get amount and transaction id
-				$amount = ( isset( $action['amount'] ) ) ? edd_sanitize_amount( $action['amount'] ) : '0.00';
-				$txn_id = ( ! empty( $action['transaction_id'] ) ) ? $action['transaction_id'] : $action['subscription_id'];
-
-				$Subscription->add_payment( array(
-					'amount'         => $amount,
-					'transaction_id' => $txn_id,
-				) );
-
-				$Subscription->renew();
+			if( in_array( $EDD_Subscription->status, array( 'cancelled', 'completed' ) ) ) {
+				continue;
 			}
+
+			// get amount and transaction id
+			$amount = ( isset( $action['amount'] ) ) ? edd_sanitize_amount( $action['amount'] ) : '0.00';
+			$txn_id = ( ! empty( $action['transaction_id'] ) ) ? $action['transaction_id'] : '';
+
+			$payment_data = array(
+				'amount'         => $amount,
+				'transaction_id' => $txn_id,
+				'gateway'        => $this->parent->get_edd_gateway_from_entry( $entry ),
+			);
+
+			$added_payment = $EDD_Subscription->add_payment( $payment_data );
+
+			if ( ! $added_payment ) {
+				$this->parent->log_error( __METHOD__ . ': Payment was not added', $payment_data );
+				continue;
+			}
+
+			// Will also mark as completed when the number of billed times has reached limit
+			$EDD_Subscription->renew();
 		}
+
+		return true;
 	}
 
 	/**
 	 * Cancel edd subscription payment when GF subscription payment renew cancelled
 	 *
 	 * @param array $entry The Entry Object
+	 * @param array $feed The form feed
+	 * @param string $transaction_id
 	 *
 	 * @return void
 	 */
-	public function edd_cancel_subscription_payment( $entry = array() ) {
+	public function edd_cancel_subscription_payment( $entry = array(), $feed = array(), $transaction_id = '' ) {
 
 		// get download id for entry
 		$payment_id = gform_get_meta( $entry['id'], 'edd_payment_id' );
@@ -704,9 +756,9 @@ class KWS_GF_EDD_Subscriptions {
 		}
 
 		// get subscription id
-		$db = new EDD_Subscriptions_DB;
+		$EDD_Subscriptions_DB = new EDD_Subscriptions_DB;
 
-		if ( $subscriptions = $db->get_subscriptions( array( 'parent_payment_id' => $payment_id ) ) ) {
+		if ( $subscriptions = $EDD_Subscriptions_DB->get_subscriptions( array( 'parent_payment_id' => $payment_id ) ) ) {
 
 			/** @var EDD_Subscription $subscription */
 			foreach ( $subscriptions as $subscription ) {
@@ -715,13 +767,14 @@ class KWS_GF_EDD_Subscriptions {
 		}
 	}
 
+
+
 	/**
 	 * Expire edd subscription payment when GF subscription payment renew expired
 	 *
 	 * @param array $entry The Entry Object
 	 * @param array $action
 	 *
-	 * @return void
 	 * @return bool|null Null if no subscriptions exist, false if didn't parse
 	 */
 	public function edd_expire_subscription_payment( $entry = array(), $action = array() ) {
