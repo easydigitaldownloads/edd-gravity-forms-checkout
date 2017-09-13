@@ -183,7 +183,7 @@ class KWS_GF_EDD_Admin {
 
 	/**
 	 * Get the price variations for an EDD product
-	 * @return string JSON-encoded array of price variations
+	 * @return void Exits with JSON-encoded array of price variations
 	 */
 	public function check_for_variations() {
 		if( isset($_POST['nonce'] ) && wp_verify_nonce($_POST['nonce'], 'edd_gf_download_nonce') ) {
