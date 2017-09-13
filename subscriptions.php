@@ -132,6 +132,11 @@ class KWS_GF_EDD_Subscriptions {
 	 * @return void
 	 */
 	function add_entry_subscription_id( $entry = array(), $subscription = array() ) {
+
+		if ( ! isset( $subscription['subscription_id'] ) || ! is_numeric( $subscription['subscription_id'] ) ) {
+			return;
+		}
+
 		gform_update_meta( $entry['id'], 'gf_subscription_id', $subscription['subscription_id'] );
 	}
 
