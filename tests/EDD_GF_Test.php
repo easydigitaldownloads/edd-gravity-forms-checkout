@@ -64,7 +64,6 @@ class EDD_GF_Test extends KWS_EDD_GF_UnitTestCase {
 
 		$this->form = $this->setup_form( $form_overrides );
 
-
 		$entry_overrides['form_id'] = $this->form['id'];
 
 		$this->entry = $this->setup_entry( $entry_overrides );
@@ -263,6 +262,9 @@ class EDD_GF_Test extends KWS_EDD_GF_UnitTestCase {
 
 	}
 
+	/**
+	 * @covers KWS_GF_EDD::get_user_info()
+	 */
 	public function test_get_user_info() {
 
 		// When logged-in and the user info from submission has no email
