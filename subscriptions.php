@@ -722,19 +722,24 @@ class KWS_GF_EDD_Subscriptions {
 	 * @param array $action
 	 *
 	 * @return void
+	 * @return bool|null Null if no subscriptions exist, false if didn't parse
 	 */
-	public function edd_expire_subscription_payment( $entry, $action ) {
+	public function edd_expire_subscription_payment( $entry = array(), $action = array() ) {
 
 		// if action type is expired
-		if ( 'expire_subscription' !== $action['type'] ) {
-			return;
+		if ( ! isset( $action['type'] ) || 'expire_subscription' !== $action['type'] ) {
+			return false;
+		}
+
+		if ( ! isset( $entry['id'] ) ) {
+			return false;
 		}
 
 		// get download id for entry
 		$edd_payment_id = gform_get_meta( $entry['id'], 'edd_payment_id' );
 
 		if ( ! $edd_payment_id ) {
-			return;
+			return false;
 		}
 
 		// get subscription id
@@ -747,6 +752,10 @@ class KWS_GF_EDD_Subscriptions {
 			foreach ( $subscriptions as $subscription ) {
 				$subscription->expire();
 			}
+
+			return true;
 		}
+
+		return null;
 	}
 }
