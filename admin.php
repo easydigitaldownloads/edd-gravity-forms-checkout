@@ -25,7 +25,8 @@ class KWS_GF_EDD_Admin {
 	 * @return void
 	 */
 	function add_hooks() {
-		add_action( 'plugins_loaded', array(&$this, 'admin_init') );
+
+		add_action( 'admin_init', array(&$this, 'admin_init') );
 		add_action( 'admin_enqueue_scripts', array(&$this, 'admin_enqueue_scripts') );
 
 		add_filter( 'gform_noconflict_styles', array( $this, 'register_no_conflict') );
