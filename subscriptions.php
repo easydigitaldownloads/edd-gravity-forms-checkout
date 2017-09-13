@@ -445,10 +445,22 @@ class KWS_GF_EDD_Subscriptions {
 		return $feed_settings;
 	}
 
+	/**
+	 * Get the trial period for a subscription
+	 *
+	 * @param array $feed GF feed configuration array
+	 *
+	 * @return string Return the trial period string (eg: "1 year") [Default: "1 day"]
+	 */
+	private function get_feed_trial_period( $feed ) {
 		// get trial period
-		$feed_addon   = $feed["addon_slug"];
+		$feed_addon   = $feed['addon_slug'];
 		$trial_length = '1';
 		$trial_unit   = 'day';
+
+		// set subscription feed addon
+		$subscription_addon = $this->get_payment_addon_feed_configuration();
+
 		if ( isset( $subscription_addon[ $feed_addon ] ) && $subscription_addon[ $feed_addon ] ) {
 			if ( rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period'] ) ) {
 				$trial_length = rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period'] );
@@ -457,10 +469,8 @@ class KWS_GF_EDD_Subscriptions {
 				$trial_unit = rgars( $feed, $subscription_addon[ $feed_addon ]['trial_period_unit'] );
 			}
 		}
-		$feed_settings['trial_period'] = $trial_length . ' ' . $trial_unit;
-		$feed_settings['exp_date']     = Date( 'Y-m-d', strtotime( $feed_settings['trial_period'] ) );
 
-		return $feed_settings;
+		return $trial_length . ' ' . $trial_unit;
 	}
 
 	/**
