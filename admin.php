@@ -117,7 +117,7 @@ class KWS_GF_EDD_Admin {
 	 * @access public
 	 * @static
 	 * @param string $location (default: '')
-	 * @return string
+	 * @return string "active", "inactive" or "notinstalled"
 	 */
 	private function get_plugin_status( $location = '' ) {
 
@@ -136,6 +136,8 @@ class KWS_GF_EDD_Admin {
 		if( is_plugin_inactive( $location ) ) {
 			return 'inactive';
 		}
+
+		return 'notinstalled';
 	}
 
 	/**
