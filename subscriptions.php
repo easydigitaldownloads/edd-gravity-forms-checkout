@@ -290,7 +290,7 @@ class KWS_GF_EDD_Subscriptions {
 		if ( 'subscription' === rgars( $feed, 'meta/transactionType' ) ) {
 
 			// get entry payment id
-			$payment_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %s LIMIT 1", $entry['id'] ) );
+			$payment_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %d LIMIT 1", $entry['id'] ) );
 
 			if ( $payment_id ) {
 				// set subscription payment
