@@ -943,15 +943,19 @@ final class KWS_GF_EDD {
      */
     public function entry_num_products($products, $coupons) {
 
-        $products_num = 0;
+	    $products_num = 0;
 
-        if ($coupons && $products) {
-            foreach ($products as $product_key => $product) {
-                if (!in_array($product_key, $coupons)) {
-                    $products_num += intval($product['quantity']);
-                }
-            }
-        }
+	    if ( $coupons && $products ) {
+		    foreach ( $products as $product_key => $product ) {
+			    if ( ! in_array( $product_key, $coupons ) ) {
+				    $products_num += intval( $product['quantity'] );
+			    }
+		    }
+	    } else if ( $products ) {
+		    foreach ( $products as $product_key => $product ) {
+			    $products_num += intval( $product['quantity'] );
+		    }
+	    }
 
 	    return $products_num;
     }
