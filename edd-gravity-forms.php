@@ -13,9 +13,9 @@
  * Plugin URI: https://easydigitaldownloads.com/downloads/gravity-forms-checkout/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Katz Web Services, Inc.
- * Version: 2.0-alpha
+ * Version: 1.5
  * Requires at least: 3.0
- * Author URI: http://katz.co
+ * Author URI: https://katz.co
  * License: GPL v3
  * Text Domain: edd-gf
  * Domain Path: languages
@@ -41,7 +41,7 @@ final class KWS_GF_EDD {
      * @link  http://semver.org
      * @var  string Semantic Versioning version number
      */
-    const version = '2.0-alpha';
+    const version = '1.5';
 
     /**
      * Name of the plugin for the updater class
