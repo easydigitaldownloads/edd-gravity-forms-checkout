@@ -159,12 +159,12 @@ class KWS_GF_EDD_Subscriptions {
 	 * @param int $edd_payment_id EDD Payment ID
 	 * @param array $edd_purchase_data Data used to create purchase in EDD
 	 *
-	 * @return void
+	 * @return bool True: Feeds get processed; False: no subscriptions were created and errors will be logged
 	 */
 	public function maybe_start_subscription( $entry = array(), $edd_payment_id = 0, $edd_purchase_data = array() ) {
 
 		if ( empty( $entry ) ) {
-			return;
+			return false;
 		}
 
 		// get GF by form id
@@ -172,7 +172,7 @@ class KWS_GF_EDD_Subscriptions {
 
 		if ( ! $form ) {
 			$this->parent->log_error( 'The form no longer exists (ID #' . $entry['form_id'] . ') - cannot process.' );
-			return;
+			return false;
 		}
 
 		$subscription_id = $this->get_entry_subscription_id( $entry );
@@ -183,14 +183,14 @@ class KWS_GF_EDD_Subscriptions {
 		 */
 		if ( empty( $subscription_id ) ) {
 			$this->parent->log_debug( 'No subscription was created in Gravity Forms for Entry ID ' . $entry['id'] );
-			return;
+			return false;
 		}
 
 		$processed_feeds = $this->get_feeds_by_entry( $entry['id'] );
 
 		if ( ! $processed_feeds ) {
 			$this->parent->log_debug( 'No feeds exist for Entry ID ' . $entry['id'] );
-			return;
+			return false;
 		}
 
 		$this->parent->log_debug( 'Processed Feeds', $processed_feeds );
@@ -223,6 +223,8 @@ class KWS_GF_EDD_Subscriptions {
 
 			break;
 		}
+
+		return true;
 	}
 
 	/**
