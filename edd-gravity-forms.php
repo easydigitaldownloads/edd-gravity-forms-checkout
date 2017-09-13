@@ -60,11 +60,6 @@ final class KWS_GF_EDD {
 	 */
     public $logger = null;
 
-	/**
-	 * @var KWS_GF_EDD_Subscriptions
-	 */
-    public $subscriptions = null;
-
     /**
      * Set constants, load textdomain, and trigger init()
      * @uses  KWS_GF_EDD::init()
@@ -97,8 +92,6 @@ final class KWS_GF_EDD {
 
 		$this->logger = new KWS_GF_EDD_Logging;
 
-		$this->subscriptions = new KWS_GF_EDD_Subscriptions( $this );
-
 		/**
 		 * Check for plugin updates. Built into EDD version 1.9+
 		 */
@@ -116,7 +109,6 @@ final class KWS_GF_EDD {
         require_once( EDD_GF_PLUGIN_DIR . 'logging.php' );
         require_once( EDD_GF_PLUGIN_DIR . 'admin.php' );
         require_once( EDD_GF_PLUGIN_DIR . 'class-gf-edd-user-fields.php' );
-	    require_once( EDD_GF_PLUGIN_DIR . 'subscriptions.php' );
     }
 
     private function add_actions() {
@@ -369,22 +361,6 @@ final class KWS_GF_EDD {
             }
         }
 
-	    /**
-	     * Get product subscription data for an entry, if exists.
-	     *
-	     * @used-by KWS_GF_EDD_Subscriptions::get_entry_subscription_data
-	     * @see GFCommon::get_product_fields for $product_info array
-	     * @since 2.0
-	     *
-	     * @param array $subscription Array of {
-	     * @type string $trial_prod
-	     * }
-	     * @param array $form Gravity Forms form object
-	     * @param array $entry Gravity Forms entry object
-	     * @param array $product_info['products'] The products returned from {@see GFCommon::get_product_fields}
-	     */
-        $subscription = apply_filters( 'edd_gf_get_entry_subscription_data', array(), $form, $entry, $product_info['products'] );
-
 	    // initial total variable
 	    $total = 0;
 
@@ -420,20 +396,11 @@ final class KWS_GF_EDD {
                     $item_discount = $coupon_details['flat'];
                 }
 
-                if( $subscription ) {
-	                // update cart total with subscription trial product
-	                if ( ! empty( $subscription['trial_prod'] ) && $subscription['trial_prod'] == $download['product_field_id'] ) {
-		                $item_discount = $item_price;
-	                } else if ( ! empty( $subscription['trial_amount'] ) ) {
-		                $item_discount += $subscription['trial_amount'];
-	                }
-                }
-
 	            $cart_details[] = array(
                     'name' => get_the_title($download_id),
                     'id' => $download_id,
                     'item_number' => $item,
-                    'price' => ( rgar( $subscription, 'is_trial' ) ? '0.00' : $item_price ),
+                    'price' => $item_price,
                     '_item_price' => $item_price,
                     'tax' => null,
                     'quantity' => 1,
@@ -778,9 +745,6 @@ final class KWS_GF_EDD {
 
         $this->r(get_post($payment_id), false, 'Payment Object (Line ' . __LINE__ . ')');
 
-	    /**
-	     * @used-by KWS_GF_EDD_Subscriptions::maybe_start_subscription
-	     */
         do_action( 'edd_gf_payment_added', $entry, $payment_id, $purchase_data );
 
     }
@@ -877,15 +841,18 @@ final class KWS_GF_EDD {
      */
     public function update_edd_transaction_id($entry, $action, $result) {
 
-        // add transaction id in complete payment or start subscription payment
-        if ($action['type'] === 'complete_payment' || $action['type'] === 'create_subscription') {
-            // get download id for entry
-            $payment_id = gform_get_meta($entry['id'], 'edd_payment_id', true);
-            $transaction_id = (!empty($action['transaction_id'])) ? $action['transaction_id'] : $action['subscription_id'];
-            if (!empty($payment_id) && !empty($transaction_id)) {
-                edd_set_payment_transaction_id($payment_id, $transaction_id);
-            }
-        }
+	    // add transaction id in complete payment
+	    if ( 'complete_payment' === $action['type'] ) {
+
+	    	// get download id for entry
+		    $payment_id     = gform_get_meta( $entry['id'], 'edd_payment_id', true );
+
+		    $transaction_id = $action['transaction_id'];
+
+		    if ( ! empty( $payment_id ) && ! empty( $transaction_id ) ) {
+			    edd_set_payment_transaction_id( $payment_id, $transaction_id );
+		    }
+	    }
     }
 
 	/**
