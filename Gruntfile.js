@@ -64,6 +64,50 @@ module.exports = function(grunt) {
 			    }
 		    }
 	    },
+
+	    // Build translations without POEdit
+	    makepot: {
+		    target: {
+			    options: {
+				    mainFile: 'edd-gravity-forms.php',
+				    type: 'wp-plugin',
+				    domainPath: '/languages',
+				    updateTimestamp: false,
+				    exclude: [ 'node_modules/', 'node_modules/.*', 'assets/.*', 'docs/', 'tmp/.*', 'vendor/.*' ],
+				    potHeaders: {
+					    poedit: true,
+					    'x-poedit-keywordslist': true
+				    },
+				    processPot: function( pot, options ) {
+					    pot.headers['language'] = 'en_US';
+					    pot.headers['language-team'] = 'Katz Web Services, Inc. <support@katz.co>';
+					    pot.headers['last-translator'] = 'Katz Web Services, Inc. <support@katz.co>';
+					    pot.headers['report-msgid-bugs-to'] = 'https://support.katz.co';
+
+					    var translation,
+						    excluded_meta = [
+							    'Easy Digital Downloads - Gravity Forms Checkout',
+							    'Integrate Gravity Forms purchases with Easy Digital Downloads',
+							    'https://easydigitaldownloads.com/downloads/gravity-forms-checkout/',
+							    'Katz Web Services, Inc.',
+							    'https://katz.co'
+						    ];
+
+					    for ( translation in pot.translations[''] ) {
+						    if ( 'undefined' !== typeof pot.translations[''][ translation ].comments.extracted ) {
+							    if ( excluded_meta.indexOf( pot.translations[''][ translation ].msgid ) >= 0 ) {
+								    console.log( 'Excluded meta: ' + pot.translations[''][ translation ].msgid );
+								    delete pot.translations[''][ translation ];
+							    }
+						    }
+					    }
+
+					    return pot;
+				    }
+			    }
+		    }
+	    },
+
 	    // Add textdomain to all strings, and modify existing textdomains in included packages.
 	    addtextdomain: {
 		    options: {
@@ -90,10 +134,11 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-exec');
 	grunt.loadNpmTasks('grunt-potomo');
+	grunt.loadNpmTasks('grunt-wp-i18n');
 
     // Task(s).
     grunt.registerTask('default', [ 'uglify', 'watch' ]);
 
 	// Task(s).
-	grunt.registerTask('translate', [ 'exec:transifex', 'potomo' ]);
+	grunt.registerTask('translate', [ 'exec:transifex', 'potomo', 'addtextdomain', 'makepot' ]);
 };
