@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="true"
+         syntaxCheck="true"
+         bootstrap="tests/bootstrap.php"
+         debug="true"
+>
+    <php>
+        <const name="DOING_EDD_GF_TESTS" value="1" />
+    </php>
+    <testsuites>
+        <testsuite name="EDD Gravity Forms Test Suite">
+            <directory suffix=".php">./tests/</directory>
+        </testsuite>
+    </testsuites>
+    <logging>
+        <log type="coverage-clover" target="/tmp/clover.xml" charset="UTF-8" />
+    </logging>
+</phpunit>
