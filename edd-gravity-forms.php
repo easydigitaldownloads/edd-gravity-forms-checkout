@@ -506,8 +506,8 @@ final class KWS_GF_EDD {
 	}
 
     /**
-     * Get user information (name and email) from entry 
-     * 
+     * Get user information (name and email) from entry
+     *
      * @param  array $form  Gravity Forms form array
      * @param  array $entry Gravity Forms entry array
      *
@@ -829,8 +829,8 @@ final class KWS_GF_EDD {
     }
 
     /**
-     * function to update edd transaction id 
-     * 
+     * function to update edd transaction id
+     *
      * @param array $entry The Entry Object
      * @param array $action The Action Object
      * @param array mixed $result The Result Object
@@ -904,9 +904,9 @@ final class KWS_GF_EDD {
     /**
      * Return numbers of product in an entry
      *
-     * @param array $products entry products 
+     * @param array $products entry products
      * @param array $coupons entry coupons
-     * 
+     *
      * @return int number of products in entry
      */
     public function entry_num_products($products, $coupons) {
@@ -933,7 +933,7 @@ final class KWS_GF_EDD {
      *
      * @param  array $entry GF Entry array
      * @param  array $form  GF Form array
-     * 
+     *
      * @return array of available coupons
      */
     public function get_entry_coupons($form, $entry) {
@@ -951,7 +951,7 @@ final class KWS_GF_EDD {
 
     /**
      * function to get entry coupon details precent and flat values
-     * 
+     *
      * @param  array $entry GF Entry array
      * @param  array $entry_coupons  GF Form Available Coupons array
      * @param  int $products_num  Number of products in form
@@ -996,7 +996,7 @@ final class KWS_GF_EDD {
      *
      * @param  array $entry GF Entry array
      * @param  array $form  GF Form array
-     * 
+     *
      * @return array Array of coupon codes in a submission
      */
     function get_entry_discount( $form, $entry ) {
