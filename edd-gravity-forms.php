@@ -695,7 +695,7 @@ final class KWS_GF_EDD {
 
         // We need to re-fetch the entry since the payment gateways
         // will have modified the entry since submitted by the user
-        $entry = GFFormsModel::get_lead($entry['id']);
+        $entry = GFAPI::get_entry( $entry['id'] );
 
         $this->r(array('$entry' => $entry), false, '$entry in `send_purchase_to_edd`, (' . __LINE__ . ')');
 
