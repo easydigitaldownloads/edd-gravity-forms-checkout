@@ -295,9 +295,6 @@ class KWS_GF_EDD_Subscriptions {
 			if ( $payment_id ) {
 				// set subscription payment
 				$payment = new EDD_Payment( $payment_id );
-
-				// Set subscription_payment
-				$payment->update_meta( '_edd_subscription_payment', true );
 			}
 		}
 
@@ -390,10 +387,7 @@ class KWS_GF_EDD_Subscriptions {
 	 *
 	 * @return array $feed_settings The Feed Settings data
 	 */
-	private function get_subscription_feed_settings( $feed ) {
-
-		// set subscription feed addon
-		$subscription_addon = $this->get_payment_addon_feed_configuration();
+	private function get_subscription_feed_settings( $feed, $form, $entry ) {
 
 		// set feed settings array
 		$feed_settings = array(
@@ -423,12 +417,33 @@ class KWS_GF_EDD_Subscriptions {
 
 		// if trial amount is selected
 		if ( 'enter_amount' === rgars( $feed, 'meta/trial_product' ) ) {
-			$feed_settings['trial_amount'] = edd_sanitize_amount( $feed['meta']['trial_amount'] );
-		} else if ( rgars( $feed, 'meta/trial_product' ) ) {
-			$feed_settings['trial_prod'] = $feed['meta']['trial_product'];
-		} else if ( rgars( $feed, 'meta/setupFee_product' ) ) {
-			$feed_settings['trial_prod'] = $feed['meta']['setupFee_product'];
+
+			// get coupons for entry
+			$entry_coupons = $this->parent->get_entry_coupons($form, $entry);
+
+			// get number of products in entry
+			$products_num = $this->parent->entry_num_products($form_prods, $entry_coupons);
+
+			$trial_amount = rgars( $feed, 'meta/trial_amount' );
+
+			if ( ! empty( $products_num ) ) {
+				$feed_settings['trial_amount'] = edd_sanitize_amount( $trial_amount ) / $products_num;
+			} else {
+				$feed_settings['trial_amount'] = edd_sanitize_amount( $trial_amount );
+			}
+
+		} elseif ( $trial_product = rgars($feed, 'meta/trial_product')) {
+			$feed_settings['trial_prod'] = $trial_product;
+		} elseif ( $setup_fee_product = rgars($feed, 'meta/setupFee_product')) {
+			$feed_settings['trial_prod'] = $setup_fee_product;
 		}
+
+		$trial_period = $this->get_feed_trial_period( $feed );
+		$feed_settings['trial_period'] = $trial_period;
+		$feed_settings['exp_date']     = Date( 'Y-m-d', strtotime( $trial_period ) );
+
+		return $feed_settings;
+	}
 
 		// get trial period
 		$feed_addon   = $feed["addon_slug"];
