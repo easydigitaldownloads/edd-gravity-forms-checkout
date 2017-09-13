@@ -7,8 +7,13 @@ class KWS_GF_EDD_Admin {
 	 */
 	function __construct() {
 
-		// We want to be in the admin.
-		if (!(is_admin() || (defined('DOING_CRON') && DOING_CRON))) { return; }
+		if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+		    return;
+		}
+
+		if ( ! is_admin() && ( ! defined( 'DOING_AJAX' ) || ! DOING_AJAX ) ) {
+			return;
+		}
 
 		$this->add_hooks();
 	}
