@@ -135,7 +135,7 @@ final class KWS_GF_EDD {
      */
     public function get_payment_status_from_gf_status( $status ) {
 
-        $this->r('Status passed to get_payment_status_from_gf_status: ' . $status);
+        $this->log_debug('Status passed to get_payment_status_from_gf_status: ' . $status);
 
         $gf_payment_statuses = array(
             "Processing" => 'pending',
@@ -200,7 +200,7 @@ final class KWS_GF_EDD {
         // Get the variations for the product
         if ($prices = edd_get_variable_prices($download_id)) {
 
-            $this->r($prices, false, '$prices for EDD product ID #' . $download_id . ' , line ' . __LINE__);
+            $this->log_debug('$prices for EDD product ID #' . $download_id . ' , line ' . __LINE__, $prices );
 
             $options = array(); // Default options array
             // The default Price ID is 0, like in EDD.
@@ -272,10 +272,10 @@ final class KWS_GF_EDD {
         // Get the products for the entry
         $product_info = GFCommon::get_product_fields($form, $entry);
 
-        $this->r($product_info, false, 'The products in the entry, from GFCommon::get_product_fields()');
+        $this->log_debug('The products in the entry, from GFCommon::get_product_fields()', $product_info );
 
         if (empty($product_info['products'])) {
-            $this->r($product_info, false, 'There are no products in the entry.');
+            $this->log_debug('There are no products in the entry.', $product_info );
             return array();
         }
 
@@ -293,8 +293,7 @@ final class KWS_GF_EDD {
 
             $edd_product_id = (int) $field['eddDownload'];
 
-            $this->r($field, false, '$field');
-            $this->r($product, false, '$product');
+            $this->log_debug( 'field & product', array( 'field' => $field, 'product' => $product ) );
 
             $download_item = array(
                 'id' => $field['eddDownload'],
@@ -344,13 +343,13 @@ final class KWS_GF_EDD {
                 }
             } else {
 
-                $this->r($download_item, false, 'Download item when empty $field[\'eddHasVariables\']');
+                $this->log_debug('Download item when empty $field[\'eddHasVariables\']', $download_item );
 
                 $downloads[] = $download_item;
             }
         }
 
-        $this->r($downloads, false, 'Downloads after product info, before removing empty downloads');
+        $this->log_debug('Downloads after product info, before removing empty downloads', $downloads );
 
         // Clean up the downloads and remove items with no quantity.
         foreach ($downloads as $key => $download) {
@@ -415,7 +414,7 @@ final class KWS_GF_EDD {
 
 
 
-        $this->r($downloads, false, 'Downloads after generating Cart Details (Line ' . __LINE__ . ')');
+        $this->log_debug('Downloads after generating Cart Details (Line ' . __LINE__ . ')', $downloads );
 
         $data['downloads'] = $downloads;
         $data['user_info'] = $this->get_user_info($form, $entry);
@@ -425,12 +424,12 @@ final class KWS_GF_EDD {
 
         if ($data['total'] < 0) {
 
-            $this->r($data, false, '$data[total] was negative (' . $data['total'] . ') - resetting to $0.00 (Line ' . __LINE__ . ')');
+            $this->log_debug('$data[total] was negative (' . $data['total'] . ') - resetting to $0.00 (Line ' . __LINE__ . ')', $data );
 
             $data['total'] = 0;
         }
 
-        $this->r($data, false, '$data returned from get_edd_data_array_from_entry() (Line ' . __LINE__ . ')');
+        $this->log_debug('$data returned from get_edd_data_array_from_entry() (Line ' . __LINE__ . ')', $data );
 
         return $data;
     }
@@ -495,13 +494,13 @@ final class KWS_GF_EDD {
     	$fields = GFAPI::get_fields_by_type( $form, array( $type ) );
 
 		if ( empty( $fields ) ) {
-			$this->r( 'No fields of type: ' . $type );
+			$this->log_debug( 'No fields of type: ' . $type );
 			return false;
 		}
 
 		$field = array_shift( $fields );
 
-		$this->r( $field, false,__METHOD__ . ': Using field as default for ' . $type );
+		$this->log_debug( __METHOD__ . ': Using field as default for ' . $type, $field );
 
 		return $field ? $field->id : false;
 	}
@@ -560,7 +559,7 @@ final class KWS_GF_EDD {
 		    );
 	    }
 
-	    $this->r( $user_info, false, 'User info mapping' );
+	    $this->log_debug( 'User info mapping', $user_info );
 
         return array_filter( $user_info );
     }
@@ -665,7 +664,7 @@ final class KWS_GF_EDD {
         // will have modified the entry since submitted by the user
         $entry = GFAPI::get_entry( $entry['id'] );
 
-        $this->r(array('$entry' => $entry), false, '$entry in `send_purchase_to_edd`, (' . __LINE__ . ')');
+        $this->log_debug('$entry in `send_purchase_to_edd`, (' . __LINE__ . ')', array('$entry' => $entry) );
 
         // Prevent double-logging
         if (function_exists('gform_update_meta')) {
@@ -699,9 +698,6 @@ final class KWS_GF_EDD {
             'gateway' => $data['gateway'],
             'status' => 'pending' // start with pending so we can call the update function, which logs all stats
         );
-
-		// TODO: If it's a free trial, don't charge any money
-		// #'transaction_type' => $entry['transaction_type'],
 
         // Add the payment
         $payment_id = edd_insert_payment($purchase_data);
@@ -741,9 +737,9 @@ final class KWS_GF_EDD {
         // Set session purchase data, so redirecting to the confirmation page works properly
         edd_set_purchase_session($purchase_data);
 
-        $this->r($purchase_data, false, 'Purchase Data (Line ' . __LINE__ . ')');
+        $this->log_debug( 'Purchase Data (Line ' . __LINE__ . ')', $purchase_data );
 
-        $this->r(get_post($payment_id), false, 'Payment Object (Line ' . __LINE__ . ')');
+        $this->log_debug( 'Payment Object (Line ' . __LINE__ . ')', get_post($payment_id) );
 
         do_action( 'edd_gf_payment_added', $entry, $payment_id, $purchase_data );
 
@@ -805,7 +801,7 @@ final class KWS_GF_EDD {
         // EDD not active
         if (!function_exists('edd_update_payment_status')) {
 
-            $this->r('edd_update_payment_status not available');
+            $this->log_error('edd_update_payment_status not available');
 
             return;
         }
@@ -816,7 +812,7 @@ final class KWS_GF_EDD {
         // Payment's not been officially inserted yet
         if (empty($payment_id)) {
 
-            $this->r('_edd_gf_entry_id not yet set; send_purchase_to_edd() has not run. Wait for it!');
+            $this->log_error('_edd_gf_entry_id not yet set; send_purchase_to_edd() has not run. Wait for it!');
 
             return;
         }
