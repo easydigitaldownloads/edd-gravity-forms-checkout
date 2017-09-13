@@ -551,7 +551,7 @@ final class KWS_GF_EDD {
 
         $user_info = array();
 
-	    $field_configuration = eddUserFields::get_instance()->get_form_settings( $form );
+	    $field_configuration = GF_EDD_User_Fields::get_instance()->get_form_settings( $form );
 
 	    $name_field_id = rgar( $field_configuration, 'name', false );
 
@@ -607,9 +607,7 @@ final class KWS_GF_EDD {
      *
      * @return array        array with user data. Keys include: 'id' (int user ID), 'email' (string user email), 'first_name', 'last_name', 'discount' (empty)
      */
-    function get_user_info( $form = array(), $entry = array() ) {
-
-        $wp_user = false;
+    function get_user_info( $form = array(), $entry = array(), $wp_user = null ) {
 
         $user_info_from_entry = $this->get_user_info_from_submission($form, $entry);
 
@@ -628,7 +626,7 @@ final class KWS_GF_EDD {
         }
         // User is not logged in, but the email exists
         else if ( ! empty( $user_info_from_entry['email'] ) ) {
-            $wp_user = get_user_by( 'email', $user_info['email'] );
+            $wp_user = get_user_by( 'email', $user_info_from_entry['email'] );
         }
 
         $default_user_info = array(
