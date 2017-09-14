@@ -1,6 +1,6 @@
 === Gravity Forms Checkout for Easy Digital Downloads ===
 Tags: easy digital downloads, edd, gravity forms, gravityforms
-Requires at least: 3.3
+Requires at least: 4.5
 Tested up to: 4.8.1
 Contributors: katzwebservices
 License: GPL 3 or higher
@@ -71,13 +71,13 @@ __Developer Notes:__
 * Fixed: PHP warnings when Easy Digital Downloads is not active
 * Added: Additional logging for use with Gravity Forms Logging Tool
 
-= 1.2.1 on November 14 = 
+= 1.2.1 on November 14 =
 * Fixed: Updated payments when payment status is updated in Gravity Forms
 
 = 1.2 on October 13 =
 * Fixed: issue where plugin was overriding existing options for options fields that were not connected to an EDD download
 * Added: Support for Product fields loading EDD Variations, when using the Radio or Drop Down Field Type
-* Fixed: Properly handle Product Price + Option Price, if set  
+* Fixed: Properly handle Product Price + Option Price, if set
 Previously, the Product for an Option would always be processed as $0.00. Now, the price is used as Gravity Forms intends: the base price, with the Options fiel as modifiers to that price.
 * Support multiple download purchases using Options field checkboxes
 * Added: Payment status "Void" to support Gravity Forms updates
@@ -115,13 +115,13 @@ Previously, the Product for an Option would always be processed as $0.00. Now, t
 
 == Upgrade Notice ==
 
-= 1.2.1 on November 14 = 
+= 1.2.1 on November 14 =
 * Fixed: Updated payments when payment status is updated in Gravity Forms
 
 = 1.2 on October 13 =
 * Fixed: issue where plugin was overriding existing options for options fields that were not connected to an EDD download
 * Added: Support for Product fields loading EDD Variations, when using the Radio or Drop Down Field Type
-* Fixed: Properly handle Product Price + Option Price, if set  
+* Fixed: Properly handle Product Price + Option Price, if set
 Previously, the Product for an Option would always be processed as $0.00. Now, the price is used as Gravity Forms intends: the base price, with the Options fiel as modifiers to that price.
 * Support multiple download purchases using Options field checkboxes
 * Added: Payment status "Void" to support Gravity Forms updates
