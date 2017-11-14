@@ -817,15 +817,57 @@ final class KWS_GF_EDD {
             return;
         }
 
-        // Make sure GF and EDD have statuses that mean the same things.
-        $payment_status = $this->get_payment_status_from_gf_status($action['payment_status']);
+        $payment = new EDD_Payment( $payment_id );
 
-        $this->log_debug( sprintf('Setting $payment_id to %s and $payment_status to %s.', $payment_id, $payment_status));
+        if( ! $payment || ! $payment->ID > 0 ) {
+   
+            $this->log_error( 'EDD_Payment object not found for payment ID ' . $payment_id );
+    
+            return;
+        }
+
+        $payment_status = $this->get_payment_status_from_gf_status( $action['payment_status'] );
 
         $this->log_debug( 'Data passed to post_payment_callback', array('$entry' => $entry, '$payment_status' => $payment_status, '$action' => $action) );
 
-        // Update the payment status
-        edd_update_payment_status($payment_id, $payment_status);
+        switch( $payment_status ) {
+
+            case 'publish' :
+
+                $this->log_debug( sprintf( 'Setting $payment_id to %s and $payment_status to %s.', $payment_id, $payment_status ) );
+                edd_update_payment_status( $payment_id, $payment_status );
+
+                break;
+
+            case 'refunded' :
+
+                if( ! isset( $action['amount'] ) ) {
+
+                    $this->log_error( 'Amount not present for ' . $payment_id );
+
+                    return;
+                }
+
+                if( $action['amount'] >= $payment->total ) {
+
+                    // This is a full refund 
+                    $payment->refund();
+
+                } else {
+
+                    // This is a partial refund
+                    $payment->total -= $action['amount'];
+
+                    $payment->add_note( sprintf( __( 'Payment partially refunded (%s)', 'edd-gf' ), $action['amount'] ) );
+
+                    $payment->save();
+
+                }
+
+                break;
+        }
+
+
     }
 
     /**
