@@ -26,6 +26,10 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
+
+= 1.5.2 on October 18, 2019 =
+* Fix: Change GF integration hook priority to 49 to fix Stripe Checkout purchases.
+
 = 1.5 =
 
 * Added: Gravity Forms Transaction ID now stored in EDD
