@@ -114,7 +114,7 @@ final class KWS_GF_EDD {
     private function add_actions() {
 
 	    // Run the EDD functionality
-	    add_action("gform_after_submission", array($this, 'send_purchase_to_edd'), PHP_INT_MAX, 2);
+	    add_action("gform_after_submission", array($this, 'send_purchase_to_edd'), 49, 2);
 
 	    // Backward compatibility
 	    add_action('gform_post_payment_status', array($this, 'gform_post_payment_status'), 10, 3);
