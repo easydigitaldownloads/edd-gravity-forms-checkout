@@ -80,17 +80,18 @@ module.exports = function(grunt) {
 				    },
 				    processPot: function( pot, options ) {
 					    pot.headers['language'] = 'en_US';
-					    pot.headers['language-team'] = 'Katz Web Services, Inc. <support@katz.co>';
-					    pot.headers['last-translator'] = 'Katz Web Services, Inc. <support@katz.co>';
-					    pot.headers['report-msgid-bugs-to'] = 'https://support.katz.co';
+						pot.headers[ 'language-team' ] = 'Sandhills Development, LLC';
+						pot.headers[ 'last-translator' ] = 'Sandhills Development, LLC';
+						pot.headers[ 'report-msgid-bugs-to' ] = 'https://easydigitaldownloads.com/support/';
 
 					    var translation,
 						    excluded_meta = [
 							    'Easy Digital Downloads - Gravity Forms Checkout',
 							    'Integrate Gravity Forms purchases with Easy Digital Downloads',
 							    'https://easydigitaldownloads.com/downloads/gravity-forms-checkout/',
-							    'Katz Web Services, Inc.',
-							    'https://katz.co'
+								'Sandhills Development, LLC',
+								'https://easydigitaldownloads.com',
+								'https://sandhillsdev.com/'
 						    ];
 
 					    for ( translation in pot.translations[''] ) {
