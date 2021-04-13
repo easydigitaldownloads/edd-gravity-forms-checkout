@@ -837,7 +837,8 @@ final class KWS_GF_EDD {
 
         switch( $payment_status ) {
 
-            case 'publish' :
+			case 'publish':
+			case 'complete':
 
                 $this->log_debug( sprintf( 'Setting $payment_id to %s and $payment_status to %s.', $payment_id, $payment_status ) );
                 edd_update_payment_status( $payment_id, $payment_status );
