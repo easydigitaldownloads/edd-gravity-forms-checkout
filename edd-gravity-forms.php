@@ -4,7 +4,7 @@
  *
  * \section intro Who this documentation is for
  * This documentation is for _developers_, not for non-developers. If you don't intend to edit any code,
- * then you should instead visit the [Support & Knowledgebase](http://support.katz.co).
+ * then you should instead visit the [Support & Knowledgebase](https://easydigitaldownloads.com/support).
  *
  */
 
@@ -12,16 +12,16 @@
  * Plugin Name: Easy Digital Downloads - Gravity Forms Checkout
  * Plugin URI: https://easydigitaldownloads.com/downloads/gravity-forms-checkout/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
- * Author: Katz Web Services, Inc.
+ * Author: Sandhills Development, LLC
  * Version: 1.5.2
  * Requires at least: 3.0
- * Author URI: https://katz.co
+ * Author URI: https://sandhillsdev.com/
  * License: GPL v3
  * Text Domain: edd-gf
  * Domain Path: languages
  */
 /*
-  Copyright (C) 2015 Katz Web Services, Inc.
+  Copyright (C) 2021 Sandhills Development, LLC.
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -95,8 +95,8 @@ final class KWS_GF_EDD {
 		/**
 		 * Check for plugin updates. Built into EDD version 1.9+
 		 */
-		if (class_exists('EDD_License')) {
-			new EDD_License(EDD_GF_PLUGIN_FILE, self::name, self::version, 'Katz Web Services, Inc.');
+		if ( class_exists( 'EDD_License' ) ) {
+			new EDD_License( EDD_GF_PLUGIN_FILE, self::name, self::version, 'Sandhills Development, LLC', null, null, 194070 );
 		}
 
 		$this->add_actions();
@@ -820,9 +820,9 @@ final class KWS_GF_EDD {
         $payment = new EDD_Payment( $payment_id );
 
         if( ! $payment || ! $payment->ID > 0 ) {
-   
+
             $this->log_error( 'EDD_Payment object not found for payment ID ' . $payment_id );
-    
+
             return;
         }
 
@@ -850,7 +850,7 @@ final class KWS_GF_EDD {
 
                 if( $action['amount'] >= $payment->total ) {
 
-                    // This is a full refund 
+                    // This is a full refund
                     $payment->refund();
 
                 } else {
