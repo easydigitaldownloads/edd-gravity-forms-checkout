@@ -259,7 +259,7 @@ final class KWS_GF_EDD {
      *
      * This is the work horse for the plugin. It processes an array with the keys: `cart_details`, `user_info`, `downloads`.
      *
-     * @link http://support.katz.co/article/334-override-user-data Learn about how not to use logged-in user data
+     * @link https://docs.easydigitaldownloads.com/article/1971-how-to-use-the-submitted-form-data-instead-of-the-current-logged-in-user-data Learn about how not to use logged-in user data
      * @param  array $entry GF Entry array
      * @param  array $form  GF Form array
      * @todo More user info for logged-in users.
@@ -579,7 +579,7 @@ final class KWS_GF_EDD {
 
 	    /**
 	     * @filter `edd_gf_use_details_from_logged_in_user` Whether to use details from the logged-in user if the information is not in the form
-	     * @see http://support.katz.co/article/334-override-user-data
+	     * @see https://docs.easydigitaldownloads.com/article/1971-how-to-use-the-submitted-form-data-instead-of-the-current-logged-in-user-data
 	     * @param bool $use_logged_in_user_details True: use user defaults, false: don't [Default: true]
 	     * @param array $entry Gravity Forms Entry object
 	     * @param array $form Gravity Forms
