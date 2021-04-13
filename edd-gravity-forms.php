@@ -395,17 +395,18 @@ final class KWS_GF_EDD {
                     $item_discount = $coupon_details['flat'];
                 }
 
-	            $cart_details[] = array(
-                    'name' => get_the_title($download_id),
-                    'id' => $download_id,
-                    'item_number' => $item,
-                    'price' => $item_price,
-                    '_item_price' => $item_price,
-                    'tax' => null,
-                    'quantity' => 1,
-                    'discount' => $item_discount,
-                    'product_field_id' => $download['product_field_id'],
-                );
+				$cart_details[] = array(
+					'name'             => function_exists( 'edd_get_download_name' ) ? edd_get_download_name( $download_id ) : get_the_title( $download_id ),
+					'id'               => $download_id,
+					'item_number'      => $item,
+					'price'            => $item_price,
+					'_item_price'      => $item_price,
+					'item_price'       => $item_price,
+					'tax'              => null,
+					'quantity'         => 1,
+					'discount'         => $item_discount,
+					'product_field_id' => $download['product_field_id'],
+				);
                 $i++;
             }
 
@@ -699,10 +700,10 @@ final class KWS_GF_EDD {
             'status' => 'pending' // start with pending so we can call the update function, which logs all stats
         );
 
-        // Add the payment
-        $payment_id = edd_insert_payment($purchase_data);
+		// Add the payment
+		$payment_id = edd_insert_payment( $purchase_data );
 
-        add_post_meta($payment_id, '_edd_gf_entry_id', $entry['id']);
+		edd_update_payment_meta( $payment_id, '_edd_gf_entry_id', $entry['id'] );
 
 	    // TODO: Store API mode so that the links to Stripe are correct (include the /test/ path). Requires Gravity Forms core update.
 
@@ -739,7 +740,7 @@ final class KWS_GF_EDD {
 
         $this->log_debug( 'Purchase Data (Line ' . __LINE__ . ')', $purchase_data );
 
-        $this->log_debug( 'Payment Object (Line ' . __LINE__ . ')', get_post($payment_id) );
+		$this->log_debug( 'Payment Object (Line ' . __LINE__ . ')', edd_get_payment( $payment_id ) );
 
         do_action( 'edd_gf_payment_added', $entry, $payment_id, $purchase_data );
 
@@ -806,8 +807,12 @@ final class KWS_GF_EDD {
             return;
         }
 
-        // Get the payment ID from the entry ID
-        $payment_id = $wpdb->get_var($wpdb->prepare("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %s LIMIT 1", $entry['id']));
+		// Get the payment ID from the entry ID
+		if ( function_exists( 'edd_get_order' ) ) {
+			$payment_id = $wpdb->get_var( $wpdb->prepare( "SELECT edd_order_id FROM $wpdb->edd_ordermeta WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %s LIMIT 1", $entry['id'] ) );
+		} else {
+			$payment_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_edd_gf_entry_id' AND meta_value = %s LIMIT 1", $entry['id'] ) );
+		}
 
         // Payment's not been officially inserted yet
         if (empty($payment_id)) {
@@ -817,12 +822,12 @@ final class KWS_GF_EDD {
             return;
         }
 
-        $payment = new EDD_Payment( $payment_id );
+		$payment = new edd_get_payment( $payment_id );
 
         if( ! $payment || ! $payment->ID > 0 ) {
-   
+
             $this->log_error( 'EDD_Payment object not found for payment ID ' . $payment_id );
-    
+
             return;
         }
 
@@ -850,7 +855,7 @@ final class KWS_GF_EDD {
 
                 if( $action['amount'] >= $payment->total ) {
 
-                    // This is a full refund 
+                    // This is a full refund
                     $payment->refund();
 
                 } else {
