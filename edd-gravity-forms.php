@@ -822,7 +822,7 @@ final class KWS_GF_EDD {
             return;
         }
 
-		$payment = new edd_get_payment( $payment_id );
+		$payment = edd_get_payment( $payment_id );
 
         if( ! $payment || ! $payment->ID > 0 ) {
 
