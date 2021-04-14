@@ -4,7 +4,7 @@
  *
  * \section intro Who this documentation is for
  * This documentation is for _developers_, not for non-developers. If you don't intend to edit any code,
- * then you should instead visit the [Support & Knowledgebase](http://support.katz.co).
+ * then you should instead visit the [Support & Knowledgebase](https://easydigitaldownloads.com/support).
  *
  */
 
@@ -12,16 +12,16 @@
  * Plugin Name: Easy Digital Downloads - Gravity Forms Checkout
  * Plugin URI: https://easydigitaldownloads.com/downloads/gravity-forms-checkout/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
- * Author: Katz Web Services, Inc.
+ * Author: Sandhills Development, LLC
  * Version: 1.5.2
  * Requires at least: 3.0
- * Author URI: https://katz.co
+ * Author URI: https://sandhillsdev.com/
  * License: GPL v3
  * Text Domain: edd-gf
  * Domain Path: languages
  */
 /*
-  Copyright (C) 2015 Katz Web Services, Inc.
+  Copyright (C) 2021 Sandhills Development, LLC.
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -95,8 +95,8 @@ final class KWS_GF_EDD {
 		/**
 		 * Check for plugin updates. Built into EDD version 1.9+
 		 */
-		if (class_exists('EDD_License')) {
-			new EDD_License(EDD_GF_PLUGIN_FILE, self::name, self::version, 'Katz Web Services, Inc.');
+		if ( class_exists( 'EDD_License' ) ) {
+			new EDD_License( EDD_GF_PLUGIN_FILE, self::name, self::version, 'Sandhills Development, LLC', null, null, 194070 );
 		}
 
 		$this->add_actions();
@@ -259,7 +259,7 @@ final class KWS_GF_EDD {
      *
      * This is the work horse for the plugin. It processes an array with the keys: `cart_details`, `user_info`, `downloads`.
      *
-     * @link http://support.katz.co/article/334-override-user-data Learn about how not to use logged-in user data
+     * @link https://docs.easydigitaldownloads.com/article/1971-how-to-use-the-submitted-form-data-instead-of-the-current-logged-in-user-data Learn about how not to use logged-in user data
      * @param  array $entry GF Entry array
      * @param  array $form  GF Form array
      * @todo More user info for logged-in users.
@@ -579,7 +579,7 @@ final class KWS_GF_EDD {
 
 	    /**
 	     * @filter `edd_gf_use_details_from_logged_in_user` Whether to use details from the logged-in user if the information is not in the form
-	     * @see http://support.katz.co/article/334-override-user-data
+	     * @see https://docs.easydigitaldownloads.com/article/1971-how-to-use-the-submitted-form-data-instead-of-the-current-logged-in-user-data
 	     * @param bool $use_logged_in_user_details True: use user defaults, false: don't [Default: true]
 	     * @param array $entry Gravity Forms Entry object
 	     * @param array $form Gravity Forms
@@ -820,9 +820,9 @@ final class KWS_GF_EDD {
         $payment = new EDD_Payment( $payment_id );
 
         if( ! $payment || ! $payment->ID > 0 ) {
-   
+
             $this->log_error( 'EDD_Payment object not found for payment ID ' . $payment_id );
-    
+
             return;
         }
 
@@ -850,7 +850,7 @@ final class KWS_GF_EDD {
 
                 if( $action['amount'] >= $payment->total ) {
 
-                    // This is a full refund 
+                    // This is a full refund
                     $payment->refund();
 
                 } else {

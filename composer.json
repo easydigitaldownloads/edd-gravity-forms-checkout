@@ -1,12 +1,12 @@
 {
-  "name": "katzwebservices/EDD-Gravity-Forms-Checkout",
+  "name": "easydigitaldownloads/edd-gravity-forms-checkout",
   "type": "wordpress-plugin",
   "description": "Integrate Gravity Forms purchases with Easy Digital Downloads",
   "keywords": ["gravity forms", "easy digital downloads"],
-  "homepage": "https://gravityview.co/",
+  "homepage": "https://easydigitaldownloads.com/downloads/gravity-forms-checkout/",
   "license": "GPL-3.0",
   "support": {
-    "issues": "https://support.katz.co"
+    "issues": "https://easydigitaldownloads.com/support/"
   },
   "require": {
     "php": ">=5.2.4"
