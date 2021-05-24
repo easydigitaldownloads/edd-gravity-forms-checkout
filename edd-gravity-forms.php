@@ -639,7 +639,7 @@ final class KWS_GF_EDD {
      * @param  array $entry GF Entry array
      * @param  array $form GF Form array
      */
-    public function send_purchase_to_edd($entry = null, $form) {
+    public function send_purchase_to_edd($entry, $form) {
 
         // EDD not active
         if (!function_exists('edd_insert_payment')) {
