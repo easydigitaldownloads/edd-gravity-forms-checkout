@@ -151,12 +151,10 @@ class KWS_GF_EDD_Admin {
 	 */
 	function admin_enqueue_scripts() {
 
-		$min = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? NULL : '.min';
-
-		wp_enqueue_script( 'edd-gf-admin', plugins_url( 'assets/js/admin'.$min.'.js', EDD_GF_PLUGIN_FILE ), array('jquery'), KWS_GF_EDD::version, true);
+		wp_enqueue_script( 'edd-gf-admin', plugins_url( 'assets/build/admin.js', EDD_GF_PLUGIN_FILE ), array('jquery'), KWS_GF_EDD::version, true);
 
 		wp_localize_script( 'edd-gf-admin', 'EDDGF', array(
-			'debug' => ( $min || KWS_GF_EDD::debug ),
+			'debug' => ( ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) || KWS_GF_EDD::debug ),
 			'text_value' => __('Value', 'edd-gf'),
 			'field_types' => array( 'email', 'name' ),
 			'text_price_id' => __('EDD Price ID or Name', 'edd-gf')
