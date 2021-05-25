@@ -1,40 +1,49 @@
 # Copyright (C) 2021 Sandhills Development, LLC
-# This file is distributed under the GPL v3.
+# This file is distributed under the same license as the Easy Digital Downloads - Gravity Forms Checkout plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Easy Digital Downloads - Gravity Forms Checkout 1.5.2\n"
-"Report-Msgid-Bugs-To: https://easydigitaldownloads.com/support/\n"
-"POT-Creation-Date: 2021-04-13 17:49:35+00:00\n"
+"Project-Id-Version: Easy Digital Downloads - Gravity Forms Checkout 1.5.3\n"
+"Report-Msgid-Bugs-To: https://easydigitaldownloads.com/support\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2021-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Sandhills Development, LLC\n"
-"Language-Team: Sandhills Development, LLC\n"
-"Language: en_US\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Poedit-Country: United States\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywordsList: "
-"__;_e;_x:1,2c;_ex:1,2c;_n:1,2;_nx:1,2,4c;_n_noop:1,2;_nx_noop:1,2,3c;esc_"
-"attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;esc_html_x:1,2c;\n"
-"X-Poedit-Basepath: ../\n"
-"X-Poedit-SearchPath-0: .\n"
-"X-Poedit-Bookmarks: \n"
-"X-Textdomain-Support: yes\n"
-"X-Generator: grunt-wp-i18n 1.0.3\n"
+"POT-Creation-Date: 2021-05-25T12:51:07+01:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.4.0\n"
+"X-Domain: edd-gf\n"
+
+#. Plugin Name of the plugin
+msgid "Easy Digital Downloads - Gravity Forms Checkout"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://easydigitaldownloads.com/downloads/gravity-forms-checkout/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Integrate Gravity Forms purchases with Easy Digital Downloads"
+msgstr ""
+
+#. Author of the plugin
+msgid "Sandhills Development, LLC"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://sandhillsdev.com/"
+msgstr ""
 
 #: admin.php:54
 msgid "There are multiple fields of this type."
 msgstr ""
 
 #: admin.php:55
-msgid ""
-"In the form settings, you can choose which field EDD should use when "
-"creating the order. Select \"EDD Fields\" in the form&rsquo;s Settings menu."
+msgid "In the form settings, you can choose which field EDD should use when creating the order. Select \"EDD Fields\" in the form&rsquo;s Settings menu."
 msgstr ""
 
-#: admin.php:81 logging.php:21
+#: admin.php:81
+#: logging.php:21
 msgid "Gravity Forms Checkout for EDD"
 msgstr ""
 
@@ -54,86 +63,73 @@ msgstr ""
 msgid "%sPurchase Gravity Forms%s"
 msgstr ""
 
-#: admin.php:160
+#: admin.php:158
 msgid "Value"
 msgstr ""
 
-#: admin.php:162
+#: admin.php:160
 msgid "EDD Price ID or Name"
 msgstr ""
 
-#: admin.php:302
+#: admin.php:300
 msgid "Connect to EDD %s"
 msgstr ""
 
-#: admin.php:312
+#: admin.php:310
 msgid "Choose a %s"
 msgstr ""
 
-#: admin.php:330
+#: admin.php:328
 msgid "No %s created yet"
 msgstr ""
 
-#: admin.php:335
+#: admin.php:333
 msgid "This download has variations."
 msgstr ""
 
-#: admin.php:335
-msgid ""
-"You will need to add an \"Option\" Pricing Field or change the Field Type "
-"to \"Radio\" or \"Drop Down\" below in order to configure the variation "
-"pricing."
+#: admin.php:333
+msgid "You will need to add an \"Option\" Pricing Field or change the Field Type to \"Radio\" or \"Drop Down\" below in order to configure the variation pricing."
 msgstr ""
 
-#: admin.php:350
+#: admin.php:348
 msgid "Load EDD Options &amp; Prices for this Product %s"
 msgstr ""
 
-#: admin.php:351
+#: admin.php:349
 msgid "This is an Easy Digital Downloads product"
 msgstr ""
 
+#. translators: 1. opening anchor tag; do not translate; 2. closing anchor tag; do not translate.
 #: admin.php:352
-msgid ""
-"The \"Label\" below must match the EDD Option Name or the EDD Price ID "
-"value. %sLearn more about connecting variable price products%s."
+msgid "The \"Label\" below must match the EDD Option Name or the EDD Price ID value. %1$sLearn more about connecting variable price products%2$s."
 msgstr ""
 
-#: admin.php:360
-msgid ""
-"This EDD product has no price variants; the settings below will not be "
-"applied to the EDD download purchase."
+#: admin.php:363
+msgid "This EDD product has no price variants; the settings below will not be applied to the EDD download purchase."
 msgstr ""
 
-#: admin.php:379
+#: admin.php:382
 msgid "Use EDD Settings"
 msgstr ""
 
-#: admin.php:379
-msgid ""
-"Load the variation names and prices from the Easy Digital Downloads "
-"product. You can change the options after loading."
+#: admin.php:382
+msgid "Load the variation names and prices from the Easy Digital Downloads product. You can change the options after loading."
 msgstr ""
 
-#: admin.php:380
+#: admin.php:383
 msgid "EDD Download"
 msgstr ""
 
-#: admin.php:380
-msgid ""
-"Connect this product to an Easy Digital Downloads product. If connected, "
-"when this product is purchased it will generate a sale in Easy Digital "
-"Downloads."
+#: admin.php:383
+msgid "Connect this product to an Easy Digital Downloads product. If connected, when this product is purchased it will generate a sale in Easy Digital Downloads."
 msgstr ""
 
-#: admin.php:381
+#: admin.php:384
 msgid "Use for EDD Customer"
 msgstr ""
 
-#: admin.php:381
-msgid ""
-"This form contains multiple fields of this type. Select this option to use "
-"this field's data when creating a Customer in Easy Digital Downloads."
+#: admin.php:384
+msgid "This form contains multiple fields of this type. Select this option to use this field's data when creating a Customer in Easy Digital Downloads."
 msgstr ""
 
 #: class-gf-edd-user-fields.php:29
@@ -144,7 +140,8 @@ msgstr ""
 msgid "EDD Fields"
 msgstr ""
 
-#: class-gf-edd-user-fields.php:97 class-gf-edd-user-fields.php:131
+#: class-gf-edd-user-fields.php:97
+#: class-gf-edd-user-fields.php:131
 msgid "%s (Field ID #%d)"
 msgstr ""
 
@@ -164,14 +161,13 @@ msgstr ""
 msgid "%sEDD%s Fields"
 msgstr ""
 
-#: class-gf-edd-user-fields.php:169 edd-gravity-forms.php:720
+#: class-gf-edd-user-fields.php:169
+#: edd-gravity-forms.php:738
 msgid "Easy Digital Downloads"
 msgstr ""
 
 #: class-gf-edd-user-fields.php:170
-msgid ""
-"The form has multiple fields of the same type. Please specify which fields "
-"should be used when creating a customer in Easy Digital Downloads."
+msgid "The form has multiple fields of the same type. Please specify which fields should be used when creating a customer in Easy Digital Downloads."
 msgstr ""
 
 #: class-gf-edd-user-fields.php:173
@@ -179,23 +175,21 @@ msgid "(Custom Override)"
 msgstr ""
 
 #: class-gf-edd-user-fields.php:174
-msgid ""
-"Enter the ID or custom key of the field you want to use as the source of "
-"the corresponding EDD data."
+msgid "Enter the ID or custom key of the field you want to use as the source of the corresponding EDD data."
 msgstr ""
 
-#: edd-gravity-forms.php:710
+#: edd-gravity-forms.php:728
 msgid "Transaction ID: %s - "
 msgstr ""
 
-#: edd-gravity-forms.php:716
+#: edd-gravity-forms.php:734
 msgid "%s%sView Gravity Forms Entry%s"
 msgstr ""
 
-#: edd-gravity-forms.php:720
+#: edd-gravity-forms.php:738
 msgid "Created Payment ID %d in Easy Digital Downloads"
 msgstr ""
 
-#: edd-gravity-forms.php:861
+#: edd-gravity-forms.php:888
 msgid "Payment partially refunded (%s)"
 msgstr ""
