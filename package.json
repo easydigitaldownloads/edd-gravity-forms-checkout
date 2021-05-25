@@ -1,18 +1,23 @@
 {
-  "name": "EDD-Gravity-Forms-Checkout",
-  "description": "Easy Digital Downloads - Gravity Forms Checkout",
-  "author": "katzwebservices",
+  "name": "edd-gravity-forms-checkout",
+  "version": "1.5.3",
+  "description": "Integrate Gravity Forms purchases with Easy Digital Downloads.",
+  "author": "Sandhills Development, LLC",
   "devDependencies": {
-    "grunt": "^1.4.0",
-    "grunt-contrib-jshint": "^3.0.0",
-    "grunt-contrib-uglify": "^5.0.1",
-    "grunt-contrib-watch": "^1.1.0",
-    "grunt-exec": "^3.0.0",
-    "grunt-potomo": "^3.5.0",
-    "grunt-wp-i18n": "^1.0.3"
+    "@wordpress/scripts": "^16.1.0",
+    "ignore-emit-webpack-plugin": "^2.0.6"
+  },
+  "scripts": {
+    "build": "wp-scripts build --webpack-no-externals && npm run i18n",
+    "format": "wp-scripts format",
+    "i18n": "wp i18n make-pot . languages/edd-gf.pot --domain=edd-gf --headers='{\"Report-Msgid-Bugs-To\": \"https://easydigitaldownloads.com/support\"}'",
+    "lint:css": "wp-scripts lint-style",
+    "lint:js": "wp-scripts lint-js",
+    "lint:pkg-json": "wp-scripts lint-pkg-json",
+    "start": "wp-scripts start --webpack-no-externals"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/katzwebservices/EDD-Gravity-Forms-Checkout.git"
+    "url": "https://github.com/easydigitaldownloads/edd-gravity-forms-checkout.git"
   }
 }
