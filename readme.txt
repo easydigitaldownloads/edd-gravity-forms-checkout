@@ -26,6 +26,11 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 == Changelog ==
 
+= 1.5.3, May 25, 2021 =
+* Fix: Deprecation notices in PHP 8.
+* Tweak: Update plugin author name to Sandhills Development, LLC.
+* Dev: Compatibility with EDD 3.0.
+* Dev: Code formatting.
 
 = 1.5.2 on October 18, 2019 =
 * Fix: Change GF integration hook priority to 49 to fix Stripe Checkout purchases.

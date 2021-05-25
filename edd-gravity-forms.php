@@ -13,7 +13,7 @@
  * Plugin URI: https://easydigitaldownloads.com/downloads/gravity-forms-checkout/
  * Description: Integrate Gravity Forms purchases with Easy Digital Downloads
  * Author: Sandhills Development, LLC
- * Version: 1.5.2
+ * Version: 1.5.3
  * Requires at least: 3.0
  * Author URI: https://sandhillsdev.com/
  * License: GPL v3
@@ -42,7 +42,7 @@ final class KWS_GF_EDD {
 	 * @link  http://semver.org
 	 * @var  string Semantic Versioning version number
 	 */
-	const version = '1.5.2';
+	const version = '1.5.3';
 
 	/**
 	 * Name of the plugin for the updater class
