@@ -1,8 +1,8 @@
 === Gravity Forms Checkout for Easy Digital Downloads ===
 Tags: easy digital downloads, edd, gravity forms, gravityforms
 Requires at least: 4.5
-Tested up to: 4.8.1
-Contributors: katzwebservices
+Tested up to: 5.7
+Contributors: easydigitaldownloads, katzwebservices
 License: GPL 3 or higher
 
 Integrate Gravity Forms purchases with Easy Digital Downloads
@@ -20,7 +20,7 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 1. Upload plugin files to your plugins folder, or install using WordPress' built-in Add New Plugin installer
 1. Activate the plugin
-1. For more, [visit the Help Docs](http://support.katz.co).
+1. For more, [visit the Help Docs](https://easydigitaldownloads.com/support/).
 
 == Frequently Asked Questions ==
 
@@ -34,7 +34,7 @@ __To translate the plugin__ into your language, please [submit your translation 
 
 * Added: Gravity Forms Transaction ID now stored in EDD
 * Added: Customer address now stored
-* Fixed: Restored [`edd_gf_use_details_from_logged_in_user`](http://support.katz.co/article/334-override-user-data) filter
+* Fixed: Restored [`edd_gf_use_details_from_logged_in_user`](https://docs.easydigitaldownloads.com/article/1971-how-to-use-the-submitted-form-data-instead-of-the-current-logged-in-user-data) filter
 
 __Developer Notes:__
 
@@ -51,7 +51,7 @@ __Developer Notes:__
 * Update the "EDD Price ID" label to be more accurately called "EDD Price ID or Name"
 
 = 1.4 on January 27, 2016 =
-* Added: Support for redirecting to EDD Purchase Confirmation page [Read how to set this up](http://support.katz.co/article/335-edd-payment-confirmation-page)
+* Added: Support for redirecting to EDD Purchase Confirmation page [Read how to set this up](https://docs.easydigitaldownloads.com/article/1970-how-to-redirect-to-the-edd-payment-confirmation-page)
 * Fixed: Prevent duplicate payment records
 * Fixed: Default Price Option wasn't set when loading choices
 * Fixed: Broken links to documentation
